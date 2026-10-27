@@ -75,9 +75,22 @@ function formatDate(value: Date | string | null, code: string) {
 /* Small building blocks                                               */
 /* ------------------------------------------------------------------ */
 
-function LanguageBadge({ blog }: { blog: HomeBlogItem }) {
+function LanguageBadge({
+  blog,
+  small = false,
+}: {
+  blog: HomeBlogItem;
+  small?: boolean;
+}) {
   return (
-    <span className="inline-flex items-center rounded bg-primary px-2 py-1 text-[10px] font-bold uppercase leading-none tracking-wider text-primary-foreground">
+    <span
+      className={cn(
+        "inline-flex items-center rounded bg-primary font-bold uppercase leading-none tracking-wider text-primary-foreground",
+        small
+          ? "px-1.5 py-1 text-[9px] sm:px-2 sm:text-[10px]"
+          : "px-2 py-1 text-[10px]"
+      )}
+    >
       {getLanguageLabel(blog)}
     </span>
   );
@@ -160,7 +173,11 @@ function StoryMeta({
 }
 
 /* ------------------------------------------------------------------ */
-/* Story card (side + latest grid)                                     */
+/* Story card                                                          */
+/*                                                                     */
+/*  variant="grid"  -> full card everywhere (Latest Stories)           */
+/*  variant="side"  -> mobile/tablet: image-only tile (2-col grid)     */
+/*                     desktop (lg+): full card beside the hero        */
 /* ------------------------------------------------------------------ */
 
 function StoryCard({
@@ -172,6 +189,7 @@ function StoryCard({
 }) {
   const rtl = isRtlBlog(blog);
   const href = articleHref(blog);
+  const isSide = variant === "side";
 
   return (
     <article
@@ -183,7 +201,7 @@ function StoryCard({
       <div
         className={cn(
           "relative isolate w-full shrink-0 overflow-hidden bg-muted shadow-none",
-          variant === "side" ? "aspect-video lg:aspect-16/7" : "aspect-video"
+          isSide ? "aspect-4/3 sm:aspect-video lg:aspect-16/7" : "aspect-video"
         )}
       >
         <Image
@@ -191,19 +209,33 @@ function StoryCard({
           alt={blog.title}
           fill
           sizes={
-            variant === "side"
-              ? "(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+            isSide
+              ? "(min-width: 1024px) 33vw, 50vw"
               : "(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
           }
           className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
         />
-        <div className="absolute inset-s-3 top-3">
-          <LanguageBadge blog={blog} />
+        <div className="absolute inset-s-2 top-2 sm:inset-s-3 sm:top-3">
+          <LanguageBadge blog={blog} small={isSide} />
         </div>
       </div>
 
-      {/* Body */}
-      <div className="flex flex-1 flex-col gap-2 p-4 sm:p-5">
+      {/* Mobile-only full-tile link for side tiles (text is hidden there) */}
+      {isSide && (
+        <Link
+          href={href}
+          aria-label={blog.title}
+          className="absolute inset-0 z-10 lg:hidden"
+        />
+      )}
+
+      {/* Body: hidden on mobile/tablet for side tiles */}
+      <div
+        className={cn(
+          "flex-1 flex-col gap-2 p-4 sm:p-5",
+          isSide ? "hidden lg:flex" : "flex"
+        )}
+      >
         <span
           className={cn(
             "text-[11px] font-bold text-primary",
@@ -216,9 +248,7 @@ function StoryCard({
         <h3
           className={cn(
             "font-bold text-foreground transition-colors group-hover:text-primary",
-            rtl
-              ? "text-xl sm:text-2xl"
-              : "text-lg leading-snug sm:text-xl"
+            rtl ? "text-xl sm:text-2xl" : "text-lg leading-snug sm:text-xl"
           )}
         >
           {/* Stretched link: the whole card is clickable */}
@@ -299,12 +329,12 @@ export function HomeClient({ blogs }: HomeClientProps) {
       {/* ============================================================ */}
       {/* 1. HERO + SIDE STORIES                                       */}
       {/* ============================================================ */}
-      <section className="grid grid-cols-1 gap-5 lg:grid-cols-12 lg:items-stretch">
+      <section className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-12 lg:items-stretch">
         {/* Hero (overlay style) */}
         <article
           dir={heroRtl ? "rtl" : "ltr"}
           lang={hero.language.code}
-          className="group relative isolate min-h-104 overflow-hidden rounded-2xl border border-border bg-muted shadow-none sm:min-h-128 lg:col-span-8 lg:min-h-136"
+          className="group relative isolate min-h-96 overflow-hidden rounded-2xl border border-border bg-muted shadow-none sm:min-h-128 lg:col-span-8 lg:min-h-136"
         >
           <Image
             src={hero.bannerImage}
@@ -346,9 +376,11 @@ export function HomeClient({ blogs }: HomeClientProps) {
           </div>
         </article>
 
-        {/* Side stories */}
+        {/* Side stories:
+            mobile/tablet -> 2-column grid of image tiles
+            desktop       -> stacked full cards beside the hero */}
         {sideBlogs.length > 0 && (
-          <div className="grid min-w-0 grid-cols-1 gap-5 sm:grid-cols-2 lg:col-span-4 lg:auto-rows-fr lg:grid-cols-1">
+          <div className="grid min-w-0 grid-cols-2 gap-3 sm:gap-5 lg:col-span-4 lg:auto-rows-fr lg:grid-cols-1">
             {sideBlogs.map((blog) => (
               <StoryCard key={blog.id} blog={blog} variant="side" />
             ))}
