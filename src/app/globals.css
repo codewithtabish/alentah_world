@@ -2,6 +2,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* Tailwind CSS v4 dark-mode variant */
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -16,11 +17,13 @@
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar: var(--sidebar);
+
   --color-chart-5: var(--chart-5);
   --color-chart-4: var(--chart-4);
   --color-chart-3: var(--chart-3);
   --color-chart-2: var(--chart-2);
   --color-chart-1: var(--chart-1);
+
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -55,50 +58,47 @@
   --tracking-widest: calc(var(--tracking-normal) + 0.1em);
   --tracking-normal: var(--tracking-normal);
 
-  /* Shadows: all flat (values are "none" in :root / .dark) */
-  --shadow-2xs: var(--shadow-2xs);
-  --shadow-xs: var(--shadow-xs);
-  --shadow-sm: var(--shadow-sm);
-  --shadow: var(--shadow);
-  --shadow-md: var(--shadow-md);
-  --shadow-lg: var(--shadow-lg);
-  --shadow-xl: var(--shadow-xl);
-  --shadow-2xl: var(--shadow-2xl);
+  /* All Tailwind shadow utilities resolve to no shadow. */
+  --shadow-2xs: none;
+  --shadow-xs: none;
+  --shadow-sm: none;
+  --shadow: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --shadow-xl: none;
+  --shadow-2xl: none;
 
-  /* ============================================
-     FONTS — wired to the next/font variables in layout.tsx
-     ============================================ */
+  /* Fonts supplied by next/font in app/layout.tsx */
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-serif: var(--font-fraunces), ui-serif, Georgia, Cambria,
+    "Times New Roman", Times, serif;
+  --font-body: var(--font-fraunces), ui-serif, Georgia, Cambria,
+    "Times New Roman", Times, serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo,
+    Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 
-  /* English (Alentah Layout) */
-  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-serif: var(--font-fraunces), ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-  --font-body: var(--font-fraunces), ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  /* Urdu Nastaliq */
+  --font-urdu-display: var(--font-gulzar), var(--font-nastaliq),
+    "Jameel Noori Nastaleeq", serif;
+  --font-urdu-text: var(--font-nastaliq), var(--font-gulzar),
+    "Jameel Noori Nastaleeq", serif;
 
-  /* Urdu (Nastaliq): utilities font-urdu-display / font-urdu-text */
-  --font-urdu-display: var(--font-gulzar), var(--font-nastaliq), "Jameel Noori Nastaleeq", serif;
-  --font-urdu-text: var(--font-nastaliq), var(--font-gulzar), "Jameel Noori Nastaleeq", serif;
+  /* Arabic Naskh */
+  --font-arabic-display: var(--font-amiri), var(--font-naskh),
+    "Traditional Arabic", serif;
+  --font-arabic-text: var(--font-naskh), var(--font-amiri),
+    "Traditional Arabic", serif;
 
-  /* Arabic (Naskh): utilities font-arabic-display / font-arabic-text */
-  --font-arabic-display: var(--font-amiri), var(--font-naskh), "Traditional Arabic", serif;
-  --font-arabic-text: var(--font-naskh), var(--font-amiri), "Traditional Arabic", serif;
-
-  /* ============================================
-     RESPONSIVE BREAKPOINTS
-     ============================================ */
-  --breakpoint-xs: 30rem;      /* 480px  */
-  --breakpoint-3xl: 112rem;    /* 1792px */
-  --breakpoint-4xl: 120rem;    /* 1920px */
+  --breakpoint-xs: 30rem;
+  --breakpoint-3xl: 112rem;
+  --breakpoint-4xl: 120rem;
 }
 
 :root {
   color-scheme: light;
 
-  /* ============================================
-     THE INSIDER — BURGUNDY + WARM CREAM PALETTE
-     Primary  ≈ #6B1D33 (deep burgundy)
-     Surface  ≈ #F9F6F0 (warm cream)
-     ============================================ */
+  /* The Insider — burgundy and warm cream */
   --background: oklch(0.9797 0.0065 85);
   --foreground: oklch(0.2300 0.0120 20);
 
@@ -108,11 +108,9 @@
   --popover: oklch(0.9950 0.0030 85);
   --popover-foreground: oklch(0.2300 0.0120 20);
 
-  /* Burgundy brand colour */
   --primary: oklch(0.3600 0.1050 10);
   --primary-foreground: oklch(0.9900 0.0040 85);
 
-  /* Soft blush for secondary surfaces */
   --secondary: oklch(0.9350 0.0200 15);
   --secondary-foreground: oklch(0.3200 0.0950 10);
 
@@ -122,9 +120,8 @@
   --accent: oklch(0.9450 0.0150 15);
   --accent-foreground: oklch(0.3200 0.0950 10);
 
-  /* Orange-red so it stays clearly different from the burgundy brand colour */
   --destructive: oklch(0.5800 0.2200 27);
-  --destructive-foreground: oklch(1.0000 0 0);
+  --destructive-foreground: oklch(1 0 0);
 
   --border: oklch(0.8900 0.0120 50);
   --input: oklch(0.8900 0.0120 50);
@@ -150,7 +147,6 @@
   --shadow-color: oklch(0 0 0);
   --tracking-normal: 0em;
 
-  /* No shadows anywhere */
   --shadow-2xs: none;
   --shadow-xs: none;
   --shadow-sm: none;
@@ -164,11 +160,6 @@
 .dark {
   color-scheme: dark;
 
-  /* ============================================
-     DARK MODE — clean neutral charcoal
-     (no red/brown tint on the page itself;
-     the burgundy brand lives in the primary only)
-     ============================================ */
   --background: oklch(0.1600 0.0030 20);
   --foreground: oklch(0.9500 0.0050 80);
 
@@ -178,7 +169,6 @@
   --popover: oklch(0.2100 0.0045 20);
   --popover-foreground: oklch(0.9500 0.0050 80);
 
-  /* Light rose-burgundy: readable on dark */
   --primary: oklch(0.7600 0.1000 10);
   --primary-foreground: oklch(0.1900 0.0300 10);
 
@@ -192,7 +182,7 @@
   --accent-foreground: oklch(0.9500 0.0050 80);
 
   --destructive: oklch(0.6500 0.2000 27);
-  --destructive-foreground: oklch(1.0000 0 0);
+  --destructive-foreground: oklch(1 0 0);
 
   --border: oklch(0.2900 0.0050 20);
   --input: oklch(0.3300 0.0050 20);
@@ -216,8 +206,6 @@
   --sidebar-ring: oklch(0.7600 0.1000 10);
 
   --shadow-color: oklch(0 0 0);
-
-  /* No shadows anywhere */
   --shadow-2xs: none;
   --shadow-xs: none;
   --shadow-sm: none;
@@ -229,13 +217,15 @@
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
+  *,
+  *::before,
+  *::after {
+    @apply border-border;
   }
 
-  /* Solid page colour behind everything, so overscroll never shows another tint */
   html {
     background-color: var(--background);
+    scroll-behavior: smooth;
   }
 
   body {
@@ -246,55 +236,34 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Burgundy text selection to match the brand */
   ::selection {
     background-color: color-mix(in oklab, var(--primary) 22%, transparent);
     color: var(--foreground);
   }
 
-  /* ============================================
-     ENGLISH HEADINGS — Fraunces
-     ============================================ */
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-serif;
     text-wrap: balance;
   }
 
-  /* ============================================
-     ENGLISH PARAGRAPHS — Fraunces, reader styles
-     ============================================ */
   p {
-    font-family: var(--font-fraunces), ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+    font-family: var(--font-fraunces), ui-serif, Georgia, Cambria,
+      "Times New Roman", Times, serif;
     font-size: 1.0625rem;
     line-height: 1.75;
     color: color-mix(in oklab, var(--foreground) 92%, transparent);
     margin-block-end: 1.5rem;
-
     text-wrap: pretty;
     overflow-wrap: break-word;
-    word-break: break-word;
-
+    word-break: normal;
     text-align: left;
     text-align-last: left;
-
     hyphens: auto;
-    -webkit-hyphens: auto;
-  }
-
-  @media (min-width: 40rem) {
-    p {
-      font-size: 1.125rem;
-      line-height: 1.8;
-    }
-  }
-
-  @media (min-width: 64rem) {
-    p {
-      text-align: justify;
-      text-justify: inter-word;
-      text-align-last: left;
-      hyphens: auto;
-    }
   }
 
   li > p,
@@ -306,14 +275,23 @@
   }
 }
 
-/* ============================================================
-   SCROLL BEHAVIOR + FULLY HIDDEN SCROLLBARS
-   ============================================================ */
-
-html {
-  scroll-behavior: smooth;
+@media (min-width: 40rem) {
+  p {
+    font-size: 1.125rem;
+    line-height: 1.8;
+  }
 }
 
+@media (min-width: 64rem) {
+  p {
+    text-align: justify;
+    text-justify: inter-word;
+    text-align-last: left;
+    hyphens: auto;
+  }
+}
+
+/* Hide scrollbars visually while preserving scrolling. */
 * {
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -326,28 +304,19 @@ html {
   background: transparent;
 }
 
-*::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-*::-webkit-scrollbar-thumb {
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-thumb,
+*::-webkit-scrollbar-corner {
   background: transparent;
   border: none;
 }
 
-*::-webkit-scrollbar-corner {
-  background: transparent;
-}
-
-/* ============================================================
-   ZERO SHADOWS — EVERYWHERE, EVERY KIND
-   This sits outside @layer, so it beats Tailwind utilities.
-   It removes:
-   - box-shadow  (shadow-sm / md / lg / xl / 2xl, arbitrary shadows, rings)
-   - text-shadow
-   - drop-shadow filters (drop-shadow-*), which are a different
-     mechanism from box-shadow and were NOT covered before
-   ============================================================ */
+/* =========================================================
+   STRICT FLAT UI RESET
+   Removes shadows and glow filters from images, cards,
+   buttons and pseudo-elements. Does not remove gradients,
+   overlays or darkening baked into the image itself.
+   ========================================================= */
 
 *,
 *::before,
@@ -356,53 +325,51 @@ html {
   text-shadow: none !important;
 }
 
-/* Images: no filter, no shadow, no extra layers.
-   Also clears drop-shadow-* on the image or its wrappers. */
+/* Remove CSS filter-based glows and drop shadows. */
 img,
 picture,
 video,
-[data-nextjs-image-wrapper],
-[class*="drop-shadow"] {
+canvas,
+svg,
+[data-nimg],
+[class*="drop-shadow"],
+[style*="drop-shadow("] {
   filter: none !important;
+  -webkit-filter: none !important;
   box-shadow: none !important;
-  -webkit-box-shadow: none !important;
 }
 
+/* Images stay transparent outside their actual pixels. */
 img {
   background-color: transparent;
   transform: none;
-  backface-visibility: visible;
-  -webkit-backface-visibility: visible;
 }
 
-/* Only a stacking context, so rounded image corners stay crisp */
+/* Keep image wrapper stacking predictable. */
 [data-nextjs-image-wrapper],
 .relative.overflow-hidden {
   isolation: isolate;
 }
 
-/* ------------------------------------------------------------
-   Keyboard focus: ring-* classes use box-shadow, which is now
-   disabled, so draw an outline instead (accessibility).
-   ------------------------------------------------------------ */
+/* Restore a visible keyboard focus indicator after shadow reset. */
 :focus-visible {
   outline: 2px solid var(--ring) !important;
   outline-offset: 2px;
 }
 
-/* Mouse clicks should not show the outline */
+/* Do not show focus outlines for ordinary pointer clicks. */
 :focus:not(:focus-visible) {
-  outline: none !important;
+  outline: none;
 }
 
-/* ============================================================
-   URDU / ARABIC FONT LOCK
-   ============================================================ */
+/* =========================================================
+   URDU FONT AND TYPOGRAPHY
+   ========================================================= */
 
-/* ---------- URDU: Nastaliq ---------- */
 [lang="ur"],
 [lang="ur"] * {
-  font-family: var(--font-nastaliq), var(--font-gulzar), "Jameel Noori Nastaleeq", serif;
+  font-family: var(--font-nastaliq), var(--font-gulzar),
+    "Jameel Noori Nastaleeq", serif;
   letter-spacing: 0;
   word-spacing: 0.08em;
   font-feature-settings: normal;
@@ -410,7 +377,8 @@ img {
 }
 
 [lang="ur"] :is(h1, h2, h3, h4, h5, h6) {
-  font-family: var(--font-gulzar), var(--font-nastaliq), "Jameel Noori Nastaleeq", serif;
+  font-family: var(--font-gulzar), var(--font-nastaliq),
+    "Jameel Noori Nastaleeq", serif;
   font-weight: 400;
   line-height: 2;
 }
@@ -422,7 +390,6 @@ img {
   text-align-last: start;
   text-justify: auto;
   hyphens: none;
-  -webkit-hyphens: none;
   word-break: normal;
 }
 
@@ -438,10 +405,14 @@ button[lang="ur"] * {
   line-height: 1.8;
 }
 
-/* ---------- ARABIC: Naskh ---------- */
+/* =========================================================
+   ARABIC FONT AND TYPOGRAPHY
+   ========================================================= */
+
 [lang="ar"],
 [lang="ar"] * {
-  font-family: var(--font-naskh), var(--font-amiri), "Traditional Arabic", serif;
+  font-family: var(--font-naskh), var(--font-amiri),
+    "Traditional Arabic", serif;
   letter-spacing: 0;
   word-spacing: 0.04em;
   font-feature-settings: normal;
@@ -449,7 +420,8 @@ button[lang="ur"] * {
 }
 
 [lang="ar"] :is(h1, h2, h3, h4, h5, h6) {
-  font-family: var(--font-amiri), var(--font-naskh), "Traditional Arabic", serif;
+  font-family: var(--font-amiri), var(--font-naskh),
+    "Traditional Arabic", serif;
   font-weight: 700;
   line-height: 1.7;
 }
@@ -461,7 +433,6 @@ button[lang="ur"] * {
   text-align-last: start;
   text-justify: auto;
   hyphens: none;
-  -webkit-hyphens: none;
   word-break: normal;
 }
 
