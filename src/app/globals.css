@@ -92,42 +92,60 @@
 }
 
 :root {
+  color-scheme: light;
+
   /* ============================================
-     WARM CREAM EDITORIAL PALETTE
+     THE INSIDER — BURGUNDY + WARM CREAM PALETTE
+     Primary  ≈ #6B1D33 (deep burgundy)
+     Surface  ≈ #F9F6F0 (warm cream)
      ============================================ */
-  --background: oklch(0.9821 0.005 80);
-  --foreground: oklch(0.2435 0.008 80);
-  --card: oklch(0.9911 0.004 80);
-  --card-foreground: oklch(0.2435 0.008 80);
-  --popover: oklch(0.9911 0.004 80);
-  --popover-foreground: oklch(0.2435 0.008 80);
-  --primary: oklch(0.4341 0.0392 41.9938);
-  --primary-foreground: oklch(1.0000 0 0);
-  --secondary: oklch(0.9200 0.0651 74.3695);
-  --secondary-foreground: oklch(0.3499 0.0685 40.8288);
-  --muted: oklch(0.9521 0.008 75);
-  --muted-foreground: oklch(0.5032 0.008 75);
-  --accent: oklch(0.9310 0.008 75);
-  --accent-foreground: oklch(0.2435 0.008 80);
-  --destructive: oklch(0.6271 0.1936 33.3390);
+  --background: oklch(0.9797 0.0065 85);
+  --foreground: oklch(0.2300 0.0120 20);
+
+  --card: oklch(0.9950 0.0030 85);
+  --card-foreground: oklch(0.2300 0.0120 20);
+
+  --popover: oklch(0.9950 0.0030 85);
+  --popover-foreground: oklch(0.2300 0.0120 20);
+
+  /* Burgundy brand colour */
+  --primary: oklch(0.3600 0.1050 10);
+  --primary-foreground: oklch(0.9900 0.0040 85);
+
+  /* Soft blush for secondary surfaces */
+  --secondary: oklch(0.9350 0.0200 15);
+  --secondary-foreground: oklch(0.3200 0.0950 10);
+
+  --muted: oklch(0.9550 0.0080 80);
+  --muted-foreground: oklch(0.5000 0.0150 20);
+
+  --accent: oklch(0.9450 0.0150 15);
+  --accent-foreground: oklch(0.3200 0.0950 10);
+
+  /* Orange-red so it stays clearly different from the burgundy brand colour */
+  --destructive: oklch(0.5800 0.2200 27);
   --destructive-foreground: oklch(1.0000 0 0);
-  --border: oklch(0.8822 0.008 70);
-  --input: oklch(0.8822 0.008 70);
-  --ring: oklch(0.4341 0.0392 41.9938);
-  --chart-1: oklch(0.4341 0.0392 41.9938);
-  --chart-2: oklch(0.9200 0.0651 74.3695);
-  --chart-3: oklch(0.9310 0 0);
-  --chart-4: oklch(0.9367 0.0523 75.5009);
-  --chart-5: oklch(0.4338 0.0437 41.6746);
+
+  --border: oklch(0.8900 0.0120 50);
+  --input: oklch(0.8900 0.0120 50);
+  --ring: oklch(0.3600 0.1050 10);
+
+  --chart-1: oklch(0.3600 0.1050 10);
+  --chart-2: oklch(0.5200 0.1400 15);
+  --chart-3: oklch(0.6800 0.1100 25);
+  --chart-4: oklch(0.8200 0.0700 40);
+  --chart-5: oklch(0.2800 0.0800 10);
+
   --radius: 0.5rem;
-  --sidebar: oklch(0.9881 0.004 80);
-  --sidebar-foreground: oklch(0.2645 0.008 80);
-  --sidebar-primary: oklch(0.4341 0.0392 41.9938);
-  --sidebar-primary-foreground: oklch(0.9881 0.004 80);
-  --sidebar-accent: oklch(0.9761 0.006 80);
-  --sidebar-accent-foreground: oklch(0.3250 0.008 80);
-  --sidebar-border: oklch(0.9401 0.008 75);
-  --sidebar-ring: oklch(0.7731 0.008 75);
+
+  --sidebar: oklch(0.9880 0.0045 85);
+  --sidebar-foreground: oklch(0.2300 0.0120 20);
+  --sidebar-primary: oklch(0.3600 0.1050 10);
+  --sidebar-primary-foreground: oklch(0.9900 0.0040 85);
+  --sidebar-accent: oklch(0.9450 0.0150 15);
+  --sidebar-accent-foreground: oklch(0.3200 0.0950 10);
+  --sidebar-border: oklch(0.9100 0.0100 50);
+  --sidebar-ring: oklch(0.3600 0.1050 10);
 
   --shadow-color: oklch(0 0 0);
   --tracking-normal: 0em;
@@ -144,39 +162,58 @@
 }
 
 .dark {
-  --background: oklch(0.1776 0.005 80);
-  --foreground: oklch(0.9491 0.006 80);
-  --card: oklch(0.2134 0.006 80);
-  --card-foreground: oklch(0.9491 0.006 80);
-  --popover: oklch(0.2134 0.006 80);
-  --popover-foreground: oklch(0.9491 0.006 80);
-  --primary: oklch(0.9247 0.0524 66.1732);
-  --primary-foreground: oklch(0.2200 0.012 60);
-  --secondary: oklch(0.3163 0.0190 63.6992);
-  --secondary-foreground: oklch(0.9247 0.0524 66.1732);
-  --muted: oklch(0.2520 0.006 80);
-  --muted-foreground: oklch(0.7699 0.006 80);
-  --accent: oklch(0.2850 0.006 80);
-  --accent-foreground: oklch(0.9491 0.006 80);
-  --destructive: oklch(0.6271 0.1936 33.3390);
+  color-scheme: dark;
+
+  /* ============================================
+     DARK MODE — clean neutral charcoal
+     (no red/brown tint on the page itself;
+     the burgundy brand lives in the primary only)
+     ============================================ */
+  --background: oklch(0.1600 0.0030 20);
+  --foreground: oklch(0.9500 0.0050 80);
+
+  --card: oklch(0.2000 0.0040 20);
+  --card-foreground: oklch(0.9500 0.0050 80);
+
+  --popover: oklch(0.2100 0.0045 20);
+  --popover-foreground: oklch(0.9500 0.0050 80);
+
+  /* Light rose-burgundy: readable on dark */
+  --primary: oklch(0.7600 0.1000 10);
+  --primary-foreground: oklch(0.1900 0.0300 10);
+
+  --secondary: oklch(0.2600 0.0150 12);
+  --secondary-foreground: oklch(0.9000 0.0400 10);
+
+  --muted: oklch(0.2300 0.0040 20);
+  --muted-foreground: oklch(0.7400 0.0060 40);
+
+  --accent: oklch(0.2600 0.0070 15);
+  --accent-foreground: oklch(0.9500 0.0050 80);
+
+  --destructive: oklch(0.6500 0.2000 27);
   --destructive-foreground: oklch(1.0000 0 0);
-  --border: oklch(0.3000 0.008 80);
-  --input: oklch(0.4017 0.006 80);
-  --ring: oklch(0.9247 0.0524 66.1732);
-  --chart-1: oklch(0.9247 0.0524 66.1732);
-  --chart-2: oklch(0.3163 0.0190 63.6992);
-  --chart-3: oklch(0.2850 0 0);
-  --chart-4: oklch(0.3481 0.0219 67.0001);
-  --chart-5: oklch(0.9245 0.0533 67.0855);
+
+  --border: oklch(0.2900 0.0050 20);
+  --input: oklch(0.3300 0.0050 20);
+  --ring: oklch(0.7600 0.1000 10);
+
+  --chart-1: oklch(0.7600 0.1000 10);
+  --chart-2: oklch(0.6200 0.1300 15);
+  --chart-3: oklch(0.4800 0.1100 12);
+  --chart-4: oklch(0.8300 0.0700 30);
+  --chart-5: oklch(0.9000 0.0500 40);
+
   --radius: 0.5rem;
-  --sidebar: oklch(0.2000 0.006 80);
-  --sidebar-foreground: oklch(0.9491 0.006 80);
-  --sidebar-primary: oklch(0.9247 0.0524 66.1732);
-  --sidebar-primary-foreground: oklch(0.2200 0.012 60);
-  --sidebar-accent: oklch(0.2850 0.006 80);
-  --sidebar-accent-foreground: oklch(0.9491 0.006 80);
-  --sidebar-border: oklch(0.3000 0.008 80);
-  --sidebar-ring: oklch(0.7731 0.008 75);
+
+  --sidebar: oklch(0.1800 0.0035 20);
+  --sidebar-foreground: oklch(0.9500 0.0050 80);
+  --sidebar-primary: oklch(0.7600 0.1000 10);
+  --sidebar-primary-foreground: oklch(0.1900 0.0300 10);
+  --sidebar-accent: oklch(0.2600 0.0070 15);
+  --sidebar-accent-foreground: oklch(0.9500 0.0050 80);
+  --sidebar-border: oklch(0.2900 0.0050 20);
+  --sidebar-ring: oklch(0.7600 0.1000 10);
 
   --shadow-color: oklch(0 0 0);
 
@@ -196,12 +233,23 @@
     @apply border-border outline-ring/50;
   }
 
+  /* Solid page colour behind everything, so overscroll never shows another tint */
+  html {
+    background-color: var(--background);
+  }
+
   body {
     @apply bg-background text-foreground font-sans;
     letter-spacing: var(--tracking-normal);
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Burgundy text selection to match the brand */
+  ::selection {
+    background-color: color-mix(in oklab, var(--primary) 22%, transparent);
+    color: var(--foreground);
   }
 
   /* ============================================
@@ -292,44 +340,59 @@ html {
 }
 
 /* ============================================================
-   GLOBAL IMAGE EDGE FIX — ALENTAH
+   ZERO SHADOWS — EVERYWHERE, EVERY KIND
+   This sits outside @layer, so it beats Tailwind utilities.
+   It removes:
+   - box-shadow  (shadow-sm / md / lg / xl / 2xl, arbitrary shadows, rings)
+   - text-shadow
+   - drop-shadow filters (drop-shadow-*), which are a different
+     mechanism from box-shadow and were NOT covered before
    ============================================================ */
 
+*,
+*::before,
+*::after {
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+/* Images: no filter, no shadow, no extra layers.
+   Also clears drop-shadow-* on the image or its wrappers. */
+img,
+picture,
+video,
+[data-nextjs-image-wrapper],
+[class*="drop-shadow"] {
+  filter: none !important;
+  box-shadow: none !important;
+  -webkit-box-shadow: none !important;
+}
+
 img {
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  image-rendering: -webkit-optimize-contrast;
-  transform: translateZ(0);
-  filter: brightness(1);
   background-color: transparent;
+  transform: none;
+  backface-visibility: visible;
+  -webkit-backface-visibility: visible;
 }
 
-@media (min-resolution: 1.1dppx) {
-  img {
-    outline: solid 1px transparent;
-  }
-}
-
+/* Only a stacking context, so rounded image corners stay crisp */
 [data-nextjs-image-wrapper],
 .relative.overflow-hidden {
   isolation: isolate;
-  contain: paint;
 }
 
-.dark img {
-  outline: 1px solid rgba(255, 255, 255, 0.1);
+/* ------------------------------------------------------------
+   Keyboard focus: ring-* classes use box-shadow, which is now
+   disabled, so draw an outline instead (accessibility).
+   ------------------------------------------------------------ */
+:focus-visible {
+  outline: 2px solid var(--ring) !important;
+  outline-offset: 2px;
 }
 
-@supports (font: -apple-system-body) and (-webkit-appearance: none) {
-  img[loading="lazy"] {
-    clip-path: inset(0.6px);
-  }
-}
-
-@-moz-document url-prefix() {
-  img {
-    filter: brightness(1);
-  }
+/* Mouse clicks should not show the outline */
+:focus:not(:focus-visible) {
+  outline: none !important;
 }
 
 /* ============================================================
