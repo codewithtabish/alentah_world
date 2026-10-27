@@ -98,10 +98,10 @@ function LanguageBadge({
 
 function StoryMeta({
   blog,
-  tone = "card",
+  tone = "plain",
 }: {
   blog: HomeBlogItem;
-  tone?: "card" | "overlay";
+  tone?: "plain" | "overlay";
 }) {
   const reading = getReadingLabel(blog, tone === "overlay");
   const date = formatDate(blog.publishedAt, blog.language.code);
@@ -148,7 +148,7 @@ function StoryMeta({
   }
 
   return (
-    <div className="flex items-center justify-between gap-3 border-t border-border pt-3 text-xs text-muted-foreground">
+    <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
       <span className="flex min-w-0 items-center gap-2">
         {avatar}
         <span className="truncate font-medium text-foreground/80">{name}</span>
@@ -173,11 +173,11 @@ function StoryMeta({
 }
 
 /* ------------------------------------------------------------------ */
-/* Story card                                                          */
+/* Story (NO card: no border, no background, no shadow)                */
 /*                                                                     */
-/*  variant="grid"  -> full card everywhere (Latest Stories)           */
+/*  variant="grid"  -> image + text (Latest Stories)                   */
 /*  variant="side"  -> mobile/tablet: image + title only (2-col grid)  */
-/*                     desktop (lg+): full card beside the hero        */
+/*                     desktop (lg+): image + full text beside hero    */
 /* ------------------------------------------------------------------ */
 
 function StoryCard({
@@ -195,13 +195,13 @@ function StoryCard({
     <article
       dir={rtl ? "rtl" : "ltr"}
       lang={blog.language.code}
-      className="group relative flex h-full min-w-0 flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors duration-300 hover:border-primary/40"
+      className="group relative flex h-full min-w-0 flex-col"
     >
       {/* Image */}
       <div
         className={cn(
-          "relative isolate w-full shrink-0 overflow-hidden bg-muted shadow-none",
-          isSide ? "aspect-4/3 sm:aspect-video lg:aspect-16/7" : "aspect-video"
+          "relative isolate w-full shrink-0 overflow-hidden rounded-xl bg-muted shadow-none",
+          isSide ? "aspect-4/3 sm:aspect-video lg:aspect-16/8" : "aspect-video"
         )}
       >
         <Image
@@ -220,11 +220,11 @@ function StoryCard({
         </div>
       </div>
 
-      {/* Body */}
+      {/* Text (sits directly on the page, no box) */}
       <div
         className={cn(
           "flex flex-1 flex-col gap-2",
-          isSide ? "p-2.5 sm:p-3 lg:p-5" : "p-4 sm:p-5"
+          isSide ? "pt-2.5 sm:pt-3 lg:pt-4" : "pt-4"
         )}
       >
         {/* Category: hidden on small side tiles */}
@@ -254,7 +254,7 @@ function StoryCard({
                 : "text-lg leading-snug sm:text-xl"
           )}
         >
-          {/* Stretched link: the whole card is clickable */}
+          {/* Stretched link: the whole story is clickable */}
           <Link href={href} className="after:absolute after:inset-0">
             {blog.title}
           </Link>
@@ -335,12 +335,12 @@ export function HomeClient({ blogs }: HomeClientProps) {
       {/* ============================================================ */}
       {/* 1. HERO + SIDE STORIES                                       */}
       {/* ============================================================ */}
-      <section className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-12 lg:items-stretch">
-        {/* Hero (overlay style) */}
+      <section className="grid grid-cols-1 gap-5 lg:grid-cols-12 lg:items-stretch">
+        {/* Hero (image with overlay text) */}
         <article
           dir={heroRtl ? "rtl" : "ltr"}
           lang={hero.language.code}
-          className="group relative isolate min-h-96 overflow-hidden rounded-2xl border border-border bg-muted shadow-none sm:min-h-128 lg:col-span-8 lg:min-h-136"
+          className="group relative isolate min-h-96 overflow-hidden rounded-2xl bg-muted shadow-none sm:min-h-128 lg:col-span-8 lg:min-h-136"
         >
           <Image
             src={hero.bannerImage}
@@ -384,9 +384,9 @@ export function HomeClient({ blogs }: HomeClientProps) {
 
         {/* Side stories:
             mobile/tablet -> 2-column grid, image + title only
-            desktop       -> stacked full cards beside the hero */}
+            desktop       -> stacked beside the hero */}
         {sideBlogs.length > 0 && (
-          <div className="grid min-w-0 grid-cols-2 gap-3 sm:gap-5 lg:col-span-4 lg:auto-rows-fr lg:grid-cols-1">
+          <div className="grid min-w-0 grid-cols-2 gap-3 sm:gap-5 lg:col-span-4 lg:auto-rows-fr lg:grid-cols-1 lg:gap-6">
             {sideBlogs.map((blog) => (
               <StoryCard key={blog.id} blog={blog} variant="side" />
             ))}
@@ -418,7 +418,7 @@ export function HomeClient({ blogs }: HomeClientProps) {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
             {latestBlogs.map((blog) => (
               <StoryCard key={blog.id} blog={blog} variant="grid" />
             ))}
