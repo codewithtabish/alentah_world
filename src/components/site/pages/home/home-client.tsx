@@ -16,7 +16,7 @@ export function HomeClient({ blogs }: HomeClientProps) {
   if (!blogs.length) {
     return (
       <div className="py-20 text-center text-muted-foreground">
-        No stories published yet. Check back soon.
+        No stories published yet. Check back soon..
       </div>
     );
   }
