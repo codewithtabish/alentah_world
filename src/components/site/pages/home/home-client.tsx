@@ -176,7 +176,7 @@ function StoryMeta({
 /* Story card                                                          */
 /*                                                                     */
 /*  variant="grid"  -> full card everywhere (Latest Stories)           */
-/*  variant="side"  -> mobile/tablet: image-only tile (2-col grid)     */
+/*  variant="side"  -> mobile/tablet: image + title only (2-col grid)  */
 /*                     desktop (lg+): full card beside the hero        */
 /* ------------------------------------------------------------------ */
 
@@ -220,35 +220,38 @@ function StoryCard({
         </div>
       </div>
 
-      {/* Mobile-only full-tile link for side tiles (text is hidden there) */}
-      {isSide && (
-        <Link
-          href={href}
-          aria-label={blog.title}
-          className="absolute inset-0 z-10 lg:hidden"
-        />
-      )}
-
-      {/* Body: hidden on mobile/tablet for side tiles */}
+      {/* Body */}
       <div
         className={cn(
-          "flex-1 flex-col gap-2 p-4 sm:p-5",
-          isSide ? "hidden lg:flex" : "flex"
+          "flex flex-1 flex-col gap-2",
+          isSide ? "p-2.5 sm:p-3 lg:p-5" : "p-4 sm:p-5"
         )}
       >
+        {/* Category: hidden on small side tiles */}
         <span
           className={cn(
             "text-[11px] font-bold text-primary",
-            !rtl && "uppercase tracking-wider"
+            !rtl && "uppercase tracking-wider",
+            isSide && "hidden lg:block"
           )}
         >
           {blog.category.name}
         </span>
 
+        {/* Title: always visible */}
         <h3
           className={cn(
             "font-bold text-foreground transition-colors group-hover:text-primary",
-            rtl ? "text-xl sm:text-2xl" : "text-lg leading-snug sm:text-xl"
+            isSide
+              ? cn(
+                  "line-clamp-2 text-[13px] sm:text-base lg:line-clamp-none",
+                  rtl
+                    ? "leading-[1.9] lg:text-2xl"
+                    : "leading-snug lg:text-xl"
+                )
+              : rtl
+                ? "text-xl sm:text-2xl"
+                : "text-lg leading-snug sm:text-xl"
           )}
         >
           {/* Stretched link: the whole card is clickable */}
@@ -257,18 +260,21 @@ function StoryCard({
           </Link>
         </h3>
 
+        {/* Description: hidden on small side tiles */}
         {blog.shortDescription && (
           <div
             className={cn(
               "line-clamp-2 text-sm text-muted-foreground",
-              rtl ? "leading-7" : "leading-6"
+              rtl ? "leading-7" : "leading-6",
+              isSide && "hidden lg:block"
             )}
           >
             {blog.shortDescription}
           </div>
         )}
 
-        <div className="mt-auto pt-2">
+        {/* Author footer: hidden on small side tiles */}
+        <div className={cn("mt-auto pt-2", isSide && "hidden lg:block")}>
           <StoryMeta blog={blog} />
         </div>
       </div>
@@ -377,7 +383,7 @@ export function HomeClient({ blogs }: HomeClientProps) {
         </article>
 
         {/* Side stories:
-            mobile/tablet -> 2-column grid of image tiles
+            mobile/tablet -> 2-column grid, image + title only
             desktop       -> stacked full cards beside the hero */}
         {sideBlogs.length > 0 && (
           <div className="grid min-w-0 grid-cols-2 gap-3 sm:gap-5 lg:col-span-4 lg:auto-rows-fr lg:grid-cols-1">
