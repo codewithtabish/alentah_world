@@ -2,7 +2,7 @@
 "use client";
 
 import Image from "next/image";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import CodeBlockSwitcher from "./code-article-switcher";
 import { z } from "zod";
@@ -13,14 +13,17 @@ type TableOfContentsItem = z.infer<typeof tableOfContentsSchema>;
 type PreviewerProps = {
   content: any;
   language?: "en" | "ur" | "ar";
+  /** Kept for backward compatibility. Table of contents is no longer rendered. */
   tableOfContents?: TableOfContentsItem[];
   stickyOffset?: number;
+  /** Kept for backward compatibility. Table of contents is no longer rendered. */
   showToc?: boolean;
 };
 
 type SidebarProps = {
   content: any;
   language?: "en" | "ur" | "ar";
+  /** Kept for backward compatibility. Table of contents is no longer rendered. */
   tableOfContents?: TableOfContentsItem[];
   stickyOffset?: number;
 };
@@ -31,9 +34,6 @@ const TOC_TYPES = new Set([
   "table-of-contents",
   "table_of_contents",
 ]);
-
-// Height of the sticky TOC bar (approx) + breathing room
-const TOC_BAR_SPACE = 80;
 
 const renderHTML = (html: string | undefined | null) => {
   if (!html || html.trim() === "") return undefined;
@@ -159,38 +159,6 @@ function getHeadingIds(blocks: any[]): Record<number, string> {
   return result;
 }
 
-type TocItem = { id: string; title: string; level: number };
-
-function buildToc(
-  blocks: any[],
-  headingIds: Record<number, string>,
-  fallback: TableOfContentsItem[],
-): TocItem[] {
-  const all: TocItem[] = [];
-
-  blocks.forEach((block, index) => {
-    const id = headingIds[index];
-    if (!id) return;
-    all.push({
-      id,
-      title: stripHtml(String(block.data.text)),
-      level: Math.min(Math.max(block.data.level || 2, 1), 6),
-    });
-  });
-
-  const main = all.filter((item) => item.level >= 2 && item.level <= 3);
-  if (main.length) return main;
-  if (all.length) return all;
-
-  return fallback
-    .map((item) => ({
-      id: item.id || slugifyHeader(item.title),
-      title: item.title,
-      level: item.level || 2,
-    }))
-    .filter((item) => item.id && item.title);
-}
-
 function getReadingMinutes(blocks: any[]) {
   let words = 0;
   blocks.forEach((b: any) => {
@@ -212,37 +180,20 @@ function getReadingMinutes(blocks: any[]) {
   return Math.max(1, Math.round(words / 220));
 }
 
-/**
- * `activeOffset` = distance from the top of the viewport at which a heading
- * counts as "current". Must be slightly larger than the scroll landing offset.
- */
-function useArticleScroll(toc: TocItem[], activeOffset: number) {
+/** Reading progress (0 → 1) for the article element. */
+function useArticleProgress() {
   const [progress, setProgress] = useState(0);
-  const [activeId, setActiveId] = useState("");
 
   useEffect(() => {
-    const headings = toc
-      .map((item) => document.getElementById(item.id))
-      .filter((el): el is HTMLElement => Boolean(el));
     let ticking = false;
 
     const update = () => {
       ticking = false;
       const article = document.querySelector<HTMLElement>("[data-blog-article]");
-      if (article) {
-        const rect = article.getBoundingClientRect();
-        const total = Math.max(rect.height - window.innerHeight * 0.6, 1);
-        setProgress(Math.min(Math.max(-rect.top / total, 0), 1));
-      }
-      if (headings.length) {
-        let current = headings[0].id;
-        for (const heading of headings) {
-          if (heading.getBoundingClientRect().top <= activeOffset) {
-            current = heading.id;
-          } else break;
-        }
-        setActiveId(current);
-      }
+      if (!article) return;
+      const rect = article.getBoundingClientRect();
+      const total = Math.max(rect.height - window.innerHeight * 0.6, 1);
+      setProgress(Math.min(Math.max(-rect.top / total, 0), 1));
     };
 
     const onScroll = () => {
@@ -259,294 +210,14 @@ function useArticleScroll(toc: TocItem[], activeOffset: number) {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
     };
-  }, [toc, activeOffset]);
+  }, []);
 
-  return { progress, activeId, setActiveId };
-}
-
-/**
- * Scrolls so the heading sits `offset` px below the top of the viewport.
- * Falls back to matching by title if the id is not in the DOM.
- */
-function scrollToId(id: string, offset: number, title?: string) {
-  let target: HTMLElement | null = document.getElementById(id);
-
-  if (!target && title) {
-    const wanted = title.trim().toLowerCase();
-    const candidates = document.querySelectorAll<HTMLElement>(
-      "[data-blog-article] h1, [data-blog-article] h2, [data-blog-article] h3, [data-blog-article] h4, [data-blog-article] h5, [data-blog-article] h6",
-    );
-    for (const el of Array.from(candidates)) {
-      const text = (el.textContent || "").replace(/#\s*$/, "").trim().toLowerCase();
-      if (text === wanted || text.startsWith(wanted)) {
-        target = el;
-        break;
-      }
-    }
-  }
-
-  if (!target) return;
-
-  const top = target.getBoundingClientRect().top + window.scrollY - offset;
-  window.scrollTo({ top: Math.max(top, 0), behavior: "smooth" });
-}
-
-function TocList({
-  items,
-  activeId,
-  onSelect,
-  isRTL,
-}: {
-  items: TocItem[];
-  activeId: string;
-  onSelect: (item: TocItem) => void;
-  isRTL?: boolean;
-}) {
-  return (
-    <ul
-      className={`relative m-0 list-none space-y-0.5 p-0 ${
-        isRTL ? "border-r" : "border-l"
-      } border-border`}
-    >
-      {items.map((item, index) => {
-        const isActive = activeId === item.id;
-        return (
-          <li key={`${item.id}-${index}`} className="m-0 p-0">
-            <button
-              type="button"
-              data-toc-id={item.id}
-              onClick={() => onSelect(item)}
-              aria-current={isActive ? "location" : undefined}
-              style={{
-                [isRTL ? "paddingRight" : "paddingLeft"]: `${
-                  Math.max(item.level - 2, 0) * 14 + 14
-                }px`,
-              }}
-              className={cn(
-                `relative ${
-                  isRTL ? "-mr-px border-r-2 pr-3" : "-ml-px border-l-2 pl-3"
-                } block w-full transition-colors duration-200`,
-                isRTL
-                  ? "py-1.5 text-right font-urdu-text text-[15px] leading-[2.2]"
-                  : "py-2 text-left text-[13.5px] leading-5",
-                isActive
-                  ? "border-primary font-semibold text-primary"
-                  : "border-transparent text-muted-foreground hover:border-muted-foreground/40 hover:text-foreground",
-              )}
-            >
-              {item.title}
-            </button>
-          </li>
-        );
-      })}
-    </ul>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/*  Sticky dropdown table of contents (top of article)                 */
-/*  The panel is an OVERLAY (absolute) so it never shifts the layout.  */
-/* ------------------------------------------------------------------ */
-function StickyTocDropdown({
-  items,
-  activeId,
-  progress,
-  readingMinutes,
-  stickyOffset,
-  isRTL,
-  onSelect,
-}: {
-  items: TocItem[];
-  activeId: string;
-  progress: number;
-  readingMinutes: number;
-  stickyOffset: number;
-  isRTL: boolean;
-  onSelect: (item: TocItem) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const listRef = useRef<HTMLDivElement>(null);
-
-  const percent = Math.round(progress * 100);
-  const minutesLeft = Math.max(0, Math.ceil(readingMinutes * (1 - progress)));
-  const activeItem = items.find((i) => i.id === activeId) ?? items[0];
-
-  // Close on outside click / Escape
-  useEffect(() => {
-    if (!open) return;
-
-    const onDown = (e: MouseEvent | TouchEvent) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-
-    document.addEventListener("mousedown", onDown);
-    document.addEventListener("touchstart", onDown, { passive: true });
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("mousedown", onDown);
-      document.removeEventListener("touchstart", onDown);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [open]);
-
-  // Keep active item visible inside the open dropdown
-  useEffect(() => {
-    if (!open || !activeId) return;
-    const box = listRef.current;
-    if (!box) return;
-    const el = box.querySelector<HTMLElement>(
-      `[data-toc-id="${CSS.escape(activeId)}"]`,
-    );
-    if (!el) return;
-    const top =
-      el.getBoundingClientRect().top -
-      box.getBoundingClientRect().top +
-      box.scrollTop -
-      box.clientHeight / 2 +
-      el.clientHeight / 2;
-    box.scrollTo({ top, behavior: "auto" });
-  }, [open, activeId]);
-
-  if (!items.length) return null;
-
-  return (
-    <div
-      ref={wrapRef}
-      className="not-prose sticky z-40 mb-8"
-      style={{ top: stickyOffset }}
-    >
-      {/* the bar */}
-      <div className="overflow-hidden rounded-2xl border border-border bg-background/90 shadow-sm backdrop-blur-md">
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          aria-expanded={open}
-          aria-controls="article-toc-panel"
-          className={cn(
-            "flex w-full items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/40 sm:px-5",
-            isRTL ? "flex-row-reverse text-right" : "text-left",
-          )}
-        >
-          <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="size-4">
-              <path
-                d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </span>
-
-          <span className="flex min-w-0 flex-1 flex-col">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              In this article
-            </span>
-            {/*
-              FIX: Nastaliq glyphs extend above/below the normal line box.
-              `truncate` = overflow:hidden, which clipped them. Padding sits
-              INSIDE the overflow box, so tall line-height + vertical padding
-              keeps the full glyphs visible while still truncating long titles.
-            */}
-            <span
-              className={cn(
-                "block overflow-hidden text-ellipsis whitespace-nowrap font-semibold text-foreground",
-                isRTL
-                  ? "py-2 font-urdu-text text-[15px] leading-[2.4] sm:text-base"
-                  : "text-sm",
-              )}
-            >
-              {activeItem?.title}
-            </span>
-          </span>
-
-          <span
-            dir="ltr"
-            className="hidden shrink-0 text-xs tabular-nums text-muted-foreground sm:block"
-          >
-            {progress >= 0.98
-              ? `${readingMinutes} min read`
-              : `${minutesLeft} min left`}
-          </span>
-
-          <span
-            dir="ltr"
-            className="shrink-0 rounded-md bg-muted px-2 py-0.5 text-xs font-semibold tabular-nums text-foreground"
-          >
-            {percent}%
-          </span>
-
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            aria-hidden="true"
-            className={cn(
-              "size-4 shrink-0 text-muted-foreground transition-transform duration-200",
-              open ? "rotate-180" : "rotate-0",
-            )}
-          >
-            <path
-              d="m6 9 6 6 6-6"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
-
-        <div className="h-0.5 w-full bg-muted">
-          <div
-            className={cn(
-              "h-full bg-primary transition-[width] duration-150",
-              isRTL && "ml-auto",
-            )}
-            style={{ width: `${percent}%` }}
-          />
-        </div>
-      </div>
-
-      {/* dropdown panel: overlay, does NOT affect page layout */}
-      <div
-        id="article-toc-panel"
-        aria-hidden={!open}
-        className={cn(
-          "absolute inset-x-0 top-full z-50 mt-2 origin-top rounded-2xl border border-border bg-background shadow-xl transition-all duration-200 ease-out",
-          open
-            ? "visible translate-y-0 opacity-100"
-            : "pointer-events-none invisible -translate-y-2 opacity-0",
-        )}
-      >
-        <div
-          ref={listRef}
-          className="max-h-[55vh] overflow-y-auto px-4 py-4 sm:px-5"
-        >
-          <TocList
-            items={items}
-            activeId={activeId}
-            isRTL={isRTL}
-            onSelect={(item) => {
-              setOpen(false);
-              onSelect(item);
-            }}
-          />
-        </div>
-      </div>
-    </div>
-  );
+  return progress;
 }
 
 export const ArticleSidebar: React.FC<SidebarProps> = ({
   content,
   language = "en",
-  tableOfContents = [],
   stickyOffset = 88,
 }) => {
   const isRTL = language === "ur" || language === "ar";
@@ -554,33 +225,11 @@ export const ArticleSidebar: React.FC<SidebarProps> = ({
     () => (Array.isArray(content?.blocks) ? content.blocks : []),
     [content],
   );
-  const headingIds = useMemo(() => getHeadingIds(blocks), [blocks]);
-  const toc = useMemo(
-    () => buildToc(blocks, headingIds, tableOfContents),
-    [blocks, headingIds, tableOfContents],
-  );
   const readingMinutes = useMemo(() => getReadingMinutes(blocks), [blocks]);
-  const { progress, activeId } = useArticleScroll(toc, stickyOffset + 24);
-  const tocBoxRef = useRef<HTMLDivElement>(null);
+  const progress = useArticleProgress();
 
   const percent = Math.round(progress * 100);
   const minutesLeft = Math.max(0, Math.ceil(readingMinutes * (1 - progress)));
-
-  useEffect(() => {
-    const box = tocBoxRef.current;
-    if (!box || !activeId) return;
-    const el = box.querySelector<HTMLElement>(
-      `[data-toc-id="${CSS.escape(activeId)}"]`,
-    );
-    if (!el) return;
-    const top =
-      el.getBoundingClientRect().top -
-      box.getBoundingClientRect().top +
-      box.scrollTop -
-      box.clientHeight / 2 +
-      el.clientHeight / 2;
-    box.scrollTo({ top, behavior: "smooth" });
-  }, [activeId]);
 
   if (!blocks.length) return null;
 
@@ -615,33 +264,18 @@ export const ArticleSidebar: React.FC<SidebarProps> = ({
                 style={{ width: `${percent}%` }}
               />
             </div>
-            <p dir="ltr" className={cn("mt-2.5 text-xs text-muted-foreground", isRTL && "text-right")}>
+            <p
+              dir="ltr"
+              className={cn(
+                "mt-2.5 text-xs text-muted-foreground",
+                isRTL && "text-right",
+              )}
+            >
               {progress >= 0.98
                 ? `${readingMinutes} min read`
                 : `${minutesLeft} min left of ${readingMinutes} min`}
             </p>
           </div>
-
-          {toc.length > 0 && (
-            <div className="border-t border-border px-5 py-4">
-              <p className="mb-3 text-sm font-semibold text-foreground">
-                In this article
-              </p>
-              <div
-                ref={tocBoxRef}
-                className="relative max-h-[38vh] overflow-y-auto pr-1 scrollbar-thin"
-              >
-                <TocList
-                  items={toc}
-                  activeId={activeId}
-                  onSelect={(item) =>
-                    scrollToId(item.id, stickyOffset + 16, item.title)
-                  }
-                  isRTL={isRTL}
-                />
-              </div>
-            </div>
-          )}
         </div>
 
         <button
@@ -659,30 +293,20 @@ export const ArticleSidebar: React.FC<SidebarProps> = ({
 export const ArticlePreviewer: React.FC<PreviewerProps> = ({
   content,
   language = "en",
-  tableOfContents = [],
   stickyOffset = 88,
-  showToc = true,
 }) => {
   const [openToggles, setOpenToggles] = useState<Record<string, boolean>>({});
   const isRTL = language === "ur" || language === "ar";
 
-  // where a heading lands after clicking a TOC item
-  const landingOffset = stickyOffset + (showToc ? TOC_BAR_SPACE : 16);
+  // where a heading lands when opened through a "#" hash link
+  const landingOffset = stickyOffset + 16;
 
   const blocks = useMemo(
     () => (Array.isArray(content?.blocks) ? content.blocks : []),
     [content],
   );
   const headingIds = useMemo(() => getHeadingIds(blocks), [blocks]);
-  const toc = useMemo(
-    () => buildToc(blocks, headingIds, tableOfContents),
-    [blocks, headingIds, tableOfContents],
-  );
-  const readingMinutes = useMemo(() => getReadingMinutes(blocks), [blocks]);
-  const { progress, activeId, setActiveId } = useArticleScroll(
-    toc,
-    landingOffset + 12,
-  );
+  const progress = useArticleProgress();
 
   useEffect(() => {
     const html = document.documentElement;
@@ -891,7 +515,6 @@ export const ArticlePreviewer: React.FC<PreviewerProps> = ({
             key={index}
             id={id}
             style={{
-              // used by the "#" hash links; TOC clicks use landingOffset directly
               scrollMarginTop: landingOffset,
               ...readableText,
             }}
@@ -1034,22 +657,6 @@ export const ArticlePreviewer: React.FC<PreviewerProps> = ({
           style={{ transform: `scaleX(${progress})` }}
         />
       </div>
-
-      {/* sticky dropdown table of contents */}
-      {showToc && toc.length > 0 && (
-        <StickyTocDropdown
-          items={toc}
-          activeId={activeId}
-          progress={progress}
-          readingMinutes={readingMinutes}
-          stickyOffset={stickyOffset}
-          isRTL={isRTL}
-          onSelect={(item) => {
-            setActiveId(item.id);
-            scrollToId(item.id, landingOffset, item.title);
-          }}
-        />
-      )}
 
       <CodeBlockSwitcher />
 
