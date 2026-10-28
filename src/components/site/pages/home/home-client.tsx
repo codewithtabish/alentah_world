@@ -87,10 +87,14 @@ function LanguageBadge({
   blog: HomeBlogItem;
   small?: boolean;
 }) {
+  const rtl = isRtlBlog(blog);
+
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded bg-primary font-bold uppercase leading-none tracking-wider text-primary-foreground",
+        "inline-flex items-center rounded bg-primary font-bold text-primary-foreground",
+        // Latin only: uppercase + tracking breaks Arabic-script letter joining
+        rtl ? "leading-normal" : "uppercase leading-none tracking-wider",
         small
           ? "px-1.5 py-1 text-[9px] sm:px-2 sm:text-[10px]"
           : "px-2 py-1 text-[10px]",
@@ -108,6 +112,7 @@ function StoryMeta({
   blog: HomeBlogItem;
   tone?: "plain" | "overlay";
 }) {
+  const rtl = isRtlBlog(blog);
   const reading = getReadingLabel(blog, tone === "overlay");
   const date = formatDate(blog.publishedAt, blog.language.code);
   const name = getAuthorName(blog);
@@ -132,10 +137,18 @@ function StoryMeta({
 
   if (tone === "overlay") {
     return (
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-white/90">
+      <div
+        className={cn(
+          "flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-white/90",
+          rtl && "leading-[1.9]",
+        )}
+      >
         <span className="flex min-w-0 items-center gap-2">
           {avatar}
-          <span className="truncate font-medium">By {name}</span>
+          {/* py-1 + relaxed leading: truncate clips overflow, so give glyphs room */}
+          <span className="truncate py-1 font-medium leading-[1.9]">
+            By {name}
+          </span>
         </span>
         {reading && (
           <span className="inline-flex items-center gap-1.5 text-white/80">
@@ -154,10 +167,22 @@ function StoryMeta({
   }
 
   return (
-    <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
+    <div
+      className={cn(
+        "flex items-center justify-between gap-3 text-xs text-muted-foreground",
+        rtl && "leading-[1.9]",
+      )}
+    >
       <span className="flex min-w-0 items-center gap-2">
         {avatar}
-        <span className="truncate font-medium text-foreground/80">{name}</span>
+        <span
+          className={cn(
+            "truncate py-1 font-medium text-foreground/80",
+            rtl ? "leading-[1.9]" : "leading-normal",
+          )}
+        >
+          {name}
+        </span>
       </span>
 
       <span className="flex shrink-0 items-center gap-3">
@@ -237,7 +262,7 @@ function StoryCard({
         <span
           className={cn(
             "text-[11px] font-bold text-primary",
-            !rtl && "uppercase tracking-wider",
+            rtl ? "leading-[1.9]" : "uppercase tracking-wider",
             isSide && "hidden lg:block",
           )}
         >
@@ -251,11 +276,11 @@ function StoryCard({
               ? cn(
                   "line-clamp-2 text-[13px] sm:text-base lg:line-clamp-none",
                   rtl
-                    ? "leading-[1.9] lg:text-2xl"
+                    ? "leading-loose lg:text-2xl lg:leading-loose"
                     : "leading-snug lg:text-xl",
                 )
               : rtl
-                ? "text-xl sm:text-2xl"
+                ? "text-xl leading-loose sm:text-2xl sm:leading-loose"
                 : "text-lg leading-snug sm:text-xl",
           )}
         >
@@ -268,8 +293,8 @@ function StoryCard({
         {blog.shortDescription && (
           <div
             className={cn(
-              "line-clamp-2 text-sm text-muted-foreground",
-              rtl ? "leading-7" : "leading-6",
+              "line-clamp-2 text-start text-sm text-muted-foreground",
+              rtl ? "leading-[2.2]" : "leading-6",
               isSide && "hidden lg:block",
             )}
           >
@@ -371,17 +396,42 @@ export function HomeClient({ blogs }: HomeClientProps) {
           <div className="pointer-events-none absolute inset-0 z-10 flex flex-col justify-end p-5 sm:p-8 lg:p-10">
             <div className="mb-3 flex flex-wrap items-center gap-3 sm:mb-4">
               <LanguageBadge blog={hero} />
-              <span className="text-xs font-bold uppercase tracking-wider text-white/80">
+              <span
+                className={cn(
+                  "text-xs font-bold text-white/80",
+                  heroRtl
+                    ? "py-1 leading-[1.9]"
+                    : "uppercase tracking-wider",
+                )}
+              >
                 {hero.category.name}
               </span>
             </div>
 
-            <h1 className="mb-3 max-w-3xl text-balance text-2xl font-bold leading-[1.15] tracking-tight text-white sm:text-4xl xl:text-5xl">
+            <h1
+              className={cn(
+                "mb-3 max-w-3xl text-balance text-2xl font-bold text-white sm:text-4xl xl:text-5xl",
+                heroRtl
+                  ? // Nastaliq / Arabic script: tall glyphs need a roomy line box,
+                    // and negative tracking breaks letter joining.
+                    "py-1 leading-[1.9] tracking-normal sm:leading-[1.9]"
+                  : "leading-[1.15] tracking-tight",
+              )}
+            >
               {hero.title}
             </h1>
 
             {hero.shortDescription && (
-              <div className="mb-5 line-clamp-2 max-w-2xl text-left text-sm leading-6 text-white/80 sm:text-base sm:leading-7">
+              <div
+                className={cn(
+                  "mb-5 line-clamp-2 max-w-2xl text-start text-sm text-white/80 sm:text-base",
+                  heroRtl
+                    ? // line-clamp hides overflow, so the line box must be tall
+                      // enough to contain the full height of every glyph.
+                      "leading-[2.2] sm:leading-[2.3]"
+                    : "leading-6 sm:leading-7",
+                )}
+              >
                 {hero.shortDescription}
               </div>
             )}
