@@ -21,7 +21,12 @@ import { CategoryListItem } from "@/actions/categories/get-categories";
 
 const HIDE_SCROLLBAR = "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden";
 
+// Premium floating panel: soft ring + deep, diffused shadow, no heavy borders
 const PANEL =
+  "rounded-3xl bg-popover/95 text-popover-foreground ring-1 ring-border/60 backdrop-blur-xl shadow-[0_24px_60px_-12px_rgba(0,0,0,0.25)] animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-200 origin-top";
+
+// Menu panel for the user dropdown (kept compact)
+const USER_PANEL =
   "rounded-2xl border border-border bg-popover text-popover-foreground shadow-xl animate-in fade-in slide-in-from-top-2 duration-200";
 
 // ============================================================
@@ -78,40 +83,64 @@ function ShieldIcon({ className }: { className?: string }) {
 
 // ============================================================
 // CATEGORY CARD (Inside mega-menu)
+// NOTE: no `truncate` on text — it clips tall Urdu/Arabic glyphs.
+// RTL text gets a roomy line-height so nothing is ever cut.
 // ============================================================
-function CategoryCard({ category, onNavigate }: { category: CategoryListItem; onNavigate: () => void; }) {
+function CategoryCard({
+  category,
+  onNavigate,
+}: {
+  category: CategoryListItem;
+  onNavigate: () => void;
+}) {
   return (
-    <div className="rounded-xl border border-border/50 bg-muted/30 p-3 transition-colors hover:border-primary/40 hover:bg-muted/50">
+    <div className="group/card rounded-2xl bg-muted/40 p-3.5 ring-1 ring-border/50 transition-all duration-200 hover:bg-muted/70 hover:ring-primary/30">
       <Link
         href={`/${category.language.code}/${category.slug}`}
         onClick={onNavigate}
-        className="flex items-center gap-3 text-sm font-bold text-primary no-underline transition-opacity hover:opacity-80 rtl:text-base"
+        className="flex items-center gap-3 no-underline"
       >
         {category.coverImage ? (
-          <div className="relative size-10 shrink-0 overflow-hidden rounded-md border border-border/50">
-            <Image src={category.coverImage} alt={category.name} fill sizes="40px" className="object-cover" />
+          <div className="relative size-11 shrink-0 overflow-hidden rounded-xl ring-1 ring-border/60">
+            <Image
+              src={category.coverImage}
+              alt={category.name}
+              fill
+              sizes="44px"
+              className="object-cover transition-transform duration-500 group-hover/card:scale-110"
+            />
           </div>
         ) : (
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-md border border-border/50 bg-muted text-muted-foreground">
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-background text-muted-foreground ring-1 ring-border/60">
             <Globe className="size-4" strokeWidth={1.75} />
           </div>
         )}
-        <div className="flex min-h-10 min-w-0 flex-1 flex-col justify-center">
-          <span className="truncate">{category.name}</span>
-        </div>
+
+        <span className="line-clamp-2 min-w-0 flex-1 py-1 text-sm font-bold leading-snug text-primary transition-opacity group-hover/card:opacity-80 rtl:text-[17px] rtl:leading-[2.1]">
+          {category.name}
+        </span>
       </Link>
 
       {category.subcategories.length > 0 && (
-        <ul className="mt-2 space-y-0.5 border-t border-border/50 pt-2">
+        <ul className="mt-3 space-y-0.5 border-t border-border/50 pt-2.5">
           {category.subcategories.map((sub) => (
             <li key={sub.id}>
               <Link
                 href={`/${category.language.code}/${category.slug}/${sub.slug}`}
                 onClick={onNavigate}
-                className="group flex items-center justify-between gap-2 rounded-md px-2 py-1.5 text-[13px] text-muted-foreground no-underline transition-colors hover:bg-background hover:text-foreground rtl:text-[15px]"
+                className="group/sub flex items-center justify-between gap-2 rounded-lg px-2.5 py-1.5 text-[13px] leading-snug text-muted-foreground no-underline transition-colors hover:bg-background hover:text-foreground rtl:text-[15px] rtl:leading-[2.1]"
               >
-                <span>{sub.name}</span>
-                <ChevronRight className="size-3.5 shrink-0 opacity-50 transition-transform group-hover:translate-x-0.5 group-hover:opacity-100 rtl:rotate-180 rtl:group-hover:-translate-x-0.5" strokeWidth={1.75} />
+                <span className="flex min-w-0 flex-1 items-center gap-2">
+                  <span
+                    aria-hidden="true"
+                    className="size-1 shrink-0 rounded-full bg-primary/40 transition-colors group-hover/sub:bg-primary"
+                  />
+                  <span className="min-w-0 flex-1 wrap-break-word">{sub.name}</span>
+                </span>
+                <ChevronRight
+                  className="size-3.5 shrink-0 opacity-40 transition-all group-hover/sub:translate-x-0.5 group-hover/sub:opacity-100 rtl:rotate-180 rtl:group-hover/sub:-translate-x-0.5"
+                  strokeWidth={1.75}
+                />
               </Link>
             </li>
           ))}
@@ -125,22 +154,32 @@ function CategoryCard({ category, onNavigate }: { category: CategoryListItem; on
 // EDITION HEADER
 // ============================================================
 function EditionHeader({ language }: { language: LanguageListItem }) {
-  const editionTitle = language.code === "ur" ? "اردو ایڈیشن" : `${language.name} Edition`;
-  const editionTagline = language.code === "ur" ? "آزاد اردو نیوز روم" : `Independent ${language.name} newsroom`;
+  const editionTitle =
+    language.code === "ur" ? "اردو ایڈیشن" : `${language.name} Edition`;
+  const editionTagline =
+    language.code === "ur"
+      ? "آزاد اردو نیوز روم"
+      : `Independent ${language.name} newsroom`;
 
   return (
     <div>
-      <div className="flex items-center gap-3">
-        <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-          <Globe className="size-4" strokeWidth={1.75} />
+      <div className="flex items-center gap-3.5">
+        <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/15">
+          <Globe className="size-5" strokeWidth={1.75} />
         </span>
-        <div className="min-w-0">
-          <p className="truncate text-base font-bold text-primary rtl:text-lg">{editionTitle}</p>
-          <p className="truncate text-xs text-muted-foreground rtl:text-sm">{editionTagline}</p>
+
+        <div className="min-w-0 flex-1">
+          <p className="py-0.5 text-lg font-bold leading-tight text-primary rtl:text-2xl rtl:leading-loose">
+            {editionTitle}
+          </p>
+          <p className="text-xs leading-snug text-muted-foreground rtl:text-[15px] rtl:leading-loose">
+            {editionTagline}
+          </p>
         </div>
       </div>
-      <div className="relative mt-4 h-px w-full bg-border">
-        <span className="absolute inset-s-0 top-0 h-px w-16 bg-primary" />
+
+      <div className="relative mt-4 h-px w-full bg-border/70">
+        <span className="absolute inset-s-0 top-0 h-px w-20 bg-primary" />
       </div>
     </div>
   );
@@ -149,7 +188,8 @@ function EditionHeader({ language }: { language: LanguageListItem }) {
 // ============================================================
 // MENU ITEM
 // ============================================================
-const MENU_ITEM = "flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-[13px] text-popover-foreground/85 no-underline transition-colors hover:bg-accent hover:text-foreground";
+const MENU_ITEM =
+  "flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-[13px] text-popover-foreground/85 no-underline transition-colors hover:bg-accent hover:text-foreground";
 
 // ============================================================
 // MAIN COMPONENT
@@ -218,18 +258,17 @@ export function NavbarClient({ categories, languages }: NavbarClientProps) {
   const openLanguageData = activeLanguages.find((l) => l.code === openLang);
   const openCategories = categories.filter((c) => c.language.code === openLang);
 
-  const ICON_BTN = "inline-flex size-9 items-center justify-center rounded-full no-underline transition-colors hover:bg-muted hover:text-primary";
+  const ICON_BTN =
+    "inline-flex size-9 items-center justify-center rounded-full no-underline transition-colors hover:bg-muted hover:text-primary";
 
   return (
     <header className="relative z-50 w-full">
       <div className="flex h-18 items-center justify-between gap-2 sm:gap-4">
-        
         {/* LEFT: Brand Name */}
         <Logo />
 
         {/* RIGHT: Languages, Actions */}
         <div className="flex shrink-0 items-center gap-1 sm:gap-2">
-          
           {/* LANGUAGE EDITIONS (Desktop) */}
           <div ref={langGroupRef} className="relative hidden items-center gap-1 lg:flex">
             {activeLanguages.map((lang) => {
@@ -251,22 +290,44 @@ export function NavbarClient({ categories, languages }: NavbarClientProps) {
                   )}
                 >
                   <span>{lang.name}</span>
-                  <ChevronDown className={cn("size-3.5 text-muted-foreground transition-transform duration-200", isOpen && "rotate-180 text-primary")} strokeWidth={1.75} />
+                  <ChevronDown
+                    className={cn(
+                      "size-3.5 text-muted-foreground transition-transform duration-200",
+                      isOpen && "rotate-180 text-primary",
+                    )}
+                    strokeWidth={1.75}
+                  />
                 </button>
               );
             })}
 
             {openLang && openLanguageData && (
               <div className="absolute right-0 top-full z-50 pt-3">
-                <div dir={openLanguageData.direction === "RTL" ? "rtl" : "ltr"} lang={openLang} className={cn("w-[min(680px,calc(100vw-2rem))]", PANEL)}>
-                  <div className={cn("max-h-[calc(100vh-7rem)] overflow-y-auto p-5", HIDE_SCROLLBAR)}>
+                <div
+                  dir={openLanguageData.direction === "RTL" ? "rtl" : "ltr"}
+                  lang={openLang}
+                  className={cn("w-[min(720px,calc(100vw-2rem))]", PANEL)}
+                >
+                  <div
+                    className={cn(
+                      "max-h-[calc(100vh-7rem)] overflow-y-auto p-6",
+                      HIDE_SCROLLBAR,
+                    )}
+                  >
                     <EditionHeader language={openLanguageData} />
+
                     {openCategories.length === 0 ? (
-                      <p className="mt-4 text-sm text-muted-foreground">No categories yet.</p>
+                      <p className="mt-5 text-sm leading-relaxed text-muted-foreground rtl:text-base rtl:leading-loose">
+                        No categories yet.
+                      </p>
                     ) : (
-                      <div className="mt-4 grid grid-cols-2 gap-3 xl:grid-cols-3">
+                      <div className="mt-5 grid grid-cols-2 gap-3.5 xl:grid-cols-3">
                         {openCategories.map((category) => (
-                          <CategoryCard key={category.id} category={category} onNavigate={() => setOpenLang(null)} />
+                          <CategoryCard
+                            key={category.id}
+                            category={category}
+                            onNavigate={() => setOpenLang(null)}
+                          />
                         ))}
                       </div>
                     )}
@@ -278,8 +339,19 @@ export function NavbarClient({ categories, languages }: NavbarClientProps) {
 
           {/* SAVED */}
           <Show when="signed-in">
-            <Link href="/saved" aria-label="Saved articles" className={cn(ICON_BTN, isSavedRoute ? "bg-primary/10 text-primary" : "text-foreground/70")}>
-              <Bookmark className="size-4.5" strokeWidth={1.75} fill={isSavedRoute ? "currentColor" : "none"} />
+            <Link
+              href="/saved"
+              aria-label="Saved articles"
+              className={cn(
+                ICON_BTN,
+                isSavedRoute ? "bg-primary/10 text-primary" : "text-foreground/70",
+              )}
+            >
+              <Bookmark
+                className="size-4.5"
+                strokeWidth={1.75}
+                fill={isSavedRoute ? "currentColor" : "none"}
+              />
             </Link>
           </Show>
 
@@ -288,7 +360,10 @@ export function NavbarClient({ categories, languages }: NavbarClientProps) {
           {/* LOGIN */}
           <Show when="signed-out">
             <SignInButton mode="modal" forceRedirectUrl="/" signUpForceRedirectUrl="/">
-              <button type="button" className="inline-flex h-9 items-center justify-center rounded-full bg-primary px-4 text-[13px] font-bold text-primary-foreground hover:opacity-90 sm:h-10 sm:px-6 sm:text-sm">
+              <button
+                type="button"
+                className="inline-flex h-9 items-center justify-center rounded-full bg-primary px-4 text-[13px] font-bold text-primary-foreground hover:opacity-90 sm:h-10 sm:px-6 sm:text-sm"
+              >
                 Login
               </button>
             </SignInButton>
@@ -305,7 +380,13 @@ export function NavbarClient({ categories, languages }: NavbarClientProps) {
                 className="inline-flex size-9 items-center justify-center overflow-hidden rounded-full border border-border"
               >
                 {user?.imageUrl ? (
-                  <Image src={user.imageUrl} alt="User" width={36} height={36} className="h-full w-full object-cover" />
+                  <Image
+                    src={user.imageUrl}
+                    alt="User"
+                    width={36}
+                    height={36}
+                    className="h-full w-full object-cover"
+                  />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center bg-primary text-xs font-bold text-primary-foreground">
                     {user?.firstName?.[0]?.toUpperCase() ?? "U"}
@@ -314,29 +395,62 @@ export function NavbarClient({ categories, languages }: NavbarClientProps) {
               </button>
 
               {userMenuOpen && (
-                <div className={cn("absolute right-0 top-full z-50 mt-3 w-[min(272px,calc(100vw-1.5rem))] overflow-hidden", PANEL)}>
+                <div
+                  className={cn(
+                    "absolute right-0 top-full z-50 mt-3 w-[min(272px,calc(100vw-1.5rem))] overflow-hidden",
+                    USER_PANEL,
+                  )}
+                >
                   <div className="border-b border-border px-4 py-3.5">
-                    <p className="truncate text-[13px] font-bold text-foreground">{user?.fullName ?? "Reader"}</p>
-                    <p className="truncate text-[11px] text-muted-foreground">{user?.primaryEmailAddress?.emailAddress}</p>
+                    <p className="truncate text-[13px] font-bold text-foreground">
+                      {user?.fullName ?? "Reader"}
+                    </p>
+                    <p className="truncate text-[11px] text-muted-foreground">
+                      {user?.primaryEmailAddress?.emailAddress}
+                    </p>
                   </div>
                   <ul className="p-1.5">
-                    <li><Link href="/profile" onClick={() => setUserMenuOpen(false)} className={MENU_ITEM}><UserIcon className="size-4" /> Profile</Link></li>
-                    <li><Link href="/saved" onClick={() => setUserMenuOpen(false)} className={MENU_ITEM}><Bookmark className="size-4" /> Saved</Link></li>
+                    <li>
+                      <Link href="/profile" onClick={() => setUserMenuOpen(false)} className={MENU_ITEM}>
+                        <UserIcon className="size-4" /> Profile
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/saved" onClick={() => setUserMenuOpen(false)} className={MENU_ITEM}>
+                        <Bookmark className="size-4" /> Saved
+                      </Link>
+                    </li>
                     {isAdmin && (
                       <>
                         <li className="mx-3 my-1 h-px bg-border" />
-                        <li><Link href="/admin" onClick={() => setUserMenuOpen(false)} className={cn(MENU_ITEM, "font-medium text-primary hover:bg-primary/10")}><ShieldIcon className="size-4" /> Admin</Link></li>
+                        <li>
+                          <Link
+                            href="/admin"
+                            onClick={() => setUserMenuOpen(false)}
+                            className={cn(MENU_ITEM, "font-medium text-primary hover:bg-primary/10")}
+                          >
+                            <ShieldIcon className="size-4" /> Admin
+                          </Link>
+                        </li>
                       </>
                     )}
                   </ul>
                   <div className="border-t border-border p-1.5">
-                    <button type="button" onClick={() => { setUserMenuOpen(false); signOut({ redirectUrl: "/" }); }} className={cn(MENU_ITEM, "hover:text-destructive")}><LogOut className="size-4" /> Sign out</button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        signOut({ redirectUrl: "/" });
+                      }}
+                      className={cn(MENU_ITEM, "hover:text-destructive")}
+                    >
+                      <LogOut className="size-4" /> Sign out
+                    </button>
                   </div>
                 </div>
               )}
             </div>
           </Show>
-
         </div>
       </div>
     </header>
