@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-export default function EditArticleLoading() {
+export default function EditArticleLoadings() {
   return (
     <div className="flex flex-col gap-6 w-full max-w-7xl mx-auto animate-pulse">
       
