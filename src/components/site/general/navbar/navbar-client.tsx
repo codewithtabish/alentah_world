@@ -125,8 +125,8 @@ function CategoryCard({ category, onNavigate }: { category: CategoryListItem; on
 // EDITION HEADER
 // ============================================================
 function EditionHeader({ language }: { language: LanguageListItem }) {
-  const editionTitle = language.code === "ur" ? "اردو ایڈیشن" : language.code === "ar" ? "النسخة العربية" : `${language.name} Edition`;
-  const editionTagline = language.code === "ur" ? "آزاد اردو نیوز روم" : language.code === "ar" ? "غرفة أخبار عربية مستقلة" : `Independent ${language.name} newsroom`;
+  const editionTitle = language.code === "ur" ? "اردو ایڈیشن" : `${language.name} Edition`;
+  const editionTagline = language.code === "ur" ? "آزاد اردو نیوز روم" : `Independent ${language.name} newsroom`;
 
   return (
     <div>
@@ -167,7 +167,6 @@ export function NavbarClient({ categories, languages }: NavbarClientProps) {
   const currentLangCode = getLanguageFromPathname(pathname);
 
   const [openLang, setOpenLang] = React.useState<string | null>(null);
-  const [mobileOpen, setMobileOpen] = React.useState(false);
   const [userMenuOpen, setUserMenuOpen] = React.useState(false);
 
   // Close menus on route change
@@ -175,7 +174,6 @@ export function NavbarClient({ categories, languages }: NavbarClientProps) {
   if (prevPathname !== pathname) {
     setPrevPathname(pathname);
     setOpenLang(null);
-    setMobileOpen(false);
     setUserMenuOpen(false);
   }
 
@@ -214,7 +212,10 @@ export function NavbarClient({ categories, languages }: NavbarClientProps) {
 
   if (isAdminRoute) return null;
 
-  const openLanguageData = languages.find((l) => l.code === openLang);
+  // Filter out Arabic, keeping only English and Urdu
+  const activeLanguages = languages.filter((l) => l.code === "en" || l.code === "ur");
+
+  const openLanguageData = activeLanguages.find((l) => l.code === openLang);
   const openCategories = categories.filter((c) => c.language.code === openLang);
 
   const ICON_BTN = "inline-flex size-9 items-center justify-center rounded-full no-underline transition-colors hover:bg-muted hover:text-primary";
@@ -231,7 +232,7 @@ export function NavbarClient({ categories, languages }: NavbarClientProps) {
           
           {/* LANGUAGE EDITIONS (Desktop) */}
           <div ref={langGroupRef} className="relative hidden items-center gap-1 lg:flex">
-            {languages.map((lang) => {
+            {activeLanguages.map((lang) => {
               const isOpen = openLang === lang.code;
               const isCurrent = currentLangCode === lang.code;
 
@@ -249,7 +250,6 @@ export function NavbarClient({ categories, languages }: NavbarClientProps) {
                     isOpen && "bg-muted text-primary",
                   )}
                 >
-                  {isCurrent && <Globe className="size-3.5" strokeWidth={1.75} />}
                   <span>{lang.name}</span>
                   <ChevronDown className={cn("size-3.5 text-muted-foreground transition-transform duration-200", isOpen && "rotate-180 text-primary")} strokeWidth={1.75} />
                 </button>
