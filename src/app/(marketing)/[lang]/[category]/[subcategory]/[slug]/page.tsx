@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cacheLife, cacheTag } from "next/cache";
 import { Clock, Calendar } from "lucide-react";
+import prisma from "@/lib/clients/prisma-client";
 import { getArticleBySlug } from "@/actions/articles/get-article-by-slug";
 import { CACHE_TAGS } from "@/lib/cache-keys";
 import { ArticlePreviewer } from "@/components/site/admin/articles/article-previewer";
@@ -19,7 +20,37 @@ type PageParams = {
 };
 
 // ------------------------------------------------------------
-// SEO METADATA (reads the cached data, no extra DB query)
+// BUILD THE ARTICLES INTO FINISHED PAGES AT DEPLOY TIME
+// Articles not listed here are built on their first visit, then saved.
+// ------------------------------------------------------------
+export async function generateStaticParams() {
+  const blogs = await prisma.blog.findMany({
+    where: { status: "PUBLISHED" },
+    select: {
+      slug: true,
+      language: { select: { code: true } },
+      category: { select: { slug: true } },
+      subcategory: { select: { slug: true } },
+    },
+    orderBy: { publishedAt: "desc" },
+    take: 100,
+  });
+
+  const params = blogs.map((b) => ({
+    lang: b.language.code,
+    category: b.category.slug,
+    subcategory: b.subcategory.slug,
+    slug: b.slug,
+  }));
+
+  // Cache Components needs at least one entry. This placeholder just 404s.
+  return params.length
+    ? params
+    : [{ lang: "en", category: "_", subcategory: "_", slug: "_" }];
+}
+
+// ------------------------------------------------------------
+// SEO METADATA
 // ------------------------------------------------------------
 export async function generateMetadata({ params }: PageParams) {
   const { lang, category, subcategory, slug } = await params;
@@ -92,7 +123,7 @@ function Avatar({
 }
 
 // ------------------------------------------------------------
-// MAIN PAGE (whole page cached, one shared copy for every user)
+// MAIN PAGE: the whole finished page is cached, shared by every user
 // ------------------------------------------------------------
 export default async function ArticlePage({ params }: PageParams) {
   "use cache";
@@ -100,9 +131,8 @@ export default async function ArticlePage({ params }: PageParams) {
 
   const { lang, category, subcategory, slug } = await params;
 
-  // Same tags as get-article-by-slug.ts, so one revalidate clears both
   cacheTag(CACHE_TAGS.blog(slug));
-  cacheTag(CACHE_TAGS.blogs);
+  // cacheTag(CACHE_TAGS.blogs);
 
   const result = await getArticleBySlug(lang, category, subcategory, slug);
 
@@ -251,7 +281,7 @@ export default async function ArticlePage({ params }: PageParams) {
         </div>
       </header>
 
-      {/* 2. BANNER (fast, with fallback) */}
+      {/* 2. BANNER */}
       <figure className="mx-auto w-full max-w-6xl">
         <BannerImage
           src={article.bannerImage}

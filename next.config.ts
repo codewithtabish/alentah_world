@@ -2,13 +2,17 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // ✅ Enable Cache Components (required for "use cache" directive)
+  // Enable Cache Components (required for "use cache")
   cacheComponents: true,
 
-  // ✅ Increase timeout for static generation (helps with heavy Nastaliq text)
+  // Prefetch the saved shell of the next page, so clicks feel instant.
+  // Recommended by Next.js for new Cache Components projects.
+  partialPrefetching: true,
+
+  // More time for static generation (helps with heavy Nastaliq text)
   staticPageGenerationTimeout: 120,
 
-  // ✅ Increase Server Action body size limit (default is 1 MB)
+  // Server Action body size limit (default is 1 MB).
   // Allows uploading images up to 10 MB through Server Actions.
   experimental: {
     serverActions: {
@@ -16,17 +20,20 @@ const nextConfig: NextConfig = {
     },
   },
 
-  // ✅ Allow ALL remote image hostnames + Optimize Formats
   images: {
-    formats: ["image/avif", "image/webp"], // This makes images load 80% faster
+    formats: ["image/avif", "image/webp"],
+
+    // Keep optimized images cached for 30 days, so they are not rebuilt often
+    minimumCacheTTL: 60 * 60 * 24 * 30,
+
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "**", // allows any hostname over HTTPS
+        hostname: "**",
       },
       {
         protocol: "http",
-        hostname: "**", // allows any hostname over HTTP
+        hostname: "**",
       },
     ],
   },
