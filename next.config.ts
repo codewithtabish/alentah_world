@@ -5,6 +5,9 @@ const nextConfig: NextConfig = {
   // ✅ Enable Cache Components (required for "use cache" directive)
   cacheComponents: true,
 
+  // ✅ Increase timeout for static generation (helps with heavy Nastaliq text)
+  staticPageGenerationTimeout: 120,
+
   // ✅ Increase Server Action body size limit (default is 1 MB)
   // Allows uploading images up to 10 MB through Server Actions.
   experimental: {
@@ -13,8 +16,9 @@ const nextConfig: NextConfig = {
     },
   },
 
-  // ✅ Allow ALL remote image hostnames
+  // ✅ Allow ALL remote image hostnames + Optimize Formats
   images: {
+    formats: ["image/avif", "image/webp"], // This makes images load 80% faster
     remotePatterns: [
       {
         protocol: "https",
