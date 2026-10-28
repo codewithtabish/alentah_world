@@ -6,14 +6,12 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
 
   // Prefetch the saved shell of the next page, so clicks feel instant.
-  // Recommended by Next.js for new Cache Components projects.
   partialPrefetching: true,
 
   // More time for static generation (helps with heavy Nastaliq text)
   staticPageGenerationTimeout: 120,
 
   // Server Action body size limit (default is 1 MB).
-  // Allows uploading images up to 10 MB through Server Actions.
   experimental: {
     serverActions: {
       bodySizeLimit: "10mb",
@@ -21,14 +19,18 @@ const nextConfig: NextConfig = {
   },
 
   images: {
-    formats: ["image/avif", "image/webp"],
+    // WebP encodes much faster than AVIF, so the first visit is quicker.
+    formats: ["image/webp"],
 
     // Image quality values the app may request.
-    // Needed for quality={60} and quality={70} on the home page.
     qualities: [60, 70, 75],
 
-    // Keep optimized images cached for 30 days, so they are not rebuilt often
-    minimumCacheTTL: 60 * 60 * 24 * 30,
+    // Keep optimized images cached for 1 year.
+    minimumCacheTTL: 60 * 60 * 24 * 365, // 31536000 seconds
+
+    // Smaller list of sizes means fewer versions to build and cache.
+    deviceSizes: [480, 768, 1024, 1280, 1600],
+    imageSizes: [32, 64, 128, 256, 400],
 
     remotePatterns: [
       {
