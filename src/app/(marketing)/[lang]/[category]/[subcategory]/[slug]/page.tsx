@@ -10,6 +10,11 @@ import { CACHE_TAGS } from "@/lib/cache-keys";
 import { ArticlePreviewer } from "@/components/site/admin/articles/article-previewer";
 import { BannerImage } from "@/components/site/pages/home/banner-image";
 
+// Comments imports
+import { Suspense } from "react";
+import { ArticleCommentsSkeleton } from "@/components/site/pages/comments/article-comments-skeleton";
+import { ArticleCommentsServer } from "@/components/site/pages/comments/article-comments-server";
+
 type PageParams = {
   params: Promise<{
     lang: string;
@@ -19,10 +24,6 @@ type PageParams = {
   }>;
 };
 
-// ------------------------------------------------------------
-// BUILD THE ARTICLES INTO FINISHED PAGES AT DEPLOY TIME
-// Articles not listed here are built on their first visit, then saved.
-// ------------------------------------------------------------
 export async function generateStaticParams() {
   const blogs = await prisma.blog.findMany({
     where: { status: "PUBLISHED" },
@@ -43,15 +44,11 @@ export async function generateStaticParams() {
     slug: b.slug,
   }));
 
-  // Cache Components needs at least one entry. This placeholder just 404s.
   return params.length
     ? params
     : [{ lang: "en", category: "_", subcategory: "_", slug: "_" }];
 }
 
-// ------------------------------------------------------------
-// SEO METADATA
-// ------------------------------------------------------------
 export async function generateMetadata({ params }: PageParams) {
   const { lang, category, subcategory, slug } = await params;
   const result = await getArticleBySlug(lang, category, subcategory, slug);
@@ -93,9 +90,6 @@ export async function generateMetadata({ params }: PageParams) {
   };
 }
 
-// ------------------------------------------------------------
-// AVATAR (with initial fallback)
-// ------------------------------------------------------------
 function Avatar({
   src,
   name,
@@ -122,9 +116,6 @@ function Avatar({
   );
 }
 
-// ------------------------------------------------------------
-// MAIN PAGE: the whole finished page is cached, shared by every user
-// ------------------------------------------------------------
 export default async function ArticlePage({ params }: PageParams) {
   "use cache";
   cacheLife("max");
@@ -132,7 +123,6 @@ export default async function ArticlePage({ params }: PageParams) {
   const { lang, category, subcategory, slug } = await params;
 
   cacheTag(CACHE_TAGS.blog(slug));
-  // cacheTag(CACHE_TAGS.blogs);
 
   const result = await getArticleBySlug(lang, category, subcategory, slug);
 
@@ -329,6 +319,16 @@ export default async function ArticlePage({ params }: PageParams) {
           </div>
         </footer>
       )}
+
+      {/* 5. COMMENTS SECTION (SUSPENSE STREAMED) */}
+      <div className="mx-auto w-full max-w-3xl mt-8">
+        <Suspense fallback={<ArticleCommentsSkeleton />}>
+          <ArticleCommentsServer 
+            blogId={article.id} 
+            blogSlug={article.slug} 
+          />
+        </Suspense>
+      </div>
     </article>
   );
 }
