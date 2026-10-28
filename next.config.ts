@@ -23,6 +23,10 @@ const nextConfig: NextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
 
+    // Image quality values the app may request.
+    // Needed for quality={60} and quality={70} on the home page.
+    qualities: [60, 70, 75],
+
     // Keep optimized images cached for 30 days, so they are not rebuilt often
     minimumCacheTTL: 60 * 60 * 24 * 30,
 

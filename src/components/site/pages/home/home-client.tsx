@@ -1,7 +1,7 @@
 // src/components/site/home/home-client.tsx
-"use client";
+// No "use client": this component has no state or effects, so it renders on
+// the server and ships no JavaScript for itself to the browser.
 
-import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Clock, ArrowRight, CalendarDays } from "lucide-react";
@@ -13,6 +13,11 @@ interface HomeClientProps {
 }
 
 const FALLBACK_AVATAR = "/placeholder-avatar.jpg";
+
+// Tiny inline placeholder: shows instantly while the real image loads.
+const BLUR = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
+  `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="9" viewBox="0 0 16 9"><rect width="16" height="9" fill="#888" fill-opacity="0.35"/></svg>`,
+)}`;
 
 /* ------------------------------------------------------------------ */
 /* Helpers                                                             */
@@ -50,7 +55,7 @@ function getReadingLabel(blog: HomeBlogItem, long = false) {
   return long ? `${blog.readingTime} min read` : `${blog.readingTime} min`;
 }
 
-// UTC + latin digits => identical output on server and client (no hydration mismatch)
+// UTC + latin digits => identical output on server and client
 function formatDate(value: Date | string | null, code: string) {
   if (!value) return null;
   const date = new Date(value);
@@ -88,7 +93,7 @@ function LanguageBadge({
         "inline-flex items-center rounded bg-primary font-bold uppercase leading-none tracking-wider text-primary-foreground",
         small
           ? "px-1.5 py-1 text-[9px] sm:px-2 sm:text-[10px]"
-          : "px-2 py-1 text-[10px]"
+          : "px-2 py-1 text-[10px]",
       )}
     >
       {getLanguageLabel(blog)}
@@ -111,7 +116,7 @@ function StoryMeta({
     <span
       className={cn(
         "relative block shrink-0 overflow-hidden rounded-full border bg-muted",
-        tone === "overlay" ? "size-8 border-white/30" : "size-7 border-border"
+        tone === "overlay" ? "size-8 border-white/30" : "size-7 border-border",
       )}
     >
       <Image
@@ -119,6 +124,7 @@ function StoryMeta({
         alt=""
         fill
         sizes="32px"
+        quality={60}
         className="object-cover"
       />
     </span>
@@ -173,11 +179,9 @@ function StoryMeta({
 }
 
 /* ------------------------------------------------------------------ */
-/* Story (NO card: no border, no background, no shadow)                */
-/*                                                                     */
-/*  variant="grid"  -> image + text (Latest Stories)                   */
-/*  variant="side"  -> mobile/tablet: image + title only (2-col grid)  */
-/*                     desktop (lg+): image + full text beside hero    */
+/* Story (no card: no border, no background, no shadow)                */
+/*  variant="grid" -> image + text (Latest Stories)                    */
+/*  variant="side" -> mobile: image + title only; desktop: full text   */
 /* ------------------------------------------------------------------ */
 
 function StoryCard({
@@ -197,48 +201,49 @@ function StoryCard({
       lang={blog.language.code}
       className="group relative flex h-full min-w-0 flex-col"
     >
-      {/* Image */}
+      {/* Image: lazy by default, so it never competes with the hero */}
       <div
         className={cn(
           "relative isolate w-full shrink-0 overflow-hidden rounded-xl bg-muted shadow-none",
-          isSide ? "aspect-4/3 sm:aspect-video lg:aspect-16/8" : "aspect-video"
+          isSide ? "aspect-4/3 sm:aspect-video lg:aspect-16/8" : "aspect-video",
         )}
       >
         <Image
           src={blog.bannerImage}
           alt={blog.title}
           fill
+          quality={60}
+          placeholder="blur"
+          blurDataURL={BLUR}
           sizes={
             isSide
-              ? "(min-width: 1024px) 33vw, 50vw"
-              : "(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+              ? "(min-width: 1024px) 400px, 50vw"
+              : "(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw"
           }
-          className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+          className="object-cover transition-transform duration-700 ease-out [@media(hover:hover)]:group-hover:scale-105"
         />
         <div className="absolute inset-s-2 top-2 sm:inset-s-3 sm:top-3">
           <LanguageBadge blog={blog} small={isSide} />
         </div>
       </div>
 
-      {/* Text (sits directly on the page, no box) */}
+      {/* Text */}
       <div
         className={cn(
           "flex flex-1 flex-col gap-2",
-          isSide ? "pt-2.5 sm:pt-3 lg:pt-4" : "pt-4"
+          isSide ? "pt-2.5 sm:pt-3 lg:pt-4" : "pt-4",
         )}
       >
-        {/* Category: hidden on small side tiles */}
         <span
           className={cn(
             "text-[11px] font-bold text-primary",
             !rtl && "uppercase tracking-wider",
-            isSide && "hidden lg:block"
+            isSide && "hidden lg:block",
           )}
         >
           {blog.category.name}
         </span>
 
-        {/* Title: always visible */}
         <h3
           className={cn(
             "font-bold text-foreground transition-colors group-hover:text-primary",
@@ -247,11 +252,11 @@ function StoryCard({
                   "line-clamp-2 text-[13px] sm:text-base lg:line-clamp-none",
                   rtl
                     ? "leading-[1.9] lg:text-2xl"
-                    : "leading-snug lg:text-xl"
+                    : "leading-snug lg:text-xl",
                 )
               : rtl
                 ? "text-xl sm:text-2xl"
-                : "text-lg leading-snug sm:text-xl"
+                : "text-lg leading-snug sm:text-xl",
           )}
         >
           {/* Stretched link: the whole story is clickable */}
@@ -260,20 +265,18 @@ function StoryCard({
           </Link>
         </h3>
 
-        {/* Description: hidden on small side tiles */}
         {blog.shortDescription && (
           <div
             className={cn(
               "line-clamp-2 text-sm text-muted-foreground",
               rtl ? "leading-7" : "leading-6",
-              isSide && "hidden lg:block"
+              isSide && "hidden lg:block",
             )}
           >
             {blog.shortDescription}
           </div>
         )}
 
-        {/* Author footer: hidden on small side tiles */}
         <div className={cn("mt-auto pt-2", isSide && "hidden lg:block")}>
           <StoryMeta blog={blog} />
         </div>
@@ -336,7 +339,7 @@ export function HomeClient({ blogs }: HomeClientProps) {
       {/* 1. HERO + SIDE STORIES                                       */}
       {/* ============================================================ */}
       <section className="grid grid-cols-1 gap-5 lg:grid-cols-12 lg:items-stretch">
-        {/* Hero (image with overlay text) */}
+        {/* Hero: the main (LCP) image, so it loads first */}
         <article
           dir={heroRtl ? "rtl" : "ltr"}
           lang={hero.language.code}
@@ -347,8 +350,13 @@ export function HomeClient({ blogs }: HomeClientProps) {
             alt={hero.title}
             fill
             priority
-            sizes="(min-width: 1024px) 66vw, 100vw"
-            className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+            fetchPriority="high"
+            loading="eager"
+            quality={70}
+            placeholder="blur"
+            blurDataURL={BLUR}
+            sizes="(min-width: 1280px) 860px, (min-width: 1024px) 66vw, 100vw"
+            className="object-cover transition-transform duration-700 ease-out [@media(hover:hover)]:group-hover:scale-105"
           />
 
           <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/45 to-black/5" />
@@ -382,9 +390,7 @@ export function HomeClient({ blogs }: HomeClientProps) {
           </div>
         </article>
 
-        {/* Side stories:
-            mobile/tablet -> 2-column grid, image + title only
-            desktop       -> stacked beside the hero */}
+        {/* Side stories */}
         {sideBlogs.length > 0 && (
           <div className="grid min-w-0 grid-cols-2 gap-3 sm:gap-5 lg:col-span-4 lg:auto-rows-fr lg:grid-cols-1 lg:gap-6">
             {sideBlogs.map((blog) => (
