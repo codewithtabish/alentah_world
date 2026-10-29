@@ -29,6 +29,9 @@ model User {
   bookmarks   Bookmark[]
   comments    Comment[]
   editor      Editor?
+  
+  // 👇 NEW RELATION ADDED HERE
+  pushSubscriptions PushSubscription[] 
 }
 
 model Editor {
@@ -253,6 +256,21 @@ model NewsletterSubscriber {
   updatedAt      DateTime         @updatedAt
 
   @@index([status])
+}
+
+// 👇 NEW MODEL FOR PUSH NOTIFICATIONS
+model PushSubscription {
+  id          String   @id @default(cuid())
+  userId      String?  // Optional: null if the user is logged out
+  endpoint    String   @unique
+  p256dh      String
+  auth        String
+  isAnonymous Boolean  @default(false) // true if they don't have an account
+  createdAt   DateTime @default(now())
+
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 enum UserRole {

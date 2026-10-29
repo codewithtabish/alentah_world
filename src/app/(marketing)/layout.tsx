@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Container } from "@/components/site/general/layouts/container";
 import { Navbar } from "@/components/site/general/navbar/navbar";
+import NotificationPrompt from "@/components/site/general/notificaions/notification-prompt";
 
 const MARKETINGLAYOUT = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -14,6 +15,9 @@ const MARKETINGLAYOUT = ({ children }: { children: React.ReactNode }) => {
         <React.Suspense fallback={<div className="h-18 w-full" />}>
           <Navbar />
         </React.Suspense>
+
+        <NotificationPrompt />
+
         
         {children}
       </Container>

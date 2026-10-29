@@ -1,10 +1,13 @@
+// src/actions/articles/create-article.ts
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { after } from "next/server"; // 👈 Corrected import for Next.js latest versions
 import { Prisma } from "@/generated/prisma/client";
 import prisma from "@/lib/clients/prisma-client";
 import { CACHE_TAGS } from "@/lib/cache-keys";
+import { sendPushNotificationToAll } from "@/actions/notifications/send-push-notification";
 import {
   createFallbackSEO,
   generateSEO,
@@ -68,13 +71,9 @@ function extractTextFromContent(content: {
 
   return content.blocks
     .map((block) => {
-      const data = block.data as
-        | Record<string, unknown>
-        | undefined;
+      const data = block.data as Record<string, unknown> | undefined;
 
-      if (!data) {
-        return "";
-      }
+      if (!data) return "";
 
       const blockType = String(block.type ?? "");
 
@@ -96,13 +95,8 @@ function extractTextFromContent(content: {
 
         return items
           .map((item: unknown) => {
-            if (typeof item === "string") {
-              return item;
-            }
-
-            if (typeof item !== "object" || item === null) {
-              return "";
-            }
+            if (typeof item === "string") return item;
+            if (typeof item !== "object" || item === null) return "";
 
             const entry = item as {
               content?: unknown;
@@ -120,14 +114,9 @@ function extractTextFromContent(content: {
             const nestedText = Array.isArray(entry.items)
               ? entry.items
                   .map((nestedItem) => {
-                    if (typeof nestedItem === "string") {
-                      return nestedItem;
-                    }
+                    if (typeof nestedItem === "string") return nestedItem;
 
-                    if (
-                      typeof nestedItem === "object" &&
-                      nestedItem !== null
-                    ) {
+                    if (typeof nestedItem === "object" && nestedItem !== null) {
                       const nested = nestedItem as {
                         content?: unknown;
                         text?: unknown;
@@ -316,7 +305,6 @@ export async function createArticleAction(
     const subCatSlug = subcategory.slug;
 
     // 5. Generate language-specific SEO.
-    // Article creation can continue even if SEO generation fails.
     const contentText = extractTextFromContent(data.content);
     let seo: SEOResult;
 
@@ -331,10 +319,6 @@ export async function createArticleAction(
         "[createArticleAction] SEO generation failed; using fallback:",
         seoError,
       );
-
-      // FIX: createFallbackSEO signature is (title, language, contentText).
-      // The previous code passed (title, contentText, language), which
-      // caused the TypeScript error and would have used the wrong language.
       seo = createFallbackSEO(
         data.title.trim(),
         langCode,
@@ -351,9 +335,7 @@ export async function createArticleAction(
       "http://localhost:3000";
 
     const baseUrl = configuredBaseUrl.replace(/\/+$/, "");
-
-    const canonicalUrl =
-      `${baseUrl}/${langCode}/${catSlug}/${subCatSlug}/${data.slug}`;
+    const canonicalUrl = `${baseUrl}/${langCode}/${catSlug}/${subCatSlug}/${data.slug}`;
 
     // 7. Prepare article status and dates
     const status = data.status || "DRAFT";
@@ -364,60 +346,36 @@ export async function createArticleAction(
       data: {
         title: data.title.trim(),
         slug: data.slug.trim(),
-
         shortDescription: seo.excerpt,
-
         content: data.content as unknown as Prisma.InputJsonValue,
-
-        tableOfContents: (
-          data.tableOfContents ?? []
-        ) as unknown as Prisma.InputJsonValue,
-
+        tableOfContents: (data.tableOfContents ?? []) as unknown as Prisma.InputJsonValue,
         type: (data.type as any) || "ARTICLE",
         status: status as any,
-
         bannerImage: data.bannerImage.trim(),
-        bannerImageAlt:
-          data.bannerImageAlt?.trim() || data.title.trim(),
-
+        bannerImageAlt: data.bannerImageAlt?.trim() || data.title.trim(),
         featured: data.featured ?? false,
-
         publishedAt: isPublished ? new Date() : null,
-
-        scheduledAt: data.scheduledAt
-          ? new Date(data.scheduledAt)
-          : null,
-
-        // Relations
+        scheduledAt: data.scheduledAt ? new Date(data.scheduledAt) : null,
         authorId: user.id,
         languageId: data.languageId,
         categoryId: data.categoryId,
         subcategoryId: data.subcategoryId,
-
-        // Guest author
         writtenBy: data.writtenBy?.trim() || null,
         writerImageUrl: data.writerImageUrl?.trim() || null,
-
         readingTime,
-
         seo: {
           create: {
             metaTitle: seo.metaTitle,
             metaDescription: seo.metaDescription,
             canonicalUrl,
-
             noIndex: false,
             noFollow: false,
-
-            // Use language-appropriate generated SEO metadata.
             ogTitle: seo.metaTitle,
             ogDescription: seo.metaDescription,
             ogImage: data.ogImage.trim(),
-
             twitterTitle: seo.metaTitle,
             twitterDescription: seo.metaDescription,
             twitterImage: data.ogImage.trim(),
-
             schemaType: "Article",
           },
         },
@@ -428,24 +386,32 @@ export async function createArticleAction(
     revalidatePath("/admin/articles");
     revalidatePath("/admin");
 
-    // 10. Invalidate public pages and cached article lists
+    // 10. Invalidate public pages and send notifications
     if (isPublished) {
       revalidatePath("/");
-      revalidatePath(
-        `/${langCode}/${catSlug}/${subCatSlug}/${article.slug}`,
-      );
-
+      revalidatePath(`/${langCode}/${catSlug}/${subCatSlug}/${article.slug}`);
       revalidateTag(CACHE_TAGS.home, "max");
       revalidateTag(CACHE_TAGS.homeScreen, "max");
-      revalidateTag(
-        CACHE_TAGS.categoryPageBlogs(catSlug),
-        "max",
-      );
-      revalidateTag(
-        CACHE_TAGS.subcategoryPageBlogs(subCatSlug),
-        "max",
-      );
+      revalidateTag(CACHE_TAGS.categoryPageBlogs(catSlug), "max");
+      revalidateTag(CACHE_TAGS.subcategoryPageBlogs(subCatSlug), "max");
       revalidateTag(CACHE_TAGS.blog(article.slug), "max");
+
+      // 👇 BACKGROUND NOTIFICATION LOGIC
+      const articleUrl = `/${langCode}/${catSlug}/${subCatSlug}/${article.slug}`;
+      
+      after(async () => {
+        try {
+          console.log("Sending background push notifications for:", article.title);
+          await sendPushNotificationToAll({
+            title: "New Article Published!",
+            body: article.title,
+            url: articleUrl,
+          });
+          console.log("Push notifications sent successfully.");
+        } catch (error) {
+          console.error("Background push notification failed:", error);
+        }
+      });
     }
 
     return {
