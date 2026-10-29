@@ -20,7 +20,7 @@ export async function removePushSubscription(endpoint: string) {
 
     return { success: true };
   } catch (error) {
-    console.error("[removePushSubscription] Error:", error);
+    console.error("[removePushSubscriptions] Error:", error);
     return { success: false };
   }
 }
