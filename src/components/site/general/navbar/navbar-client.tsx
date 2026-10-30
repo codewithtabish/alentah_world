@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
+  ArrowRight,
   Bookmark,
   ChevronDown,
   ChevronRight,
@@ -21,9 +22,9 @@ import { CategoryListItem } from "@/actions/categories/get-categories";
 
 const HIDE_SCROLLBAR = "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden";
 
-// Premium floating panel: soft ring + deep, diffused shadow, no heavy borders
+// Compact floating panel: soft ring + diffused shadow, no heavy borders
 const PANEL =
-  "rounded-3xl bg-popover/95 text-popover-foreground ring-1 ring-border/60 backdrop-blur-xl shadow-[0_24px_60px_-12px_rgba(0,0,0,0.25)] animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-200 origin-top";
+  "rounded-2xl bg-popover/95 text-popover-foreground ring-1 ring-border/60 backdrop-blur-xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.25)] animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-200 origin-top";
 
 // Menu panel for the user dropdown (kept compact)
 const USER_PANEL =
@@ -82,9 +83,9 @@ function ShieldIcon({ className }: { className?: string }) {
 }
 
 // ============================================================
-// CATEGORY CARD (Inside mega-menu)
-// NOTE: no `truncate` on text — it clips tall Urdu/Arabic glyphs.
-// RTL text gets a roomy line-height so nothing is ever cut.
+// CATEGORY CARD (Inside mega-menu) — compact
+// NOTE: no `truncate` / line-clamp on RTL text — it clips tall
+// Urdu/Arabic glyphs. RTL gets a roomy line-height instead.
 // ============================================================
 function CategoryCard({
   category,
@@ -94,41 +95,41 @@ function CategoryCard({
   onNavigate: () => void;
 }) {
   return (
-    <div className="group/card rounded-2xl bg-muted/40 p-3.5 ring-1 ring-border/50 transition-all duration-200 hover:bg-muted/70 hover:ring-primary/30">
+    <div className="group/card rounded-xl bg-muted/40 p-3 ring-1 ring-border/50 transition-all duration-200 hover:bg-muted/70 hover:ring-primary/30">
       <Link
         href={`/${category.language.code}/${category.slug}`}
         onClick={onNavigate}
-        className="flex items-center gap-3 no-underline"
+        className="flex items-center gap-2.5 no-underline"
       >
         {category.coverImage ? (
-          <div className="relative size-11 shrink-0 overflow-hidden rounded-xl ring-1 ring-border/60">
+          <div className="relative size-9 shrink-0 overflow-hidden rounded-lg ring-1 ring-border/60">
             <Image
               src={category.coverImage}
-              alt={category.name}
+              alt=""
               fill
-              sizes="44px"
+              sizes="36px"
               className="object-cover transition-transform duration-500 group-hover/card:scale-110"
             />
           </div>
         ) : (
-          <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-background text-muted-foreground ring-1 ring-border/60">
-            <Globe className="size-4" strokeWidth={1.75} />
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-background text-muted-foreground ring-1 ring-border/60">
+            <Globe className="size-3.5" strokeWidth={1.75} />
           </div>
         )}
 
-        <span className="line-clamp-2 min-w-0 flex-1 py-1 text-sm font-bold leading-snug text-primary transition-opacity group-hover/card:opacity-80 rtl:text-[17px] rtl:leading-[2.1]">
+        <span className="min-w-0 flex-1 wrap-break-word py-0.5 text-[13px] font-bold leading-snug text-primary transition-opacity group-hover/card:opacity-80 ltr:line-clamp-2 rtl:text-[15px] rtl:leading-loose">
           {category.name}
         </span>
       </Link>
 
       {category.subcategories.length > 0 && (
-        <ul className="mt-3 space-y-0.5 border-t border-border/50 pt-2.5">
+        <ul className="mt-2 space-y-0.5 border-t border-border/50 pt-2">
           {category.subcategories.map((sub) => (
             <li key={sub.id}>
               <Link
                 href={`/${category.language.code}/${category.slug}/${sub.slug}`}
                 onClick={onNavigate}
-                className="group/sub flex items-center justify-between gap-2 rounded-lg px-2.5 py-1.5 text-[13px] leading-snug text-muted-foreground no-underline transition-colors hover:bg-background hover:text-foreground rtl:text-[15px] rtl:leading-[2.1]"
+                className="group/sub flex items-center justify-between gap-2 rounded-md px-2 py-0.5 text-[12px] leading-snug text-muted-foreground no-underline transition-colors hover:bg-background hover:text-foreground rtl:text-[14px] rtl:leading-loose"
               >
                 <span className="flex min-w-0 flex-1 items-center gap-2">
                   <span
@@ -138,7 +139,7 @@ function CategoryCard({
                   <span className="min-w-0 flex-1 wrap-break-word">{sub.name}</span>
                 </span>
                 <ChevronRight
-                  className="size-3.5 shrink-0 opacity-40 transition-all group-hover/sub:translate-x-0.5 group-hover/sub:opacity-100 rtl:rotate-180 rtl:group-hover/sub:-translate-x-0.5"
+                  className="size-3 shrink-0 opacity-40 transition-all group-hover/sub:translate-x-0.5 group-hover/sub:opacity-100 rtl:rotate-180 rtl:group-hover/sub:-translate-x-0.5"
                   strokeWidth={1.75}
                 />
               </Link>
@@ -151,9 +152,15 @@ function CategoryCard({
 }
 
 // ============================================================
-// EDITION HEADER
+// EDITION HEADER (title is a link to the edition home)
 // ============================================================
-function EditionHeader({ language }: { language: LanguageListItem }) {
+function EditionHeader({
+  language,
+  onNavigate,
+}: {
+  language: LanguageListItem;
+  onNavigate: () => void;
+}) {
   const editionTitle =
     language.code === "ur" ? "اردو ایڈیشن" : `${language.name} Edition`;
   const editionTagline =
@@ -163,23 +170,27 @@ function EditionHeader({ language }: { language: LanguageListItem }) {
 
   return (
     <div>
-      <div className="flex items-center gap-3.5">
-        <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/15">
-          <Globe className="size-5" strokeWidth={1.75} />
+      <Link
+        href={`/${language.code}`}
+        onClick={onNavigate}
+        className="group/ed flex items-center gap-3 no-underline"
+      >
+        <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+          <Globe className="size-4" strokeWidth={1.75} />
         </span>
 
         <div className="min-w-0 flex-1">
-          <p className="py-0.5 text-lg font-bold leading-tight text-primary rtl:text-2xl rtl:leading-loose">
+          <p className="text-base font-bold leading-tight text-primary transition-opacity group-hover/ed:opacity-80 rtl:text-xl rtl:leading-loose">
             {editionTitle}
           </p>
-          <p className="text-xs leading-snug text-muted-foreground rtl:text-[15px] rtl:leading-loose">
+          <p className="text-[11px] leading-snug text-muted-foreground rtl:text-[13px] rtl:leading-loose">
             {editionTagline}
           </p>
         </div>
-      </div>
+      </Link>
 
-      <div className="relative mt-4 h-px w-full bg-border/70">
-        <span className="absolute inset-s-0 top-0 h-px w-20 bg-primary" />
+      <div className="relative mt-3 h-px w-full bg-border/70">
+        <span className="absolute inset-s-0 top-0 h-px w-16 bg-primary" />
       </div>
     </div>
   );
@@ -257,6 +268,7 @@ export function NavbarClient({ categories, languages }: NavbarClientProps) {
 
   const openLanguageData = activeLanguages.find((l) => l.code === openLang);
   const openCategories = categories.filter((c) => c.language.code === openLang);
+  const isOpenRTL = openLanguageData?.direction === "RTL";
 
   const ICON_BTN =
     "inline-flex size-9 items-center justify-center rounded-full no-underline transition-colors hover:bg-muted hover:text-primary";
@@ -276,52 +288,72 @@ export function NavbarClient({ categories, languages }: NavbarClientProps) {
               const isCurrent = currentLangCode === lang.code;
 
               return (
-                <button
+                // Split button: name = link to the edition, arrow = open categories
+                <div
                   key={lang.id}
-                  type="button"
-                  aria-haspopup="true"
-                  aria-expanded={isOpen}
-                  onClick={() => setOpenLang(isOpen ? null : lang.code)}
                   className={cn(
-                    "inline-flex h-9 items-center gap-1.5 rounded-full px-3 no-underline",
-                    "text-sm font-bold text-foreground/80 transition-colors hover:bg-muted hover:text-foreground",
-                    isCurrent && "text-primary",
-                    isOpen && "bg-muted text-primary",
+                    "inline-flex h-9 items-center rounded-full transition-colors hover:bg-muted",
+                    isOpen && "bg-muted",
                   )}
                 >
-                  <span>{lang.name}</span>
-                  <ChevronDown
+                  <Link
+                    href={`/${lang.code}`}
+                    onClick={() => setOpenLang(null)}
+                    aria-current={isCurrent ? "page" : undefined}
                     className={cn(
-                      "size-3.5 text-muted-foreground transition-transform duration-200",
-                      isOpen && "rotate-180 text-primary",
+                      "inline-flex h-9 items-center rounded-full ps-3.5 pe-1 text-sm font-bold no-underline transition-colors",
+                      isCurrent || isOpen
+                        ? "text-primary"
+                        : "text-foreground/80 hover:text-foreground",
                     )}
-                    strokeWidth={1.75}
-                  />
-                </button>
+                  >
+                    {lang.name}
+                  </Link>
+
+                  <button
+                    type="button"
+                    aria-haspopup="true"
+                    aria-expanded={isOpen}
+                    aria-label={`Browse ${lang.name} categories`}
+                    onClick={() => setOpenLang(isOpen ? null : lang.code)}
+                    className="inline-flex h-9 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-primary"
+                  >
+                    <ChevronDown
+                      className={cn(
+                        "size-3.5 transition-transform duration-200",
+                        isOpen && "rotate-180 text-primary",
+                      )}
+                      strokeWidth={1.75}
+                    />
+                  </button>
+                </div>
               );
             })}
 
             {openLang && openLanguageData && (
-              <div className="absolute right-0 top-full z-50 pt-3">
+              <div className="absolute right-0 top-full z-50 pt-2">
                 <div
-                  dir={openLanguageData.direction === "RTL" ? "rtl" : "ltr"}
+                  dir={isOpenRTL ? "rtl" : "ltr"}
                   lang={openLang}
-                  className={cn("w-[min(720px,calc(100vw-2rem))]", PANEL)}
+                  className={cn("w-[min(560px,calc(100vw-2rem))]", PANEL)}
                 >
                   <div
                     className={cn(
-                      "max-h-[calc(100vh-7rem)] overflow-y-auto p-6",
+                      "max-h-[70vh] overflow-y-auto p-4",
                       HIDE_SCROLLBAR,
                     )}
                   >
-                    <EditionHeader language={openLanguageData} />
+                    <EditionHeader
+                      language={openLanguageData}
+                      onNavigate={() => setOpenLang(null)}
+                    />
 
                     {openCategories.length === 0 ? (
-                      <p className="mt-5 text-sm leading-relaxed text-muted-foreground rtl:text-base rtl:leading-loose">
-                        No categories yet.
+                      <p className="mt-4 text-sm leading-relaxed text-muted-foreground rtl:text-[15px] rtl:leading-loose">
+                        {isOpenRTL ? "ابھی کوئی زمرہ نہیں ہے۔" : "No categories yet."}
                       </p>
                     ) : (
-                      <div className="mt-5 grid grid-cols-2 gap-3.5 xl:grid-cols-3">
+                      <div className="mt-4 grid grid-cols-2 items-start gap-2.5">
                         {openCategories.map((category) => (
                           <CategoryCard
                             key={category.id}
@@ -331,6 +363,15 @@ export function NavbarClient({ categories, languages }: NavbarClientProps) {
                         ))}
                       </div>
                     )}
+
+                    <Link
+                      href={`/${openLanguageData.code}`}
+                      onClick={() => setOpenLang(null)}
+                      className="mt-4 flex items-center justify-center gap-1.5 rounded-lg border border-border/70 py-1.5 text-[12px] font-semibold text-foreground no-underline transition-colors hover:bg-muted hover:text-primary rtl:text-[14px] rtl:leading-loose"
+                    >
+                      {isOpenRTL ? "اردو ایڈیشن کھولیں" : `Open ${openLanguageData.name} edition`}
+                      <ArrowRight className="size-3.5 rtl:rotate-180" strokeWidth={1.75} />
+                    </Link>
                   </div>
                 </div>
               </div>
