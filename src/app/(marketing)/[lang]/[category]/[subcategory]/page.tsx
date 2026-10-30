@@ -9,11 +9,10 @@ import { getSubcategoryBlogs } from "@/actions/articles/get-subcategory-blogs";
 import { SubcategoryClient } from "@/components/site/pages/subcategory/subcategory-client";
 import { SubcategoryPageSkeleton } from "@/components/site/pages/subcategory/subcategory-skeleton";
 
-type RouteParams = { lang: string; category: string; subcategory: string };
-
-type PageParams = {
-  params: Promise<RouteParams>;
-  searchParams: Promise<{ page?: string }>;
+// 👇 FIXED: Use the exact type signature Next.js 16 expects for Props
+type PageProps = {
+  params: Promise<{ lang: string; category: string; subcategory: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 export async function generateStaticParams() {
@@ -39,7 +38,7 @@ export async function generateStaticParams() {
   return params.length ? params : [{ lang: "en", category: "_", subcategory: "_" }];
 }
 
-export async function generateMetadata({ params }: { params: PageParams["params"] }) {
+export async function generateMetadata({ params }: { params: Promise<{ lang: string; category: string; subcategory: string }> }) {
   const { lang, category, subcategory } = await params;
   const res = await getSubcategoryBlogs(lang, category, subcategory);
 
@@ -58,10 +57,6 @@ export async function generateMetadata({ params }: { params: PageParams["params"
   };
 }
 
-// ─────────────────────────────────────────────────────────────
-// CACHED: one cache entry per (lang, category, subcategory, page).
-// Revalidate with the same tags your action already uses.
-// ─────────────────────────────────────────────────────────────
 async function CachedSubcategoryPage({
   lang,
   category,
@@ -81,7 +76,6 @@ async function CachedSubcategoryPage({
   const res = await getSubcategoryBlogs(lang, category, subcategory, page);
 
   if (!res.success) notFound();
-  // Page number past the last page -> 404
   if (page > 1 && res.blogs.length === 0) notFound();
 
   return (
@@ -91,15 +85,15 @@ async function CachedSubcategoryPage({
       blogs={res.blogs}
       totalPages={res.totalPages}
       currentPage={res.currentPage}
-    //   totalCount={res.totalCount} // 👈 Added here
+    //   totalCount={res.totalCount}
     />
   );
 }
 
-// Reads ?page= (runtime data) inside Suspense so the rest stays static/cached.
-async function SubcategoryContent({ params, searchParams }: PageParams) {
+async function SubcategoryContent({ params, searchParams }: PageProps) {
   const [{ lang, category, subcategory }, sp] = await Promise.all([params, searchParams]);
-  const page = Math.max(1, Number.parseInt(sp?.page ?? "1", 10) || 1);
+  const pageStr = typeof sp?.page === "string" ? sp.page : "1";
+  const page = Math.max(1, Number.parseInt(pageStr, 10) || 1);
 
   return (
     <CachedSubcategoryPage
@@ -111,7 +105,8 @@ async function SubcategoryContent({ params, searchParams }: PageParams) {
   );
 }
 
-export default function SubcategoryPage({ params, searchParams }: PageParams) {
+// 👇 FIXED: Explicitly type the component props
+export default function SubcategoryPage({ params, searchParams }: PageProps) {
   return (
     <Suspense fallback={<SubcategoryPageSkeleton />}>
       <SubcategoryContent params={params} searchParams={searchParams} />
