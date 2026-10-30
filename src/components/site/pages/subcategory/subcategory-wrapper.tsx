@@ -21,7 +21,7 @@ export async function SubcategoryWrapper({
   }
 
   return (
-    <SubcategoryClient 
+    <SubcategoryClient
       langCode={lang} 
       subcategory={res.subcategory} 
       blogs={res.blogs} 

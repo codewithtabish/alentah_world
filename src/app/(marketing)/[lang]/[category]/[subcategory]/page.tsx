@@ -1,18 +1,14 @@
 // src/app/[lang]/[category]/[subcategory]/page.tsx
 import * as React from "react";
-import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { cacheLife, cacheTag } from "next/cache";
 import prisma from "@/lib/clients/prisma-client";
 import { CACHE_TAGS } from "@/lib/cache-keys";
 import { getSubcategoryBlogs } from "@/actions/articles/get-subcategory-blogs";
 import { SubcategoryClient } from "@/components/site/pages/subcategory/subcategory-client";
-import { SubcategoryPageSkeleton } from "@/components/site/pages/subcategory/subcategory-skeleton";
 
-// 👇 FIXED: Use the exact type signature Next.js 16 expects for Props
 type PageProps = {
   params: Promise<{ lang: string; category: string; subcategory: string }>;
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 export async function generateStaticParams() {
@@ -38,9 +34,9 @@ export async function generateStaticParams() {
   return params.length ? params : [{ lang: "en", category: "_", subcategory: "_" }];
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ lang: string; category: string; subcategory: string }> }) {
+export async function generateMetadata({ params }: PageProps) {
   const { lang, category, subcategory } = await params;
-  const res = await getSubcategoryBlogs(lang, category, subcategory);
+  const res = await getSubcategoryBlogs(lang, category, subcategory, 1);
 
   if (!res.success) return { title: "Subcategory Not Found | Alentah World" };
 
@@ -57,26 +53,20 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   };
 }
 
-async function CachedSubcategoryPage({
-  lang,
-  category,
-  subcategory,
-  page,
-}: {
-  lang: string;
-  category: string;
-  subcategory: string;
-  page: number;
-}) {
+export default async function SubcategoryPage({ params }: PageProps) {
   "use cache";
   cacheLife("max");
-  cacheTag(CACHE_TAGS.subcategoryPageBlogs(subcategory));
-  cacheTag(CACHE_TAGS.subcategoryPage(`${subcategory}:${page}`));
 
-  const res = await getSubcategoryBlogs(lang, category, subcategory, page);
+  const { lang, category, subcategory } = await params;
+
+  cacheTag(CACHE_TAGS.subcategoryPageBlogs(subcategory));
+  // Same tag format your action uses: "<slug>:<page>"
+  cacheTag(CACHE_TAGS.subcategoryPage(`${subcategory}:1`));
+
+  // Only page 1 is fetched, so the page is fully static and instant.
+  const res = await getSubcategoryBlogs(lang, category, subcategory, 1);
 
   if (!res.success) notFound();
-  if (page > 1 && res.blogs.length === 0) notFound();
 
   return (
     <SubcategoryClient
@@ -85,31 +75,6 @@ async function CachedSubcategoryPage({
       blogs={res.blogs}
       totalPages={res.totalPages}
       currentPage={res.currentPage}
-    //   totalCount={res.totalCount}
     />
-  );
-}
-
-async function SubcategoryContent({ params, searchParams }: PageProps) {
-  const [{ lang, category, subcategory }, sp] = await Promise.all([params, searchParams]);
-  const pageStr = typeof sp?.page === "string" ? sp.page : "1";
-  const page = Math.max(1, Number.parseInt(pageStr, 10) || 1);
-
-  return (
-    <CachedSubcategoryPage
-      lang={lang}
-      category={category}
-      subcategory={subcategory}
-      page={page}
-    />
-  );
-}
-
-// 👇 FIXED: Explicitly type the component props
-export default function SubcategoryPage({ params, searchParams }: PageProps) {
-  return (
-    <Suspense fallback={<SubcategoryPageSkeleton />}>
-      <SubcategoryContent params={params} searchParams={searchParams} />
-    </Suspense>
   );
 }
