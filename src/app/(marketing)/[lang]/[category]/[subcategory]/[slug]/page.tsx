@@ -1,10 +1,10 @@
 import * as React from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cacheLife, cacheTag } from "next/cache";
 import { Clock, Calendar } from "lucide-react";
 import prisma from "@/lib/clients/prisma-client";
+import { cn } from "@/lib/utils";
 import { getArticleBySlug } from "@/actions/articles/get-article-by-slug";
 import { CACHE_TAGS } from "@/lib/cache-keys";
 import { ArticlePreviewer } from "@/components/site/admin/articles/article-previewer";
@@ -14,6 +14,7 @@ import { BannerImage } from "@/components/site/pages/home/banner-image";
 import { Suspense } from "react";
 import { ArticleCommentsSkeleton } from "@/components/site/pages/comments/article-comments-skeleton";
 import { ArticleCommentsServer } from "@/components/site/pages/comments/article-comments-server";
+import { Breadcrumbs } from "@/components/site/pages/shared/breadcrumbs";
 
 type PageParams = {
   params: Promise<{
@@ -23,6 +24,18 @@ type PageParams = {
     slug: string;
   }>;
 };
+
+// Small UI label dictionary (en / ur / ar)
+const LABELS = {
+  en: { home: "Home", contributor: "Contributor", minRead: "min read", aboutAuthor: "About the Author" },
+  ur: { home: "صفحہ اول", contributor: "لکھاری", minRead: "منٹ کا مطالعہ", aboutAuthor: "مصنف کے بارے میں" },
+  ar: { home: "الرئيسية", contributor: "كاتب", minRead: "دقائق للقراءة", aboutAuthor: "عن الكاتب" },
+} as const;
+
+function truncate(text: string, max = 60) {
+  const t = text.trim();
+  return t.length > max ? `${t.slice(0, max).trimEnd()}…` : t;
+}
 
 export async function generateStaticParams() {
   const blogs = await prisma.blog.findMany({
@@ -132,6 +145,17 @@ export default async function ArticlePage({ params }: PageParams) {
 
   const article = result.article;
   const isRTL = article.language.direction === "RTL";
+  const t = LABELS[(lang as keyof typeof LABELS) in LABELS ? (lang as keyof typeof LABELS) : "en"];
+
+  // ───── Anti-clipping helpers (Urdu/Arabic: tall ascenders + deep descenders) ─────
+  // NOTE: dir="rtl" already flips flex rows, so NO flex-row-reverse / justify-end hacks.
+  const fontClass = isRTL ? "font-urdu-text" : "font-sans";
+  const titleFont = isRTL ? "font-urdu-display" : "font-serif";
+  const lhXL = isRTL ? "leading-[2]" : "leading-[1.15]";
+  const lhBody = isRTL ? "leading-[2.3]" : "leading-relaxed";
+  const lhMeta = isRTL ? "leading-[2.2]" : "leading-normal";
+  const pad = isRTL ? "py-1.5" : "";
+  const labelCase = isRTL ? "" : "uppercase tracking-widest";
 
   const publishedDate = article.publishedAt
     ? new Intl.DateTimeFormat(
@@ -146,125 +170,101 @@ export default async function ArticlePage({ params }: PageParams) {
     "Alentah World";
   const authorImage = article.writerImageUrl || article.author.imageUrl;
 
+  const breadcrumbItems = [
+    { label: t.home, href: `/${lang}` },
+    { label: article.category.name, href: `/${lang}/${category}` },
+    { label: article.subcategory.name, href: `/${lang}/${category}/${subcategory}` },
+    { label: truncate(article.title) },
+  ];
+
   return (
     <article
       className="flex flex-col gap-8 pb-20 pt-8"
       dir={isRTL ? "rtl" : "ltr"}
     >
       {/* BREADCRUMBS */}
-      <nav
-        aria-label="Breadcrumb"
-        className={`flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground ${
-          isRTL ? "flex-row-reverse" : ""
-        }`}
-      >
-        <Link href={`/${lang}`} className="transition-colors hover:text-primary">
-          {article.language.name}
-        </Link>
-        <span>/</span>
-        <Link
-          href={`/${lang}/${category}`}
-          className="transition-colors hover:text-primary"
-        >
-          {article.category.name}
-        </Link>
-        <span>/</span>
-        <Link
-          href={`/${lang}/${category}/${subcategory}`}
-          className="transition-colors hover:text-primary"
-        >
-          {article.subcategory.name}
-        </Link>
-      </nav>
+      <Breadcrumbs items={breadcrumbItems} isRTL={isRTL} />
 
       {/* 1. HEADER */}
       <header className="mx-auto flex w-full max-w-4xl flex-col gap-6">
-        <div
-          className={`flex items-center gap-2 ${
-            isRTL ? "justify-end" : "justify-start"
-          }`}
-        >
+        <div className="flex items-center gap-2">
           <span
-            className={`rounded-sm bg-primary px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary-foreground ${
-              isRTL ? "font-urdu-text" : ""
-            }`}
+            className={cn(
+              "rounded-sm bg-primary px-3 py-0.5 text-xs font-bold text-primary-foreground",
+              labelCase,
+              lhMeta,
+              fontClass,
+            )}
           >
             {article.category.name}
           </span>
         </div>
 
         <h1
-          className={`font-serif text-3xl font-bold leading-[1.15] text-foreground sm:text-5xl lg:text-6xl ${
-            isRTL ? "font-urdu-display leading-[1.4]" : ""
-          }`}
+          className={cn(
+            "wrap-break-word text-3xl font-bold text-foreground sm:text-5xl lg:text-6xl",
+            pad,
+            lhXL,
+            titleFont,
+          )}
         >
           {article.title}
         </h1>
 
         {article.shortDescription && (
           <p
-            className={`text-lg leading-relaxed text-muted-foreground sm:text-xl ${
-              isRTL ? "font-urdu-text leading-[2.2]" : ""
-            }`}
+            className={cn(
+              "py-1 text-lg text-muted-foreground sm:text-xl",
+              lhBody,
+              fontClass,
+            )}
           >
             {article.shortDescription}
           </p>
         )}
 
         {/* Author and metadata */}
-        <div
-          className={`flex flex-wrap items-center gap-4 border-y border-border py-4 ${
-            isRTL ? "flex-row-reverse" : ""
-          }`}
-        >
-          <div
-            className={`flex items-center gap-3 ${
-              isRTL ? "flex-row-reverse" : ""
-            }`}
-          >
+        <div className="flex flex-wrap items-center gap-4 border-y border-border py-4">
+          <div className="flex items-center gap-3">
             <Avatar
               src={authorImage}
               name={authorName}
               className="size-10"
               sizes="40px"
             />
-            <div
-              className={`flex flex-col ${
-                isRTL ? "items-end" : "items-start"
-              }`}
-            >
+            <div className="flex flex-col items-start">
               <span
-                className={`text-sm font-bold text-foreground ${
-                  isRTL ? "font-urdu-text" : ""
-                }`}
+                className={cn(
+                  "text-sm font-bold text-foreground",
+                  lhMeta,
+                  fontClass,
+                )}
               >
                 {authorName}
               </span>
-              <span className="text-xs text-muted-foreground">Contributor</span>
+              <span
+                className={cn("text-xs text-muted-foreground", lhMeta, fontClass)}
+              >
+                {t.contributor}
+              </span>
             </div>
           </div>
 
           <div
-            className={`flex items-center gap-4 text-xs font-medium text-muted-foreground sm:ml-auto ${
-              isRTL ? "sm:ml-0 sm:mr-auto" : ""
-            }`}
+            className={cn(
+              "flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-medium text-muted-foreground sm:ms-auto",
+              lhMeta,
+              fontClass,
+            )}
           >
             {publishedDate && (
-              <span
-                className={`flex items-center gap-1.5 ${
-                  isRTL ? "flex-row-reverse" : ""
-                }`}
-              >
+              <span className="flex items-center gap-1.5">
                 <Calendar className="size-4" /> {publishedDate}
               </span>
             )}
             {article.readingTime ? (
-              <span
-                className={`flex items-center gap-1.5 ${
-                  isRTL ? "flex-row-reverse" : ""
-                }`}
-              >
-                <Clock className="size-4" /> {article.readingTime} min read
+              <span className="flex items-center gap-1.5">
+                <Clock className="size-4" /> {article.readingTime} {t.minRead}
               </span>
             ) : null}
           </div>
@@ -278,7 +278,13 @@ export default async function ArticlePage({ params }: PageParams) {
           alt={article.bannerImageAlt || article.title}
         />
         {article.bannerImageAlt && article.bannerImage && (
-          <figcaption className="mt-3 text-center text-xs text-muted-foreground">
+          <figcaption
+            className={cn(
+              "mt-3 py-1 text-center text-xs text-muted-foreground",
+              lhMeta,
+              fontClass,
+            )}
+          >
             {article.bannerImageAlt}
           </figcaption>
         )}
@@ -302,18 +308,26 @@ export default async function ArticlePage({ params }: PageParams) {
             className="size-16 border-2 border-background shadow-sm"
             sizes="64px"
           />
-          <div
-            className={`flex flex-col gap-1 ${
-              isRTL ? "text-right font-urdu-text" : ""
-            }`}
-          >
-            <span className="mb-1 text-[10px] font-bold uppercase tracking-widest text-primary">
-              About the Author
+          <div className={cn("flex min-w-0 flex-col gap-1 text-start", fontClass)}>
+            <span
+              className={cn(
+                "mb-1 text-xs font-bold text-primary",
+                labelCase,
+                lhMeta,
+              )}
+            >
+              {t.aboutAuthor}
             </span>
-            <h3 className="font-serif text-lg font-bold text-foreground">
+            <h3
+              className={cn(
+                "text-lg font-bold text-foreground",
+                pad,
+                isRTL ? "leading-loose font-urdu-display" : "font-serif",
+              )}
+            >
               {authorName}
             </h3>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            <p className={cn("mt-1 py-1 text-sm text-muted-foreground", lhBody)}>
               {article.author.bio}
             </p>
           </div>
@@ -321,11 +335,11 @@ export default async function ArticlePage({ params }: PageParams) {
       )}
 
       {/* 5. COMMENTS SECTION (SUSPENSE STREAMED) */}
-      <div className="mx-auto w-full max-w-3xl mt-8">
+      <div className="mx-auto mt-8 w-full max-w-3xl">
         <Suspense fallback={<ArticleCommentsSkeleton />}>
-          <ArticleCommentsServer 
-            blogId={article.id} 
-            blogSlug={article.slug} 
+          <ArticleCommentsServer
+            blogId={article.id}
+            blogSlug={article.slug}
           />
         </Suspense>
       </div>

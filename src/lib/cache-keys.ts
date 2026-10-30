@@ -49,6 +49,19 @@ export const CACHE_TAGS = {
   // ── Home ──
   home: "homeblogs",
   homeScreen: "home:screen",
+  // Add this inside the CACHE_TAGS object:
+languagePageBlogs: (code: string) => `language:blogs:${code}`,
+
+
+// CACHE_TAGS کے اندر یہ شامل کریں:
+categoryPage: (slug: string) => `category:page:${slug}`,
+
+// CACHE_TAGS کے اندر شامل کریں:
+subcategoryPage: (slug: string) => `subcategory:page:${slug}`,
+
+
+
+
 
   // ── Dashboard ──
   dashboard: "dashboard",
@@ -63,6 +76,27 @@ export const CACHE_TAGS = {
 // ============================================================
 
 const NOW = { expire: 0 } as const;
+
+
+// فائل کے آخر میں یہ فائنکشن شامل کریں:
+export function revalidateSubcategoryPage(slug: string) {
+  revalidateTag(CACHE_TAGS.subcategoryPage(slug), NOW);
+  revalidateTag(CACHE_TAGS.subcategoryPageBlogs(slug), NOW);
+}
+
+// فائل کے آخر میں یہ فائنکشن شامل کریں:
+export function revalidateCategoryPage(slug: string) {
+  revalidateTag(CACHE_TAGS.categoryPage(slug), NOW);
+  revalidateTag(CACHE_TAGS.categories, NOW);
+}
+
+
+// Add this at the bottom of the file:
+export function revalidateLanguagePage(code: string) {
+  revalidateTag(CACHE_TAGS.languagePageBlogs(code), NOW);
+  revalidateTag(CACHE_TAGS.language(code), NOW);
+}
+
 
 // ─────────────────────────────────────────────
 // USERS
