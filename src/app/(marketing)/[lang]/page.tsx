@@ -1,18 +1,29 @@
 // src/app/[lang]/page.tsx
 import * as React from "react";
-import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { cacheLife, cacheTag } from "next/cache";
 import { LanguageWrapper } from "@/components/site/pages/language/language-wrapper";
-import { LanguagePageSkeleton } from "@/components/site/pages/language/language-skeleton";
 import { getLanguages } from "@/actions/language/get-languages";
 import { CACHE_TAGS } from "@/lib/cache-keys";
+import prisma from "@/lib/clients/prisma-client";
 
 type PageProps = {
   params: Promise<{ lang: string }>;
 };
 
-// 👇 SEO Metadata
+// 👇 1. TELL NEXT.JS TO PRE-BUILD THESE AT DEPLOY TIME (STATIC)
+export async function generateStaticParams() {
+  const languages = await prisma.language.findMany({
+    where: { isActive: true },
+    select: { code: true },
+  });
+
+  return languages.map((lang) => ({
+    lang: lang.code,
+  }));
+}
+
+// 👇 2. SEO METADATA
 export async function generateMetadata({ params }: PageProps) {
   const { lang } = await params;
   
@@ -28,37 +39,28 @@ export async function generateMetadata({ params }: PageProps) {
   };
 }
 
-// 👇 CACHED: Language homepage is generated once and served to everyone
-async function CachedLanguagePage({ lang }: { lang: string }) {
+// 👇 3. FULL STATIC PAGE (Served instantly like the Slug Page)
+export default async function LanguagePage({ params }: PageProps) {
   "use cache";
   cacheLife("max");
+
+  const { lang } = await params;
+
   cacheTag(CACHE_TAGS.languagePageBlogs(lang));
   cacheTag(CACHE_TAGS.language(lang));
 
-  // 1. Validate the language exists in the database
+  // Validate language
   const languagesRes = await getLanguages();
-  const isValid = languagesRes.success && languagesRes.languages.some(l => l.code === lang);
+  const isValid = languagesRes.success && languagesRes.languages.some((l) => l.code === lang);
   
   if (!isValid) {
     notFound();
   }
 
-  // 2. Render the wrapper which fetches the blogs
-  return <LanguageWrapper langCode={lang} />;
-}
-
-// 👇 Wrapper with Suspense for the Skeleton
-export default function LanguagePage({ params }: PageProps) {
+  // Render directly (No Suspense, No Wrapper delay)
   return (
     <main className="w-full min-h-screen">
-      <Suspense fallback={<LanguagePageSkeleton />}>
-        <LanguageContent params={params} />
-      </Suspense>
+      <LanguageWrapper langCode={lang} />
     </main>
   );
-}
-
-async function LanguageContent({ params }: PageProps) {
-  const { lang } = await params;
-  return <CachedLanguagePage lang={lang} />;
 }
