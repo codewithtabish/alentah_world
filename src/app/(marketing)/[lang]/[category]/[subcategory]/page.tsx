@@ -91,6 +91,7 @@ async function CachedSubcategoryPage({
       blogs={res.blogs}
       totalPages={res.totalPages}
       currentPage={res.currentPage}
+    //   totalCount={res.totalCount} // 👈 Added here
     />
   );
 }
