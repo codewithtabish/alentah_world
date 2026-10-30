@@ -39,33 +39,27 @@ function getLanguageFromPathname(pathname: string) {
 }
 
 // ============================================================
-// LOGO — ALENTAH WORLD
+// LOGO — ALENTAH WORLD (image: /public/images/logo.png, 2172×724)
+// - Fixed height, auto width -> keeps the 3:1 ratio, never stretches
+// - Turns white in dark mode so the maroon artwork stays readable
+// - Negative start margin cancels the transparent padding inside the PNG
 // ============================================================
 function Logo() {
   return (
     <Link
       href="/"
-      aria-label="ALENTAH WORLD — Home"
-      className="group flex shrink-0 items-center no-underline"
+      aria-label="Alentah World — Home"
+      className="group -ms-3 flex shrink-0 items-center no-underline transition-opacity duration-200 hover:opacity-85 sm:-ms-5"
     >
-      <span className="flex flex-col leading-none">
-        <span className="font-serif text-[22px] font-extrabold uppercase tracking-[0.1em] text-foreground transition-colors duration-300 group-hover:text-primary min-[400px]:text-[25px] sm:text-[28px] md:text-[32px]">
-          Alentah
-        </span>
-        <span className="mt-1 flex items-center gap-2 sm:mt-1.5">
-          <span
-            aria-hidden="true"
-            className="h-px flex-1 bg-primary/50 transition-colors duration-300 group-hover:bg-primary"
-          />
-          <span className="me-[-0.4em] text-[8px] font-semibold uppercase tracking-[0.45em] text-primary min-[400px]:text-[9px] sm:text-[10px]">
-            World
-          </span>
-          <span
-            aria-hidden="true"
-            className="h-px flex-1 bg-primary/50 transition-colors duration-300 group-hover:bg-primary"
-          />
-        </span>
-      </span>
+      <Image
+        src="/images/logo.png"
+        alt="Alentah World"
+        width={2172}
+        height={724}
+        priority
+        sizes="(min-width: 640px) 216px, 192px"
+        className="h-16 w-auto select-none object-contain transition-transform duration-300 group-hover:scale-[1.02] sm:h-18 dark:brightness-0 dark:invert"
+      />
     </Link>
   );
 }
@@ -275,8 +269,8 @@ export function NavbarClient({ categories, languages }: NavbarClientProps) {
 
   return (
     <header className="relative z-50 w-full">
-      <div className="flex h-18 items-center justify-between gap-2 sm:gap-4">
-        {/* LEFT: Brand Name */}
+      <div className="flex h-20 items-center justify-between gap-2 sm:h-22 sm:gap-4">
+        {/* LEFT: Logo */}
         <Logo />
 
         {/* RIGHT: Languages, Actions */}

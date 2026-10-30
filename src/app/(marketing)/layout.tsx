@@ -2,6 +2,7 @@ import * as React from "react";
 import { Container } from "@/components/site/general/layouts/container";
 import { Navbar } from "@/components/site/general/navbar/navbar";
 import NotificationPrompt from "@/components/site/general/notificaions/notification-prompt";
+import { Footer } from "@/components/site/general/footer/footer";
 
 const MARKETINGLAYOUT = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -20,6 +21,7 @@ const MARKETINGLAYOUT = ({ children }: { children: React.ReactNode }) => {
 
         
         {children}
+        <Footer/>
       </Container>
     </main>
   );

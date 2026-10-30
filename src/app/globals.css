@@ -58,7 +58,6 @@
   --tracking-widest: calc(var(--tracking-normal) + 0.1em);
   --tracking-normal: var(--tracking-normal);
 
-  /* All Tailwind shadow utilities resolve to no shadow. */
   --shadow-2xs: none;
   --shadow-xs: none;
   --shadow-sm: none;
@@ -68,7 +67,6 @@
   --shadow-xl: none;
   --shadow-2xl: none;
 
-  /* Fonts supplied by next/font in app/layout.tsx */
   --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, -apple-system,
     BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-serif: var(--font-fraunces), ui-serif, Georgia, Cambria,
@@ -78,13 +76,11 @@
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo,
     Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 
-  /* Urdu Nastaliq */
   --font-urdu-display: var(--font-gulzar), var(--font-nastaliq),
     "Jameel Noori Nastaleeq", serif;
   --font-urdu-text: var(--font-nastaliq), var(--font-gulzar),
     "Jameel Noori Nastaleeq", serif;
 
-  /* Arabic Naskh */
   --font-arabic-display: var(--font-amiri), var(--font-naskh),
     "Traditional Arabic", serif;
   --font-arabic-text: var(--font-naskh), var(--font-amiri),
@@ -98,7 +94,7 @@
 :root {
   color-scheme: light;
 
-  /* The Insider — burgundy and warm cream */
+  /* Light Mode - Warm Cream & Burgundy */
   --background: oklch(0.9797 0.0065 85);
   --foreground: oklch(0.2300 0.0120 20);
 
@@ -127,14 +123,6 @@
   --input: oklch(0.8900 0.0120 50);
   --ring: oklch(0.3600 0.1050 10);
 
-  --chart-1: oklch(0.3600 0.1050 10);
-  --chart-2: oklch(0.5200 0.1400 15);
-  --chart-3: oklch(0.6800 0.1100 25);
-  --chart-4: oklch(0.8200 0.0700 40);
-  --chart-5: oklch(0.2800 0.0800 10);
-
-  --radius: 0.5rem;
-
   --sidebar: oklch(0.9880 0.0045 85);
   --sidebar-foreground: oklch(0.2300 0.0120 20);
   --sidebar-primary: oklch(0.3600 0.1050 10);
@@ -144,76 +132,55 @@
   --sidebar-border: oklch(0.9100 0.0100 50);
   --sidebar-ring: oklch(0.3600 0.1050 10);
 
-  --shadow-color: oklch(0 0 0);
+  --radius: 0.5rem;
   --tracking-normal: 0em;
-
-  --shadow-2xs: none;
-  --shadow-xs: none;
-  --shadow-sm: none;
-  --shadow: none;
-  --shadow-md: none;
-  --shadow-lg: none;
-  --shadow-xl: none;
-  --shadow-2xl: none;
 }
 
+/* =========================================================
+   PREMIUM DARK MODE (Charcoal & Warm Tones)
+   ========================================================= */
 .dark {
   color-scheme: dark;
 
-  --background: oklch(0.1600 0.0030 20);
-  --foreground: oklch(0.9500 0.0050 80);
+  /* Changed from pure black to a premium warm dark gray */
+  --background: oklch(0.1800 0.0050 20);
+  --foreground: oklch(0.9400 0.0080 80);
 
-  --card: oklch(0.2000 0.0040 20);
-  --card-foreground: oklch(0.9500 0.0050 80);
+  /* Slightly lighter surfaces for cards */
+  --card: oklch(0.2100 0.0060 20);
+  --card-foreground: oklch(0.9400 0.0080 80);
 
-  --popover: oklch(0.2100 0.0045 20);
-  --popover-foreground: oklch(0.9500 0.0050 80);
+  --popover: oklch(0.2200 0.0060 20);
+  --popover-foreground: oklch(0.9400 0.0080 80);
 
-  --primary: oklch(0.7600 0.1000 10);
-  --primary-foreground: oklch(0.1900 0.0300 10);
+  /* Lighter, more elegant burgundy for dark mode */
+  --primary: oklch(0.5500 0.1200 10);
+  --primary-foreground: oklch(0.9800 0.0050 85);
 
   --secondary: oklch(0.2600 0.0150 12);
   --secondary-foreground: oklch(0.9000 0.0400 10);
 
-  --muted: oklch(0.2300 0.0040 20);
-  --muted-foreground: oklch(0.7400 0.0060 40);
+  --muted: oklch(0.2500 0.0050 20);
+  --muted-foreground: oklch(0.7000 0.0100 40);
 
-  --accent: oklch(0.2600 0.0070 15);
-  --accent-foreground: oklch(0.9500 0.0050 80);
+  --accent: oklch(0.2800 0.0080 15);
+  --accent-foreground: oklch(0.9400 0.0080 80);
 
   --destructive: oklch(0.6500 0.2000 27);
   --destructive-foreground: oklch(1 0 0);
 
-  --border: oklch(0.2900 0.0050 20);
-  --input: oklch(0.3300 0.0050 20);
-  --ring: oklch(0.7600 0.1000 10);
+  --border: oklch(0.3000 0.0060 20);
+  --input: oklch(0.3000 0.0060 20);
+  --ring: oklch(0.5500 0.1200 10);
 
-  --chart-1: oklch(0.7600 0.1000 10);
-  --chart-2: oklch(0.6200 0.1300 15);
-  --chart-3: oklch(0.4800 0.1100 12);
-  --chart-4: oklch(0.8300 0.0700 30);
-  --chart-5: oklch(0.9000 0.0500 40);
-
-  --radius: 0.5rem;
-
-  --sidebar: oklch(0.1800 0.0035 20);
-  --sidebar-foreground: oklch(0.9500 0.0050 80);
-  --sidebar-primary: oklch(0.7600 0.1000 10);
-  --sidebar-primary-foreground: oklch(0.1900 0.0300 10);
-  --sidebar-accent: oklch(0.2600 0.0070 15);
-  --sidebar-accent-foreground: oklch(0.9500 0.0050 80);
-  --sidebar-border: oklch(0.2900 0.0050 20);
-  --sidebar-ring: oklch(0.7600 0.1000 10);
-
-  --shadow-color: oklch(0 0 0);
-  --shadow-2xs: none;
-  --shadow-xs: none;
-  --shadow-sm: none;
-  --shadow: none;
-  --shadow-md: none;
-  --shadow-lg: none;
-  --shadow-xl: none;
-  --shadow-2xl: none;
+  --sidebar: oklch(0.1900 0.0050 20);
+  --sidebar-foreground: oklch(0.9400 0.0080 80);
+  --sidebar-primary: oklch(0.5500 0.1200 10);
+  --sidebar-primary-foreground: oklch(0.9800 0.0050 85);
+  --sidebar-accent: oklch(0.2600 0.0080 15);
+  --sidebar-accent-foreground: oklch(0.9400 0.0080 80);
+  --sidebar-border: oklch(0.3000 0.0060 20);
+  --sidebar-ring: oklch(0.5500 0.1200 10);
 }
 
 @layer base {
@@ -311,13 +278,7 @@
   border: none;
 }
 
-/* =========================================================
-   STRICT FLAT UI RESET
-   Removes shadows and glow filters from images, cards,
-   buttons and pseudo-elements. Does not remove gradients,
-   overlays or darkening baked into the image itself.
-   ========================================================= */
-
+/* STRICT FLAT UI RESET */
 *,
 *::before,
 *::after {
@@ -325,7 +286,6 @@
   text-shadow: none !important;
 }
 
-/* Remove CSS filter-based glows and drop shadows. */
 img,
 picture,
 video,
@@ -339,33 +299,26 @@ svg,
   box-shadow: none !important;
 }
 
-/* Images stay transparent outside their actual pixels. */
 img {
   background-color: transparent;
   transform: none;
 }
 
-/* Keep image wrapper stacking predictable. */
 [data-nextjs-image-wrapper],
 .relative.overflow-hidden {
   isolation: isolate;
 }
 
-/* Restore a visible keyboard focus indicator after shadow reset. */
 :focus-visible {
   outline: 2px solid var(--ring) !important;
   outline-offset: 2px;
 }
 
-/* Do not show focus outlines for ordinary pointer clicks. */
 :focus:not(:focus-visible) {
   outline: none;
 }
 
-/* =========================================================
-   URDU FONT AND TYPOGRAPHY
-   ========================================================= */
-
+/* URDU FONT AND TYPOGRAPHY */
 [lang="ur"],
 [lang="ur"] * {
   font-family: var(--font-nastaliq), var(--font-gulzar),
@@ -405,10 +358,7 @@ button[lang="ur"] * {
   line-height: 1.8;
 }
 
-/* =========================================================
-   ARABIC FONT AND TYPOGRAPHY
-   ========================================================= */
-
+/* ARABIC FONT AND TYPOGRAPHY */
 [lang="ar"],
 [lang="ar"] * {
   font-family: var(--font-naskh), var(--font-amiri),
