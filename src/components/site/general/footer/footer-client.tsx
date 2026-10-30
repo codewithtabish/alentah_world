@@ -48,12 +48,12 @@ export function FooterClient({ categories, languages }: FooterClientProps) {
   ];
 
   const companyPages = [
-    { name: "About Us", href: "/en/about" },
-    { name: "Contact Us", href: "/en/contact" },
-    { name: "Advertise With Us", href: "/en/advertise" },
-    { name: "Write for Us", href: "/en/write-for-us" },
-    { name: "Privacy Policy", href: "/en/privacy" },
-    { name: "Terms and Conditions", href: "/en/terms" },
+    { name: "About Us", href: "/about" },
+    { name: "Contact Us", href: "/contact" },
+    { name: "Advertise With Us", href: "/advertise" },
+    { name: "Write for Us", href: "/write-for-us" },
+    { name: "Privacy Policy", href: "/privacy" },
+    { name: "Terms and Conditions", href: "/terms" },
   ];
 
   return (
@@ -203,10 +203,10 @@ export function FooterClient({ categories, languages }: FooterClientProps) {
             © 2026 Alentah World. All rights reserved.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
-             <Link href="/en/privacy" className={cn("text-xs text-muted-foreground hover:text-foreground", fontClass)}>Privacy Policy</Link>
-             <Link href="/en/terms" className={cn("text-xs text-muted-foreground hover:text-foreground", fontClass)}>Terms and Conditions</Link>
-             <Link href="/en/cookie" className={cn("text-xs text-muted-foreground hover:text-foreground", fontClass)}>Cookie Policy</Link>
-             <Link href="/en/sitemap" className={cn("text-xs text-muted-foreground hover:text-foreground", fontClass)}>Sitemap</Link>
+             <Link href="/privacy" className={cn("text-xs text-muted-foreground hover:text-foreground", fontClass)}>Privacy Policy</Link>
+             <Link href="/terms" className={cn("text-xs text-muted-foreground hover:text-foreground", fontClass)}>Terms and Conditions</Link>
+             <Link href="/cookie" className={cn("text-xs text-muted-foreground hover:text-foreground", fontClass)}>Cookie Policy</Link>
+             <Link href="/sitemap" className={cn("text-xs text-muted-foreground hover:text-foreground", fontClass)}>Sitemap</Link>
           </div>
         </div>
 
