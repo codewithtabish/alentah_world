@@ -18,13 +18,15 @@ interface FooterClientProps {
 }
 
 export function FooterClient({ categories, languages }: FooterClientProps) {
-  // Force English typography and LTR direction for the entire footer
   const fontClass = "font-sans";
   const titleFont = "font-serif";
   
-  // Get all active categories for English
-  const activeCategories = categories.filter(
+  // Separate categories by language
+  const englishCategories = categories.filter(
     (c) => c.language.code === "en" && c.isActive
+  );
+  const urduCategories = categories.filter(
+    (c) => c.language.code === "ur" && c.isActive
   );
 
   const [email, setEmail] = React.useState("");
@@ -65,24 +67,57 @@ export function FooterClient({ categories, languages }: FooterClientProps) {
           
           {/* COLUMN 1: Brand & Social */}
           <div className="lg:col-span-3 flex flex-col items-center md:items-start gap-6 text-center md:text-left">
-            
-            {/* 👇 LOGO MADE LARGER (h-24) */}
             <Link 
               href="/en" 
-              className="group flex items-center gap-2 w-fit transition-opacity hover:opacity-80"
+              aria-label="Alentah World - Home"
+              className="group block w-fit transition-opacity hover:opacity-80"
             >
-              <Image
-                src="/images/logo.png" // Ensure this path is correct
-                alt="Alentah World"
-                width={2172}
-                height={724}
-                priority
-                sizes="(min-width: 640px) 280px, 240px"
-                className="h-24 w-auto object-contain dark:brightness-0 dark:invert"
-              />
+              {/* SMALL DEVICES (< 640px): brand icon */}
+              <span className="block sm:hidden">
+                {/* Light mode icon (maroon) */}
+                <Image
+                  src="/images/logos/icon-maroon-1024.png"
+                  alt="Alentah World"
+                  width={1024}
+                  height={1024}
+                  sizes="80px"
+                  className="block size-20 object-contain dark:hidden"
+                />
+                {/* Dark mode icon (white) */}
+                <Image
+                  src="/images/logos/icon-white-1024.png"
+                  alt="Alentah World"
+                  width={1024}
+                  height={1024}
+                  sizes="80px"
+                  className="hidden size-20 object-contain dark:block"
+                />
+              </span>
+
+              {/* LARGE DEVICES (>= 640px): full logo */}
+              <span className="hidden w-65 sm:block">
+                {/* Light mode logo (maroon) */}
+                <Image
+                  src="/images/logos/light.png"
+                  alt="Alentah World"
+                  width={3000}
+                  height={1000}
+                  sizes="260px"
+                  className="block h-auto w-full object-contain dark:hidden"
+                />
+                {/* Dark mode logo (white) */}
+                <Image
+                  src="/images/logos/dark.png"
+                  alt="Alentah World"
+                  width={3000}
+                  height={1000}
+                  sizes="260px"
+                  className="hidden h-auto w-full object-contain dark:block"
+                />
+              </span>
             </Link>
 
-            <p className={cn("text-sm leading-relaxed text-muted-foreground mt-2 max-w-xs", fontClass)}>
+            <p className={cn("text-sm leading-relaxed text-muted-foreground max-w-xs", fontClass)}>
               Independent Journalism. Global Perspective.<br/>
               <em>A More Thoughtful Tomorrow.</em>
             </p>
@@ -100,14 +135,16 @@ export function FooterClient({ categories, languages }: FooterClientProps) {
             </div>
           </div>
 
-          {/* COLUMN 2: Explore Categories */}
+          {/* COLUMN 2: Explore Categories (English + Urdu) */}
           <div className="lg:col-span-3 flex flex-col items-center md:items-start text-center md:text-left">
             <h3 className={cn("mb-6 text-lg font-bold text-foreground border-b-2 border-foreground/10 pb-2 inline-block", titleFont)}>
               Explore Categories
             </h3>
-            <ul className="flex flex-col gap-3 w-full">
-              {activeCategories.slice(0, 6).map((cat) => (
-                <li key={cat.id}>
+            <ul className="flex flex-col gap-3 w-full items-center md:items-start">
+              
+              {/* English Categories */}
+              {englishCategories.slice(0, 3).map((cat) => (
+                <li key={cat.id} className="w-full">
                   <Link 
                     href={`/en/${cat.slug}`}
                     className={cn("group flex items-center justify-center md:justify-start gap-2 text-sm text-muted-foreground hover:text-primary transition-colors", fontClass)}
@@ -117,22 +154,41 @@ export function FooterClient({ categories, languages }: FooterClientProps) {
                   </Link>
                 </li>
               ))}
+
+              {/* Divider */}
+              <li className="h-px w-full bg-border/50 my-1" />
+
+              {/* Urdu Categories (Centered, No dir="rtl") */}
+              {urduCategories.slice(0, 3).map((cat) => (
+                <li key={cat.id} className="w-full">
+                  <Link 
+                    href={`/ur/${cat.slug}`}
+                    className="group flex items-center justify-center md:justify-start gap-2 text-sm text-muted-foreground hover:text-primary transition-colors font-urdu-text"
+                  >
+                    <span className="size-1.5 rounded-full bg-primary/40 group-hover:bg-primary hidden md:block" />
+                    {cat.name}
+                  </Link>
+                </li>
+              ))}
+
             </ul>
           </div>
 
-          {/* COLUMN 3: Explore Subcategories */}
+          {/* COLUMN 3: Explore Subcategories (English + Urdu) */}
           <div className="lg:col-span-3 flex flex-col items-center md:items-start text-center md:text-left">
             <h3 className={cn("mb-6 text-lg font-bold text-foreground border-b-2 border-foreground/10 pb-2 inline-block", titleFont)}>
               Explore Subcategories
             </h3>
-            <div className="flex flex-col gap-4 w-full">
-               {activeCategories.filter(c => c.subcategories.length > 0).slice(0, 2).map((cat) => (
+            <div className="flex flex-col gap-4 w-full items-center md:items-start">
+               
+               {/* English Subcategories */}
+               {englishCategories.filter(c => c.subcategories.length > 0).slice(0, 1).map((cat) => (
                  <div key={cat.id} className="flex flex-col items-center md:items-start gap-2 w-full">
                     <p className={cn("text-sm font-bold text-foreground flex items-center gap-1.5", fontClass)}>
                       <ChevronRight className="size-3 text-muted-foreground hidden md:block" /> {cat.name}
                     </p>
                     <ul className="flex flex-col items-center md:items-start gap-2 w-full md:ms-4 md:border-s md:border-border/50 md:ps-3">
-                      {cat.subcategories.slice(0, 4).map((sub) => (
+                      {cat.subcategories.slice(0, 3).map((sub) => (
                         <li key={sub.id}>
                           <Link 
                             href={`/en/${cat.slug}/${sub.slug}`}
@@ -145,6 +201,28 @@ export function FooterClient({ categories, languages }: FooterClientProps) {
                     </ul>
                  </div>
                ))}
+
+               {/* Urdu Subcategories (Centered, No dir="rtl") */}
+               {urduCategories.filter(c => c.subcategories.length > 0).slice(0, 1).map((cat) => (
+                 <div key={cat.id} className="flex flex-col items-center md:items-start gap-2 w-full">
+                    <p className="text-sm font-bold text-foreground flex items-center gap-1.5 font-urdu-display">
+                      <ChevronRight className="size-3 text-muted-foreground hidden md:block" /> {cat.name}
+                    </p>
+                    <ul className="flex flex-col items-center md:items-start gap-2 w-full md:ms-4 md:border-s md:border-border/50 md:ps-3">
+                      {cat.subcategories.slice(0, 3).map((sub) => (
+                        <li key={sub.id}>
+                          <Link 
+                            href={`/ur/${cat.slug}/${sub.slug}`}
+                            className="text-[13px] text-muted-foreground hover:text-primary transition-colors flex items-center justify-center md:justify-start gap-2 font-urdu-text"
+                          >
+                            <ChevronRight className="size-2.5 opacity-50 hidden md:block" /> {sub.name}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                 </div>
+               ))}
+
             </div>
           </div>
 

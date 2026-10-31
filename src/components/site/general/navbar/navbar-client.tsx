@@ -39,27 +39,66 @@ function getLanguageFromPathname(pathname: string) {
 }
 
 // ============================================================
-// LOGO — ALENTAH WORLD (image: /public/images/logo.png, 2172×724)
-// - Fixed height, auto width -> keeps the 3:1 ratio, never stretches
-// - Turns white in dark mode so the maroon artwork stays readable
-// - Negative start margin cancels the transparent padding inside the PNG
+// LOGO — ALENTAH WORLD
+// SMALL DEVICES (< 640px) -> square brand icon (1024×1024)
+//   /public/images/logos/icon-maroon-1024.png -> light mode
+//   /public/images/logos/icon-white-1024.png  -> dark mode
+// LARGE DEVICES (>= 640px) -> full logo (3000×1000, 3:1)
+//   /public/images/logos/light.png -> light mode
+//   /public/images/logos/dark.png  -> dark mode
+// - Fixed height, auto width -> keeps the ratio, never stretches
+// - Negative start margin cancels the transparent padding inside the PNGs
 // ============================================================
 function Logo() {
   return (
     <Link
       href="/"
       aria-label="Alentah World — Home"
-      className="group -ms-3 flex shrink-0 items-center no-underline transition-opacity duration-200 hover:opacity-85 sm:-ms-5"
+      className="group -ms-1 flex shrink-0 items-center no-underline transition-opacity duration-200 hover:opacity-85 sm:-ms-4"
     >
-      <Image
-        src="/images/logo.png"
-        alt="Alentah World"
-        width={2172}
-        height={724}
-        priority
-        sizes="(min-width: 640px) 216px, 192px"
-        className="h-16 w-auto select-none object-contain transition-transform duration-300 group-hover:scale-[1.02] sm:h-18 dark:brightness-0 dark:invert"
-      />
+      {/* SMALL DEVICES: brand icon */}
+      <span className="flex items-center sm:hidden">
+        {/* Light mode icon (maroon) */}
+        <Image
+          src="/images/logos/icon-maroon-1024.png"
+          alt="Alentah World"
+          width={1024}
+          height={1024}
+          sizes="56px"
+          className="block size-14 select-none object-contain transition-transform duration-300 group-hover:scale-[1.04] dark:hidden"
+        />
+        {/* Dark mode icon (white) */}
+        <Image
+          src="/images/logos/icon-white-1024.png"
+          alt="Alentah World"
+          width={1024}
+          height={1024}
+          sizes="56px"
+          className="hidden size-14 select-none object-contain transition-transform duration-300 group-hover:scale-[1.04] dark:block"
+        />
+      </span>
+
+      {/* LARGE DEVICES: full logo */}
+      <span className="hidden items-center sm:flex">
+        {/* Light mode logo (maroon) */}
+        <Image
+          src="/images/logos/light.png"
+          alt="Alentah World"
+          width={3000}
+          height={1000}
+          sizes="240px"
+          className="block h-20 w-auto select-none object-contain transition-transform duration-300 group-hover:scale-[1.02] dark:hidden"
+        />
+        {/* Dark mode logo (white) */}
+        <Image
+          src="/images/logos/dark.png"
+          alt="Alentah World"
+          width={3000}
+          height={1000}
+          sizes="240px"
+          className="hidden h-20 w-auto select-none object-contain transition-transform duration-300 group-hover:scale-[1.02] dark:block"
+        />
+      </span>
     </Link>
   );
 }

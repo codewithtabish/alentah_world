@@ -24,19 +24,19 @@ const IMAGES = {
 const TOPICS = [
   {
     title: "General Enquiries",
-    desc: "For general questions, feedback, suggestions, and other enquiries.",
+    desc: "Questions, feedback and suggestions.",
   },
   {
-    title: "Editorial & Story Submissions",
-    desc: "For story ideas, article submissions, corrections, and editorial matters.",
+    title: "Editorial & Stories",
+    desc: "Story ideas, submissions and corrections.",
   },
   {
     title: "Advertising & Partnerships",
-    desc: "For advertising opportunities, sponsored content enquiries, and commercial collaborations.",
+    desc: "Sponsorships and commercial collaborations.",
   },
   {
     title: "Technical Support",
-    desc: "For website-related issues, accessibility concerns, or technical problems.",
+    desc: "Website issues and accessibility concerns.",
   },
 ];
 
@@ -88,6 +88,12 @@ const FAQ_RIGHT = [
 const eyebrow =
   "mb-3 block text-[11px] font-bold uppercase tracking-[0.2em] text-foreground/70";
 
+/*
+ * Keeps text clean even if a global style justifies or hyphenates <p>.
+ * The trailing "!" makes each utility important so it always wins.
+ */
+const cleanText = "text-start! hyphens-none! wrap-normal! break-normal! text-pretty";
+
 function FaqList({ items }: { items: { q: string; a: React.ReactNode }[] }) {
   return (
     <div className="flex flex-col border-t border-border">
@@ -100,7 +106,12 @@ function FaqList({ items }: { items: { q: string; a: React.ReactNode }[] }) {
               aria-hidden="true"
             />
           </summary>
-          <div className="pb-4 pe-8 text-[13px] leading-relaxed text-muted-foreground">
+          <div
+            className={cn(
+              "pb-4 pe-8 text-[13px] leading-relaxed text-muted-foreground",
+              cleanText,
+            )}
+          >
             {item.a}
           </div>
         </details>
@@ -148,7 +159,12 @@ export function ContactContent() {
             Every Good Conversation Starts Somewhere.
           </h1>
 
-          <p className="mb-8 max-w-md text-base leading-relaxed text-foreground/75">
+          <p
+            className={cn(
+              "mb-8 max-w-md text-base leading-relaxed text-foreground/75",
+              cleanText,
+            )}
+          >
             Have a story to share, a question to ask, an idea to explore, or an
             opportunity to discuss? We&apos;d love to hear from you.
           </p>
@@ -177,31 +193,53 @@ export function ContactContent() {
       {/* ============================================================ */}
       {/* 2. HOW CAN WE HELP                                           */}
       {/* ============================================================ */}
-      <section className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-8">
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:col-span-5">
-          <div>
-            <span className={eyebrow}>Our contact information</span>
-            <h2 className="font-serif text-3xl font-bold leading-[1.1] tracking-tight text-primary sm:text-4xl">
-              How Can We Help?
-            </h2>
-            <span aria-hidden="true" className="mt-6 block h-px w-14 bg-foreground/25" />
-          </div>
-          <p className="text-[13px] leading-relaxed text-muted-foreground sm:pt-7">
-            Whether you&apos;re reaching out about our journalism, sharing
-            feedback, or exploring a partnership, we&apos;re here to listen.
+      <section className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-12">
+        {/* Intro: eyebrow, heading, rule, short line */}
+        <div className="flex flex-col lg:col-span-4">
+          <span className={eyebrow}>Our contact information</span>
+          <h2 className="font-serif text-3xl font-bold leading-[1.1] tracking-tight text-primary sm:text-4xl">
+            How Can
+            <br className="hidden sm:block" /> We Help?
+          </h2>
+          <span aria-hidden="true" className="my-6 block h-px w-14 bg-foreground/25" />
+          <p
+            className={cn(
+              "max-w-68 text-[13.5px] leading-[1.75] text-muted-foreground",
+              cleanText,
+            )}
+          >
+            Our journalism, your feedback or a partnership: we&apos;re here to
+            listen.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:col-span-7 lg:grid-cols-4 lg:gap-0">
-          {TOPICS.map((topic) => (
+        {/* Topics */}
+        <div className="grid grid-cols-1 gap-y-8 sm:grid-cols-2 lg:col-span-8 xl:grid-cols-4 xl:gap-y-0">
+          {TOPICS.map((topic, index) => (
             <div
               key={topic.title}
-              className="flex min-w-0 flex-col gap-2.5 lg:border-s lg:border-border lg:px-5"
+              className="group/topic flex min-w-0 flex-col gap-2.5 border-s border-border ps-5 pe-4 transition-colors duration-300 hover:border-primary/60 xl:py-1"
             >
-              <h3 className="font-serif text-lg font-bold leading-snug text-primary">
+              <span
+                aria-hidden="true"
+                className="font-serif text-[11px] font-bold tracking-[0.18em] text-foreground/40 transition-colors duration-300 group-hover/topic:text-primary"
+              >
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <h3
+                className={cn(
+                  "font-serif text-[1.05rem] font-bold leading-snug text-primary",
+                  cleanText,
+                )}
+              >
                 {topic.title}
               </h3>
-              <p className="text-[12.5px] leading-relaxed text-muted-foreground">
+              <p
+                className={cn(
+                  "text-[13px] leading-[1.65] text-muted-foreground",
+                  cleanText,
+                )}
+              >
                 {topic.desc}
               </p>
             </div>
@@ -230,7 +268,12 @@ export function ContactContent() {
             <h2 className="mb-3 font-serif text-2xl font-bold leading-tight sm:text-[1.7rem]">
               Share Your Story
             </h2>
-            <p className="mb-5 max-w-[16rem] text-[13px] leading-relaxed text-white/80">
+            <p
+              className={cn(
+                "mb-5 max-w-[16rem] text-[13px] leading-relaxed text-white/80",
+                cleanText,
+              )}
+            >
               We&apos;re always looking for fresh perspectives, compelling
               stories and new voices.
             </p>
@@ -256,7 +299,12 @@ export function ContactContent() {
           <h2 className="mb-3 font-serif text-3xl font-bold leading-tight text-primary">
             Get in Touch
           </h2>
-          <p className="mb-7 max-w-sm text-[13px] leading-relaxed text-muted-foreground">
+          <p
+            className={cn(
+              "mb-7 max-w-sm text-[13px] leading-relaxed text-muted-foreground",
+              cleanText,
+            )}
+          >
             Tell us a little about what brings you here. We&apos;ll make sure
             your message reaches the appropriate team.
           </p>
@@ -283,7 +331,7 @@ export function ContactContent() {
             <h2 className="font-serif text-2xl font-bold leading-tight text-primary">
               Independent Global Journalism
             </h2>
-            <p className="text-[13px] leading-relaxed text-muted-foreground">
+            <p className={cn("text-[13px] leading-relaxed text-muted-foreground", cleanText)}>
               We&apos;re building a more informed, more connected world through
               independent journalism and diverse perspectives.
             </p>
