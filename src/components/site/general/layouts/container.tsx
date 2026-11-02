@@ -77,9 +77,9 @@ export function Container({
         <div
           className={cn(
             "absolute left-1/2 top-[-15%] -translate-x-1/2",
-            "h-[400px] w-[400px]",
-            "sm:h-[550px] sm:w-[550px]",
-            "lg:h-[700px] lg:w-[700px]",
+            "h-100 w-100",
+            "sm:h-137.5 sm:w-137.5",
+            "lg:h-175 lg:w-175",
             "rounded-full blur-[120px]",
             "bg-[radial-gradient(circle,color-mix(in_oklab,var(--primary)_3%,transparent),transparent_70%)]",
             "dark:bg-[radial-gradient(circle,color-mix(in_oklab,var(--primary)_8%,transparent),transparent_70%)]",
@@ -90,9 +90,9 @@ export function Container({
         <div
           className={cn(
             "absolute bottom-[-20%] right-[-10%]",
-            "h-[350px] w-[350px]",
-            "sm:h-[450px] sm:w-[450px]",
-            "lg:h-[600px] lg:w-[600px]",
+            "h-87.5 w-87.5",
+            "sm:h-112.5 sm:w-112.5",
+            "lg:h-150 lg:w-150",
             "rounded-full blur-[140px]",
             "bg-[radial-gradient(circle,color-mix(in_oklab,var(--primary)_2%,transparent),transparent_70%)]",
             "dark:bg-[radial-gradient(circle,color-mix(in_oklab,var(--primary)_5%,transparent),transparent_70%)]",
