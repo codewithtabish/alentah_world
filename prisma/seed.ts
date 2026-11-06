@@ -1,7 +1,5 @@
-
 import "dotenv/config";
 import prisma from "@/lib/clients/prisma-client";
-
 
 const languages = [
   {
@@ -30,6 +28,33 @@ const languages = [
     isActive: true,
     isDefault: false,
     sortOrder: 3,
+  },
+  {
+    code: "de",
+    name: "German",
+    nativeName: "Deutsch",
+    direction: "LTR" as const,
+    isActive: true,
+    isDefault: false,
+    sortOrder: 4,
+  },
+  {
+    code: "hi",
+    name: "Hindi",
+    nativeName: "हिन्दी",
+    direction: "LTR" as const,
+    isActive: true,
+    isDefault: false,
+    sortOrder: 5,
+  },
+  {
+    code: "zh",
+    name: "Chinese",
+    nativeName: "中文",
+    direction: "LTR" as const,
+    isActive: true,
+    isDefault: false,
+    sortOrder: 6,
   },
 ];
 
@@ -64,6 +89,7 @@ async function main() {
         nativeName: language.nativeName,
         direction: language.direction,
         isActive: language.isActive,
+        isDefault: language.isDefault,
         sortOrder: language.sortOrder,
       },
       create: language,
@@ -72,7 +98,7 @@ async function main() {
     console.log(`Seeded language: ${language.name}`);
   }
 
-  console.log("All languages seeded successfully.");
+  console.log("All six ENEENA languages seeded successfully.");
 }
 
 main()
