@@ -1,25 +1,28 @@
-// src/components/site/pages/contact/contact-content.tsx
-// Server component: no state, no effects. Only <ContactForm /> is client-side.
+
+import type { ReactNode } from "react";
 
 import Image from "next/image";
 import Link from "next/link";
+
 import { ArrowRight, Plus } from "lucide-react";
+
 import { cn } from "@/lib/utils";
+
 import { ContactForm } from "./contact-form";
 
-/* ------------------------------------------------------------------ */
-/* Images                                                              */
-/* ------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/* Images                                                                     */
+/* -------------------------------------------------------------------------- */
 
 const IMAGES = {
-  cover: "/images/contact/contact_cover.webp", // 1920x640 (3:1)
-  story: "/images/contact/share_story.webp", // 800x1000 (4:5)
-  mission: "/images/contact/our_mission.webp", // 900x600 (3:2)
+  cover: "/images/contact/contact_cover.webp",
+  story: "/images/contact/share_story.webp",
+  mission: "/images/contact/our_mission.webp",
 } as const;
 
-/* ------------------------------------------------------------------ */
-/* Content                                                             */
-/* ------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/* Content                                                                    */
+/* -------------------------------------------------------------------------- */
 
 const TOPICS = [
   {
@@ -47,10 +50,10 @@ const FAQ_LEFT = [
   },
   {
     q: "Do you accept guest contributions?",
-    a: "We welcome fresh perspectives. Please send a short pitch through the form before submitting a full piece, and our editorial team will take a look.",
+    a: "We welcome fresh perspectives and thoughtful contributions. Please send a short pitch through the form before submitting a full piece, and our editorial team will review it.",
   },
   {
-    q: "How can I advertise on Alentah World?",
+    q: "How can I advertise on ENEENA?",
     a: (
       <>
         Visit our{" "}
@@ -81,31 +84,44 @@ const FAQ_RIGHT = [
   },
 ];
 
-/* ------------------------------------------------------------------ */
-/* Shared bits                                                         */
-/* ------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/* Shared styles                                                              */
+/* -------------------------------------------------------------------------- */
 
 const eyebrow =
   "mb-3 block text-[11px] font-bold uppercase tracking-[0.2em] text-foreground/70";
 
-/*
- * Keeps text clean even if a global style justifies or hyphenates <p>.
- * The trailing "!" makes each utility important so it always wins.
- */
-const cleanText = "text-start! hyphens-none! wrap-normal! break-normal! text-pretty";
+const cleanText =
+  "text-start! hyphens-none! wrap-normal! break-normal! text-pretty";
 
-function FaqList({ items }: { items: { q: string; a: React.ReactNode }[] }) {
+/* -------------------------------------------------------------------------- */
+/* FAQ component                                                              */
+/* -------------------------------------------------------------------------- */
+
+function FaqList({
+  items,
+}: {
+  items: {
+    q: string;
+    a: ReactNode;
+  }[];
+}) {
   return (
     <div className="flex flex-col border-t border-border">
       {items.map((item) => (
-        <details key={item.q} className="group border-b border-border">
+        <details
+          key={item.q}
+          className="group border-b border-border"
+        >
           <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-4 text-[13px] font-semibold text-foreground transition-colors marker:content-none hover:text-primary [&::-webkit-details-marker]:hidden">
             {item.q}
+
             <Plus
               className="size-4 shrink-0 text-foreground/70 transition-transform duration-300 group-open:rotate-45"
               aria-hidden="true"
             />
           </summary>
+
           <div
             className={cn(
               "pb-4 pe-8 text-[13px] leading-relaxed text-muted-foreground",
@@ -120,18 +136,20 @@ function FaqList({ items }: { items: { q: string; a: React.ReactNode }[] }) {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* Page                                                                */
-/* ------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/* Contact page content                                                       */
+/* -------------------------------------------------------------------------- */
 
 export function ContactContent() {
   return (
     <div className="flex min-w-0 flex-col gap-16 overflow-x-clip pb-16 lg:gap-24 lg:pb-24">
-      {/* ============================================================ */}
-      {/* 1. HERO                                                      */}
-      {/* ============================================================ */}
+      {/* ================================================================== */}
+      {/* 1. HERO                                                            */}
+      {/* ================================================================== */}
+
       <section className="relative isolate overflow-hidden">
-        {/* Image: fades into the page on the left (desktop) */}
+        {/* Hero image */}
+
         <div className="absolute inset-y-0 inset-e-0 -z-10 w-full lg:w-[68%] lg:[-webkit-mask-image:linear-gradient(to_right,transparent_0%,rgba(0,0,0,0.55)_20%,black_50%)] lg:mask-[linear-gradient(to_right,transparent_0%,rgba(0,0,0,0.55)_20%,black_50%)]">
           <Image
             src={IMAGES.cover}
@@ -143,7 +161,8 @@ export function ContactContent() {
           />
         </div>
 
-        {/* Readability wash on small screens */}
+        {/* Readability overlay */}
+
         <div
           aria-hidden="true"
           className="absolute inset-0 -z-10 bg-background/80 lg:hidden"
@@ -152,7 +171,11 @@ export function ContactContent() {
         <div className="flex min-h-88 max-w-xl flex-col justify-center py-12 lg:min-h-100 lg:py-16">
           <span className="mb-5 flex items-center gap-4 text-[11px] font-bold uppercase tracking-[0.2em] text-foreground/70">
             Get in touch
-            <span aria-hidden="true" className="hidden h-px w-14 bg-foreground/25 sm:block" />
+
+            <span
+              aria-hidden="true"
+              className="hidden h-px w-14 bg-foreground/25 sm:block"
+            />
           </span>
 
           <h1 className="mb-5 text-balance font-serif text-4xl font-bold leading-[1.08] tracking-tight text-primary sm:text-5xl xl:text-[3.5rem]">
@@ -175,11 +198,13 @@ export function ContactContent() {
               className="group/btn inline-flex h-12 items-center gap-2.5 rounded-[3px] bg-primary px-6 text-[13px] font-bold text-primary-foreground shadow-lg shadow-primary/20 transition-colors duration-300 hover:bg-primary/90"
             >
               Send Us a Message
+
               <ArrowRight
                 className="size-4 transition-transform duration-300 group-hover/btn:translate-x-0.5"
                 aria-hidden="true"
               />
             </Link>
+
             <Link
               href="/advertise"
               className="inline-flex h-12 items-center rounded-[3px] border border-foreground/25 px-6 text-[13px] font-semibold text-foreground transition-colors duration-300 hover:border-primary hover:text-primary"
@@ -190,18 +215,26 @@ export function ContactContent() {
         </div>
       </section>
 
-      {/* ============================================================ */}
-      {/* 2. HOW CAN WE HELP                                           */}
-      {/* ============================================================ */}
+      {/* ================================================================== */}
+      {/* 2. HOW CAN WE HELP                                                 */}
+      {/* ================================================================== */}
+
       <section className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-12">
-        {/* Intro: eyebrow, heading, rule, short line */}
+        {/* Introduction */}
+
         <div className="flex flex-col lg:col-span-4">
           <span className={eyebrow}>Our contact information</span>
+
           <h2 className="font-serif text-3xl font-bold leading-[1.1] tracking-tight text-primary sm:text-4xl">
             How Can
             <br className="hidden sm:block" /> We Help?
           </h2>
-          <span aria-hidden="true" className="my-6 block h-px w-14 bg-foreground/25" />
+
+          <span
+            aria-hidden="true"
+            className="my-6 block h-px w-14 bg-foreground/25"
+          />
+
           <p
             className={cn(
               "max-w-68 text-[13.5px] leading-[1.75] text-muted-foreground",
@@ -213,7 +246,8 @@ export function ContactContent() {
           </p>
         </div>
 
-        {/* Topics */}
+        {/* Contact topics */}
+
         <div className="grid grid-cols-1 gap-y-8 sm:grid-cols-2 lg:col-span-8 xl:grid-cols-4 xl:gap-y-0">
           {TOPICS.map((topic, index) => (
             <div
@@ -226,6 +260,7 @@ export function ContactContent() {
               >
                 {String(index + 1).padStart(2, "0")}
               </span>
+
               <h3
                 className={cn(
                   "font-serif text-[1.05rem] font-bold leading-snug text-primary",
@@ -234,6 +269,7 @@ export function ContactContent() {
               >
                 {topic.title}
               </h3>
+
               <p
                 className={cn(
                   "text-[13px] leading-[1.65] text-muted-foreground",
@@ -247,11 +283,13 @@ export function ContactContent() {
         </div>
       </section>
 
-      {/* ============================================================ */}
-      {/* 3. STORY CARD + FORM + MISSION CARD                          */}
-      {/* ============================================================ */}
+      {/* ================================================================== */}
+      {/* 3. STORY CARD, CONTACT FORM AND MISSION CARD                       */}
+      {/* ================================================================== */}
+
       <section className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,3.1fr)_minmax(0,4.35fr)_minmax(0,2.5fr)] lg:items-stretch">
         {/* Share your story */}
+
         <article className="group relative isolate flex min-h-120 flex-col justify-end overflow-hidden rounded-lg lg:min-h-0">
           <Image
             src={IMAGES.story}
@@ -265,9 +303,11 @@ export function ContactContent() {
             <span className="mb-3 block text-[10px] font-bold uppercase tracking-[0.22em] text-white/70">
               For editorial
             </span>
+
             <h2 className="mb-3 font-serif text-2xl font-bold leading-tight sm:text-[1.7rem]">
               Share Your Story
             </h2>
+
             <p
               className={cn(
                 "mb-5 max-w-[16rem] text-[13px] leading-relaxed text-white/80",
@@ -277,11 +317,13 @@ export function ContactContent() {
               We&apos;re always looking for fresh perspectives, compelling
               stories and new voices.
             </p>
+
             <Link
               href="#contact-form"
               className="group/link inline-flex items-center gap-2 border-b border-white/70 pb-0.5 text-[13px] font-semibold text-white transition-opacity hover:opacity-75"
             >
               Submit a Story
+
               <ArrowRight
                 className="size-3.5 transition-transform duration-300 group-hover/link:translate-x-0.5"
                 aria-hidden="true"
@@ -290,15 +332,18 @@ export function ContactContent() {
           </div>
         </article>
 
-        {/* Form */}
+        {/* Contact form */}
+
         <div
           id="contact-form"
           className="scroll-mt-24 rounded-lg border border-border p-6 shadow-sm shadow-black/3 sm:p-8 lg:p-9"
         >
           <span className={eyebrow}>Write to us</span>
+
           <h2 className="mb-3 font-serif text-3xl font-bold leading-tight text-primary">
             Get in Touch
           </h2>
+
           <p
             className={cn(
               "mb-7 max-w-sm text-[13px] leading-relaxed text-muted-foreground",
@@ -313,6 +358,7 @@ export function ContactContent() {
         </div>
 
         {/* Our mission */}
+
         <article className="group flex flex-col overflow-hidden rounded-lg border border-border">
           <div className="relative aspect-3/2 w-full shrink-0 overflow-hidden bg-muted">
             <Image
@@ -328,18 +374,27 @@ export function ContactContent() {
             <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-foreground/70">
               Our mission
             </span>
+
             <h2 className="font-serif text-2xl font-bold leading-tight text-primary">
               Independent Global Journalism
             </h2>
-            <p className={cn("text-[13px] leading-relaxed text-muted-foreground", cleanText)}>
+
+            <p
+              className={cn(
+                "text-[13px] leading-relaxed text-muted-foreground",
+                cleanText,
+              )}
+            >
               We&apos;re building a more informed, more connected world through
               independent journalism and diverse perspectives.
             </p>
+
             <Link
               href="/about"
               className="group/link mt-auto inline-flex w-fit items-center gap-2 border-b border-primary pb-0.5 text-[13px] font-semibold text-primary transition-opacity hover:opacity-75"
             >
               Learn More
+
               <ArrowRight
                 className="size-3.5 transition-transform duration-300 group-hover/link:translate-x-0.5"
                 aria-hidden="true"
@@ -349,20 +404,33 @@ export function ContactContent() {
         </article>
       </section>
 
-      {/* ============================================================ */}
-      {/* 4. FAQ                                                       */}
-      {/* ============================================================ */}
+      {/* ================================================================== */}
+      {/* 4. FREQUENTLY ASKED QUESTIONS                                      */}
+      {/* ================================================================== */}
+
       <section className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-10">
+        {/* Heading */}
+
         <div className="lg:col-span-3">
-          <span className={eyebrow}>Frequently asked questions</span>
+          <span className={eyebrow}>
+            Frequently asked questions
+          </span>
+
           <h2 className="font-serif text-3xl font-bold leading-[1.1] tracking-tight text-primary sm:text-4xl">
             Quick Answers
           </h2>
-          <span aria-hidden="true" className="mt-6 block h-px w-14 bg-foreground/25" />
+
+          <span
+            aria-hidden="true"
+            className="mt-6 block h-px w-14 bg-foreground/25"
+          />
         </div>
 
-        <div className={cn("grid grid-cols-1 gap-x-12 gap-y-0 sm:grid-cols-2 lg:col-span-9")}>
+        {/* FAQ columns */}
+
+        <div className="grid grid-cols-1 gap-x-12 gap-y-0 sm:grid-cols-2 lg:col-span-9">
           <FaqList items={FAQ_LEFT} />
+
           <FaqList items={FAQ_RIGHT} />
         </div>
       </section>

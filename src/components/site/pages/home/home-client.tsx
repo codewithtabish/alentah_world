@@ -1,29 +1,41 @@
-// src/components/site/home/home-client.tsx
-// No "use client": this component has no state or effects, so it renders on
-// the server and ships no JavaScript for itself to the browser.
+// No "use client": no state or effects, so this renders on the server and
+// ships no JavaScript for itself.
 
 import Link from "next/link";
 import Image from "next/image";
 import { Clock, ArrowRight, ArrowUpRight, CalendarDays } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { HomeBlogItem } from "@/actions/articles/get-home-blogs";
+import type { HomeBlogItem } from "@/actions/articles/get-home-blogs";
 
 interface HomeClientProps {
   blogs: HomeBlogItem[];
 }
 
 const FALLBACK_AVATAR = "/placeholder-avatar.jpg";
+const FALLBACK_AUTHOR = "ENEENA Editorial Team";
 
-// Tiny inline placeholder: shows instantly while the real image loads.
 const BLUR = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
   `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="9" viewBox="0 0 16 9"><rect width="16" height="9" fill="#888" fill-opacity="0.35"/></svg>`,
 )}`;
 
 /* ------------------------------------------------------------------ */
+/* Editions (the six publishing languages)                             */
+/* ------------------------------------------------------------------ */
+
+const EDITIONS = [
+  { code: "en", name: "English", native: "English", dir: "ltr", font: "font-serif" },
+  { code: "ur", name: "Urdu", native: "اردو", dir: "rtl", font: "font-urdu-display" },
+  { code: "ar", name: "Arabic", native: "العربية", dir: "rtl", font: "font-arabic-display" },
+  { code: "de", name: "German", native: "Deutsch", dir: "ltr", font: "font-serif" },
+  { code: "hi", name: "Hindi", native: "हिन्दी", dir: "ltr", font: "font-hindi-display" },
+  { code: "zh", name: "Chinese", native: "中文", dir: "ltr", font: "font-chinese-display" },
+] as const;
+
+/* ------------------------------------------------------------------ */
 /* Helpers                                                             */
 /* ------------------------------------------------------------------ */
 
-function articleHref(blog: HomeBlogItem) {
+export function articleHref(blog: HomeBlogItem) {
   return `/${blog.language.code}/${blog.category.slug}/${blog.subcategory.slug}/${blog.slug}`;
 }
 
@@ -31,18 +43,32 @@ function isRtlBlog(blog: HomeBlogItem) {
   return blog.language.direction === "RTL";
 }
 
-// Serif for English, dedicated display fonts for Urdu / Arabic
+// Latin-script languages can use uppercase, tracking and animated underlines.
+// Urdu, Arabic, Hindi and Chinese must not (it breaks joining / glyph shapes).
+function isLatinBlog(blog: HomeBlogItem) {
+  return blog.language.code === "en" || blog.language.code === "de";
+}
+
 function getTitleFont(blog: HomeBlogItem) {
-  if (blog.language.code === "ur") return "font-urdu-display";
-  if (blog.language.code === "ar") return "font-arabic-display";
-  return "font-serif";
+  switch (blog.language.code) {
+    case "ur":
+      return "font-urdu-display";
+    case "ar":
+      return "font-arabic-display";
+    case "hi":
+      return "font-hindi-display";
+    case "zh":
+      return "font-chinese-display";
+    default:
+      return "font-serif";
+  }
 }
 
 function getAuthorName(blog: HomeBlogItem) {
   const full = [blog.author.firstName, blog.author.lastName]
     .filter(Boolean)
     .join(" ");
-  return blog.writtenBy || full || "The Insider";
+  return blog.writtenBy || full || FALLBACK_AUTHOR;
 }
 
 function getAuthorImage(blog: HomeBlogItem) {
@@ -50,16 +76,39 @@ function getAuthorImage(blog: HomeBlogItem) {
 }
 
 function getLanguageLabel(blog: HomeBlogItem) {
-  if (blog.language.code === "ur") return "اردو";
-  if (blog.language.code === "ar") return "العربية";
-  return blog.language.name;
+  switch (blog.language.code) {
+    case "ur":
+      return "اردو";
+    case "ar":
+      return "العربية";
+    case "de":
+      return "Deutsch";
+    case "hi":
+      return "हिन्दी";
+    case "zh":
+      return "中文";
+    default:
+      return blog.language.name;
+  }
 }
 
 function getReadingLabel(blog: HomeBlogItem, long = false) {
   if (!blog.readingTime) return null;
-  if (blog.language.code === "ur") return `${blog.readingTime} منٹ`;
-  if (blog.language.code === "ar") return `${blog.readingTime} دقائق`;
-  return long ? `${blog.readingTime} min read` : `${blog.readingTime} min`;
+  const n = blog.readingTime;
+  switch (blog.language.code) {
+    case "ur":
+      return `${n} منٹ`;
+    case "ar":
+      return `${n} دقائق`;
+    case "de":
+      return long ? `${n} Min. Lesezeit` : `${n} Min.`;
+    case "hi":
+      return `${n} मिनट`;
+    case "zh":
+      return `${n} 分钟`;
+    default:
+      return long ? `${n} min read` : `${n} min`;
+  }
 }
 
 // UTC + latin digits => identical output on server and client
@@ -68,14 +117,15 @@ function formatDate(value: Date | string | null, code: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return null;
 
-  const locale =
-    code === "ur"
-      ? "ur-PK-u-nu-latn"
-      : code === "ar"
-        ? "ar-u-nu-latn"
-        : "en-US";
+  const locales: Record<string, string> = {
+    ur: "ur-PK-u-nu-latn",
+    ar: "ar-u-nu-latn",
+    de: "de-DE",
+    hi: "hi-IN-u-nu-latn",
+    zh: "zh-CN",
+  };
 
-  return new Intl.DateTimeFormat(locale, {
+  return new Intl.DateTimeFormat(locales[code] ?? "en-US", {
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -83,9 +133,14 @@ function formatDate(value: Date | string | null, code: string) {
   }).format(date);
 }
 
+function toIso(value: Date | string | null) {
+  if (!value) return undefined;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
+}
+
 const pad = (n: number) => String(n).padStart(2, "0");
 
-// Animated underline (Latin only: Nastaliq/Arabic have tall line boxes)
 const UNDERLINE =
   "bg-[linear-gradient(currentColor,currentColor)] bg-[length:0%_1.5px] bg-left-bottom bg-no-repeat box-decoration-clone transition-[background-size] duration-500 ease-out [@media(hover:hover)]:group-hover:bg-[length:100%_1.5px]";
 
@@ -100,17 +155,16 @@ function LanguageBadge({
   blog: HomeBlogItem;
   small?: boolean;
 }) {
-  const rtl = isRtlBlog(blog);
+  const latin = isLatinBlog(blog);
 
   return (
     <span
       className={cn(
         "inline-flex items-center rounded-[3px] bg-primary font-bold text-primary-foreground shadow-md shadow-black/20",
-        // Latin only: uppercase + tracking breaks Arabic-script letter joining
-        rtl ? "leading-normal" : "uppercase leading-none tracking-[0.14em]",
+        latin ? "uppercase leading-none tracking-[0.14em]" : "leading-normal",
         small
-          ? "px-1.5 py-1 text-[9px] sm:px-2 sm:text-[10px]"
-          : "px-2.5 py-1.5 text-[10px]",
+          ? "px-1.5 py-1 text-[10px] sm:px-2 sm:text-[11px]"
+          : "px-2.5 py-1.5 text-[11px]",
       )}
     >
       {getLanguageLabel(blog)}
@@ -118,7 +172,6 @@ function LanguageBadge({
   );
 }
 
-// Round arrow chip that slides up on hover (desktop pointers only)
 function ArrowChip({ className }: { className?: string }) {
   return (
     <span
@@ -142,12 +195,12 @@ function CategoryLabel({
   blog: HomeBlogItem;
   className?: string;
 }) {
-  const rtl = isRtlBlog(blog);
+  const latin = isLatinBlog(blog);
   return (
     <span
       className={cn(
         "inline-flex items-center gap-2 text-[11px] font-bold text-primary",
-        rtl ? "leading-[1.9]" : "uppercase tracking-[0.18em]",
+        latin ? "uppercase tracking-[0.18em]" : "leading-[1.9]",
         className,
       )}
     >
@@ -164,9 +217,10 @@ function StoryMeta({
   blog: HomeBlogItem;
   tone?: "plain" | "overlay";
 }) {
-  const rtl = isRtlBlog(blog);
+  const latin = isLatinBlog(blog);
   const reading = getReadingLabel(blog, tone === "overlay");
   const date = formatDate(blog.publishedAt, blog.language.code);
+  const iso = toIso(blog.publishedAt);
   const name = getAuthorName(blog);
 
   const avatar = (
@@ -194,14 +248,13 @@ function StoryMeta({
       <div
         className={cn(
           "flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-white/90",
-          rtl && "leading-[1.9]",
+          !latin && "leading-[1.9]",
         )}
       >
         <span className="flex min-w-0 items-center gap-2.5">
           {avatar}
-          {/* py-1 + relaxed leading: truncate clips overflow, so give glyphs room */}
           <span className="truncate py-1 font-semibold leading-[1.9]">
-            By {name}
+            {name}
           </span>
         </span>
         {reading && (
@@ -213,7 +266,7 @@ function StoryMeta({
         {date && (
           <span className="inline-flex items-center gap-1.5 text-white/75">
             <CalendarDays className="size-3.5" aria-hidden="true" />
-            {date}
+            <time dateTime={iso}>{date}</time>
           </span>
         )}
       </div>
@@ -224,7 +277,7 @@ function StoryMeta({
     <div
       className={cn(
         "flex items-center justify-between gap-3 text-xs text-muted-foreground",
-        rtl && "leading-[1.9]",
+        !latin && "leading-[1.9]",
       )}
     >
       <span className="flex min-w-0 items-center gap-2">
@@ -232,7 +285,7 @@ function StoryMeta({
         <span
           className={cn(
             "truncate py-1 font-semibold text-foreground/80",
-            rtl ? "leading-[1.9]" : "leading-normal",
+            latin ? "leading-normal" : "leading-[1.9]",
           )}
         >
           {name}
@@ -249,7 +302,7 @@ function StoryMeta({
         {date && (
           <span className="hidden items-center gap-1 sm:inline-flex">
             <CalendarDays className="size-3" aria-hidden="true" />
-            {date}
+            <time dateTime={iso}>{date}</time>
           </span>
         )}
       </span>
@@ -258,10 +311,10 @@ function StoryMeta({
 }
 
 /* ------------------------------------------------------------------ */
-/* Story (no card chrome: image + typography only)                     */
-/*  variant="grid" -> image on top, text below                         */
-/*  variant="side" -> mobile: image + title; desktop: full text        */
-/*  variant="wide" -> lead story: big image beside big headline        */
+/* Story card                                                          */
+/*  grid -> image on top, text below                                   */
+/*  side -> mobile: image + title; desktop: full text                  */
+/*  wide -> lead story: big image beside big headline                  */
 /* ------------------------------------------------------------------ */
 
 function StoryCard({
@@ -274,6 +327,7 @@ function StoryCard({
   index?: number;
 }) {
   const rtl = isRtlBlog(blog);
+  const latin = isLatinBlog(blog);
   const href = articleHref(blog);
   const isSide = variant === "side";
   const isWide = variant === "wide";
@@ -285,17 +339,17 @@ function StoryCard({
     isSide &&
       cn(
         "line-clamp-2 text-[13px] sm:text-base lg:line-clamp-none",
-        rtl
+        !latin
           ? "leading-loose lg:text-2xl lg:leading-loose"
           : "leading-snug lg:text-[1.35rem]",
       ),
     isWide &&
-      (rtl
+      (!latin
         ? "text-2xl leading-loose sm:text-3xl sm:leading-loose lg:text-4xl lg:leading-loose"
         : "text-2xl leading-[1.12] tracking-tight sm:text-3xl lg:text-[2.5rem]"),
     !isSide &&
       !isWide &&
-      (rtl
+      (!latin
         ? "text-xl leading-loose sm:text-2xl sm:leading-loose"
         : "text-xl leading-[1.2] sm:text-[1.45rem]"),
   );
@@ -311,7 +365,6 @@ function StoryCard({
           : "flex h-full flex-col",
       )}
     >
-      {/* Image: lazy by default, so it never competes with the hero */}
       <div
         className={cn(
           "relative isolate w-full shrink-0 overflow-hidden rounded-lg bg-muted shadow-none ring-1 ring-black/5",
@@ -343,7 +396,6 @@ function StoryCard({
         <ArrowChip className={isSide ? "lg:flex" : undefined} />
       </div>
 
-      {/* Text */}
       <div
         className={cn(
           "flex flex-1 flex-col",
@@ -353,10 +405,7 @@ function StoryCard({
         )}
       >
         <div
-          className={cn(
-            "flex items-center gap-3",
-            isSide && "hidden lg:flex",
-          )}
+          className={cn("flex items-center gap-3", isSide && "hidden lg:flex")}
         >
           {typeof index === "number" && (
             <span className="font-serif text-lg font-bold italic leading-none text-foreground/25">
@@ -369,7 +418,7 @@ function StoryCard({
         <h3 className={titleClass}>
           {/* Stretched link: the whole story is clickable */}
           <Link href={href} className="after:absolute after:inset-0">
-            <span className={cn(!rtl && UNDERLINE)}>{blog.title}</span>
+            <span className={cn(latin && UNDERLINE)}>{blog.title}</span>
           </Link>
         </h3>
 
@@ -378,7 +427,7 @@ function StoryCard({
             className={cn(
               "text-start text-muted-foreground",
               isWide ? "line-clamp-3 text-base" : "line-clamp-2 text-sm",
-              rtl
+              !latin
                 ? isWide
                   ? "leading-[2.3]"
                   : "leading-[2.2]"
@@ -407,6 +456,64 @@ function StoryCard({
 }
 
 /* ------------------------------------------------------------------ */
+/* Per-language edition block (text-only, light, crawlable)            */
+/* ------------------------------------------------------------------ */
+
+function EditionBlock({
+  edition,
+  blogs,
+}: {
+  edition: (typeof EDITIONS)[number];
+  blogs: HomeBlogItem[];
+}) {
+  const latin = edition.code === "en" || edition.code === "de";
+
+  return (
+    <div
+      dir={edition.dir}
+      lang={edition.code}
+      className="flex min-w-0 flex-col gap-4 border-t border-border pt-5"
+    >
+      <h3 className="flex items-baseline justify-between gap-3">
+        <Link
+          href={`/${edition.code}`}
+          hrefLang={edition.code}
+          title={`ENEENA in ${edition.name}`}
+          className={cn(
+            "text-2xl font-bold text-primary hover:underline",
+            edition.font,
+            !latin && "leading-[1.9]",
+          )}
+        >
+          {edition.native}
+        </Link>
+        <ArrowRight
+          className="size-4 text-primary rtl:rotate-180"
+          aria-hidden="true"
+        />
+      </h3>
+
+      <ul className="flex flex-col gap-3">
+        {blogs.map((blog) => (
+          <li key={blog.id}>
+            <Link
+              href={articleHref(blog)}
+              className={cn(
+                "block text-balance font-semibold text-foreground transition-colors hover:text-primary",
+                getTitleFont(blog),
+                latin ? "leading-snug" : "leading-loose",
+              )}
+            >
+              {blog.title}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /* Main                                                                */
 /* ------------------------------------------------------------------ */
 
@@ -414,8 +521,11 @@ export function HomeClient({ blogs }: HomeClientProps) {
   if (!blogs.length) {
     return (
       <div className="mx-auto max-w-md py-28 text-center">
+        <h1 className="sr-only">
+          ENEENA — Independent Journalism, Global Perspectives
+        </h1>
         <span className="mb-4 block text-[11px] font-bold uppercase tracking-[0.2em] text-primary">
-          Alentah World
+          ENEENA
         </span>
         <h2 className="mb-3 font-serif text-3xl font-bold text-foreground sm:text-4xl">
           Stories are on the way.
@@ -427,14 +537,12 @@ export function HomeClient({ blogs }: HomeClientProps) {
     );
   }
 
-  // ---- Pick hero + side stories, then everything else is "Latest" ----
+  // ---- Pick hero + side stories, then the rest is "Latest" ----
   const used = new Set<string>();
 
-  const englishBlogs = blogs.filter((b) => b.language.code === "en");
-  const urduBlogs = blogs.filter((b) => b.language.code === "ur");
-  const arabicBlogs = blogs.filter((b) => b.language.code === "ar");
+  const byLang = (code: string) => blogs.filter((b) => b.language.code === code);
 
-  const hero = englishBlogs[0] ?? blogs[0];
+  const hero = byLang("en")[0] ?? blogs[0];
   used.add(hero.id);
 
   const sideBlogs: HomeBlogItem[] = [];
@@ -445,10 +553,9 @@ export function HomeClient({ blogs }: HomeClientProps) {
       sideBlogs.push(found);
     }
   };
-  pickFrom(urduBlogs);
-  pickFrom(arabicBlogs);
+  pickFrom(byLang("ur"));
+  pickFrom(byLang("ar"));
 
-  // If one language is missing, fill from whatever is left
   for (const b of blogs) {
     if (sideBlogs.length >= 2) break;
     if (!used.has(b.id)) {
@@ -458,32 +565,48 @@ export function HomeClient({ blogs }: HomeClientProps) {
   }
 
   const latestBlogs = blogs.filter((b) => !used.has(b.id)).slice(0, 9);
+  latestBlogs.forEach((b) => used.add(b.id));
   const leadBlog = latestBlogs[0];
   const restBlogs = latestBlogs.slice(1);
 
+  // Up to 3 further stories per language, not already shown above
+  const editionBlocks = EDITIONS.map((edition) => ({
+    edition,
+    blogs: byLang(edition.code)
+      .filter((b) => !used.has(b.id))
+      .slice(0, 3),
+  })).filter((block) => block.blogs.length > 0);
+
   const heroHref = articleHref(hero);
   const heroRtl = isRtlBlog(hero);
+  const heroLatin = isLatinBlog(hero);
   const heroTitleFont = getTitleFont(hero);
 
   return (
     <div className="flex min-w-0 flex-col gap-16 overflow-x-clip pb-16 pt-5 sm:gap-24 sm:pb-24 sm:pt-8">
+      {/* The page's one <h1>: stable, brand-level. Story titles are h2/h3. */}
+      <h1 className="sr-only">
+        ENEENA — Independent Journalism, Global Perspectives
+      </h1>
+
       {/* ============================================================ */}
       {/* 1. HERO + SIDE STORIES                                       */}
       {/* ============================================================ */}
-      <section className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-stretch lg:gap-10">
-        {/* Hero: the main (LCP) image, so it loads first */}
+      <section
+        aria-label="Top stories"
+        className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-stretch lg:gap-10"
+      >
         <article
           dir={heroRtl ? "rtl" : "ltr"}
           lang={hero.language.code}
           className="group relative isolate min-h-112 overflow-hidden rounded-[6px] bg-muted shadow-2xl shadow-black/15 ring-1 ring-black/5 sm:min-h-136 lg:col-span-8 lg:min-h-164"
         >
+          {/* LCP image. `priority` already implies eager + high fetch priority */}
           <Image
             src={hero.bannerImage}
             alt={hero.title}
             fill
             priority
-            fetchPriority="high"
-            loading="eager"
             quality={70}
             placeholder="blur"
             blurDataURL={BLUR}
@@ -491,29 +614,19 @@ export function HomeClient({ blogs }: HomeClientProps) {
             className="object-cover transition-transform duration-1400 ease-out [@media(hover:hover)]:group-hover:scale-[1.035]"
           />
 
-          {/* Cinematic overlay: deep fade + warm burgundy glow + top vignette */}
           <div className="absolute inset-0 bg-linear-to-t from-black/95 via-black/45 to-black/10" />
           <div className="absolute inset-x-0 bottom-0 h-3/5 bg-linear-to-t from-[#6b1d2e]/45 to-transparent mix-blend-multiply" />
           <div className="absolute inset-x-0 top-0 h-32 bg-linear-to-b from-black/35 to-transparent" />
 
-          {/* Fine inner frame for a printed, premium feel */}
           <div
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 rounded-[6px] ring-1 ring-inset ring-white/10"
           />
 
-          {/* Whole hero is clickable */}
-          <Link
-            href={heroHref}
-            aria-label={hero.title}
-            className="absolute inset-0 z-20"
-          />
-
-          {/* Top row */}
           <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center justify-between p-5 sm:p-8 lg:p-10">
             <div className="flex items-center gap-3">
               <LanguageBadge blog={hero} />
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-[10px] font-bold uppercase leading-none tracking-[0.18em] text-white backdrop-blur-md">
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-[11px] font-bold uppercase leading-none tracking-[0.18em] text-white backdrop-blur-md">
                 <span
                   aria-hidden="true"
                   className="size-1.5 rounded-full bg-white"
@@ -523,45 +636,47 @@ export function HomeClient({ blogs }: HomeClientProps) {
             </div>
           </div>
 
-          {/* Bottom content */}
           <div className="pointer-events-none absolute inset-0 z-10 flex flex-col justify-end p-6 sm:p-9 lg:p-12">
             <div className="mb-4 flex items-center gap-4 sm:mb-5">
               <span aria-hidden="true" className="h-px w-10 bg-white/70" />
               <span
                 className={cn(
                   "text-xs font-bold text-white/90",
-                  heroRtl
-                    ? "py-1 leading-[1.9]"
-                    : "uppercase tracking-[0.22em]",
+                  heroLatin
+                    ? "uppercase tracking-[0.22em]"
+                    : "py-1 leading-[1.9]",
                 )}
               >
                 {hero.category.name}
               </span>
             </div>
 
-            <h1
+            {/* The headline itself is the link (real anchor text for crawlers).
+                The ::after stretches the click area over the whole hero. */}
+            <h2
               className={cn(
                 heroTitleFont,
                 "mb-4 max-w-3xl text-balance text-3xl font-bold text-white sm:text-5xl xl:text-[3.5rem]",
-                heroRtl
-                  ? // Nastaliq / Arabic script: tall glyphs need a roomy line box,
-                    // and negative tracking breaks letter joining.
-                    "py-1 leading-[1.9] tracking-normal sm:leading-[1.9]"
-                  : "leading-[1.06] tracking-tight",
+                heroLatin
+                  ? "leading-[1.06] tracking-tight"
+                  : "py-1 leading-[1.9] tracking-normal sm:leading-[1.9]",
               )}
             >
-              {hero.title}
-            </h1>
+              <Link
+                href={heroHref}
+                className="pointer-events-auto after:absolute after:inset-0 after:z-20"
+              >
+                {hero.title}
+              </Link>
+            </h2>
 
             {hero.shortDescription && (
               <div
                 className={cn(
                   "mb-7 line-clamp-2 max-w-2xl text-start text-sm text-white/80 sm:text-[17px]",
-                  heroRtl
-                    ? // line-clamp hides overflow, so the line box must be tall
-                      // enough to contain the full height of every glyph.
-                      "leading-[2.2] sm:leading-[2.3]"
-                    : "leading-6 sm:leading-7",
+                  heroLatin
+                    ? "leading-6 sm:leading-7"
+                    : "leading-[2.2] sm:leading-[2.3]",
                 )}
               >
                 {hero.shortDescription}
@@ -571,24 +686,23 @@ export function HomeClient({ blogs }: HomeClientProps) {
             <div className="flex items-end justify-between gap-4 border-t border-white/20 pt-5">
               <StoryMeta blog={hero} tone="overlay" />
 
-              <span className="hidden shrink-0 items-center gap-2 rounded-full bg-white px-5 py-3 text-[13px] font-bold text-primary shadow-lg shadow-black/30 transition-transform duration-500 group-hover:translate-x-0.5 sm:inline-flex">
+              <span
+                aria-hidden="true"
+                className="hidden shrink-0 items-center gap-2 rounded-full bg-white px-5 py-3 text-[13px] font-bold text-primary shadow-lg shadow-black/30 transition-transform duration-500 group-hover:translate-x-0.5 sm:inline-flex"
+              >
                 Read story
-                <ArrowRight
-                  className="size-4 rtl:rotate-180"
-                  aria-hidden="true"
-                />
+                <ArrowRight className="size-4 rtl:rotate-180" />
               </span>
             </div>
           </div>
         </article>
 
-        {/* Side stories */}
         {sideBlogs.length > 0 && (
           <div className="flex min-w-0 flex-col gap-4 lg:col-span-4 lg:gap-5">
             <div className="hidden items-center gap-4 lg:flex">
-              <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-foreground">
+              <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-foreground">
                 More to Read
-              </span>
+              </h2>
               <span aria-hidden="true" className="h-px flex-1 bg-border" />
             </div>
 
@@ -610,8 +724,10 @@ export function HomeClient({ blogs }: HomeClientProps) {
       {/* 2. LATEST STORIES                                            */}
       {/* ============================================================ */}
       {latestBlogs.length > 0 && (
-        <section className="flex flex-col gap-10 sm:gap-14">
-          {/* Header: no rules, just type */}
+        <section
+          aria-labelledby="latest-stories-heading"
+          className="flex flex-col gap-10 sm:gap-14"
+        >
           <header className="flex flex-col gap-3">
             <span className="inline-flex items-center gap-2.5 text-[11px] font-bold uppercase tracking-[0.22em] text-primary">
               <span
@@ -620,7 +736,10 @@ export function HomeClient({ blogs }: HomeClientProps) {
               />
               Fresh from the newsroom
             </span>
-            <h2 className="font-serif text-4xl font-bold leading-none tracking-tight text-foreground sm:text-6xl">
+            <h2
+              id="latest-stories-heading"
+              className="font-serif text-4xl font-bold leading-none tracking-tight text-foreground sm:text-6xl"
+            >
               Latest Stories
               <sup className="ms-2 align-super font-sans text-xs font-bold tracking-widest text-foreground/35">
                 {pad(latestBlogs.length)}
@@ -628,10 +747,8 @@ export function HomeClient({ blogs }: HomeClientProps) {
             </h2>
           </header>
 
-          {/* Lead story */}
           {leadBlog && <StoryCard blog={leadBlog} variant="wide" />}
 
-          {/* Rest of the stories */}
           {restBlogs.length > 0 && (
             <>
               <div
@@ -654,13 +771,41 @@ export function HomeClient({ blogs }: HomeClientProps) {
       )}
 
       {/* ============================================================ */}
-      {/* 3. CLOSING BANNER (lighter wine-rose)                        */}
+      {/* 3. READ IN YOUR LANGUAGE (crawlable links into every edition) */}
+      {/* ============================================================ */}
+      {editionBlocks.length > 0 && (
+        <section
+          aria-labelledby="languages-heading"
+          className="flex flex-col gap-8"
+        >
+          <header className="flex flex-col gap-3">
+            <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-primary">
+              Six editions
+            </span>
+            <h2
+              id="languages-heading"
+              className="font-serif text-3xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl"
+            >
+              Read ENEENA in Your Language
+            </h2>
+          </header>
+
+          <div className="grid grid-cols-1 gap-x-10 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+            {editionBlocks.map(({ edition, blogs: list }) => (
+              <EditionBlock key={edition.code} edition={edition} blogs={list} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ============================================================ */}
+      {/* 4. CLOSING BANNER + SIX EDITIONS                              */}
       {/* ============================================================ */}
       <section
         dir="ltr"
+        aria-labelledby="editions-heading"
         className="relative isolate overflow-hidden rounded-[8px] bg-linear-to-br from-[#a33a55] via-[#8f2f49] to-[#7a2540] px-6 py-14 text-[#fffaf5] shadow-2xl shadow-[#8f2f49]/20 ring-1 ring-inset ring-white/15 sm:px-14 sm:py-20"
       >
-        {/* Light only: soft glows, no black shadows */}
         <div
           aria-hidden="true"
           className="absolute -inset-e-24 -top-28 -z-10 size-104 rounded-full bg-white/20 blur-3xl"
@@ -676,20 +821,32 @@ export function HomeClient({ blogs }: HomeClientProps) {
 
         <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-14">
           <div className="lg:col-span-7">
-            {/* Language chips (each one is its own element so scripts never mix) */}
-            <div className="mb-6 flex flex-wrap items-center gap-2">
-              <span className="rounded-full border border-white/35 bg-white/10 px-3.5 py-1.5 font-serif text-sm font-semibold leading-none text-white">
-                English
-              </span>
-              <span className="rounded-full border border-white/35 bg-white/10 px-3.5 py-1 font-urdu-display text-base leading-[1.9] text-white">
-                اردو
-              </span>
-              <span className="rounded-full border border-white/35 bg-white/10 px-3.5 py-1 font-arabic-display text-base leading-[1.9] text-white">
-                العربية
-              </span>
-            </div>
+            <nav aria-label="ENEENA editions by language" className="mb-6">
+              <ul className="flex flex-wrap items-center gap-2">
+                {EDITIONS.map((edition) => (
+                  <li key={edition.code}>
+                    <Link
+                      href={`/${edition.code}`}
+                      hrefLang={edition.code}
+                      lang={edition.code}
+                      dir={edition.dir}
+                      title={`ENEENA in ${edition.name}`}
+                      className={cn(
+                        "inline-block rounded-full border border-white/35 bg-white/10 px-3.5 py-1 text-base leading-[1.9] text-white transition-colors hover:bg-white/20",
+                        edition.font,
+                      )}
+                    >
+                      {edition.native}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
 
-            <h2 className="font-serif text-4xl font-bold leading-[1.05] tracking-tight sm:text-6xl">
+            <h2
+              id="editions-heading"
+              className="font-serif text-4xl font-bold leading-[1.05] tracking-tight sm:text-6xl"
+            >
               Your Curiosity Deserves Better Stories.
             </h2>
           </div>
@@ -700,11 +857,12 @@ export function HomeClient({ blogs }: HomeClientProps) {
               className="max-w-md font-sans text-[15px] leading-7 text-white/90 [hyphens:none]"
             >
               Thoughtful work, meaningful perspectives, and stories worth your
-              time, in three languages.
+              time, in six languages.
             </p>
 
             <Link
               href="/en"
+              hrefLang="en"
               className="group/cta inline-flex items-center gap-3 rounded-full bg-[#fffaf5] py-2 pe-2 ps-8 text-sm font-bold text-[#8f2f49] shadow-xl shadow-[#5c1a2c]/20 transition-all duration-300 hover:bg-white hover:shadow-2xl"
             >
               Explore Our Stories

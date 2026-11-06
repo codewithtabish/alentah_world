@@ -22,11 +22,9 @@ import { CategoryListItem } from "@/actions/categories/get-categories";
 
 const HIDE_SCROLLBAR = "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden";
 
-// Compact floating panel: soft ring + diffused shadow, no heavy borders
 const PANEL =
   "rounded-2xl bg-popover/95 text-popover-foreground ring-1 ring-border/60 backdrop-blur-xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.25)] animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-200 origin-top";
 
-// Menu panel for the user dropdown (kept compact)
 const USER_PANEL =
   "rounded-2xl border border-border bg-popover text-popover-foreground shadow-xl animate-in fade-in slide-in-from-top-2 duration-200";
 
@@ -39,64 +37,71 @@ function getLanguageFromPathname(pathname: string) {
 }
 
 // ============================================================
-// LOGO — ALENTAH WORLD
-// SMALL DEVICES (< 640px) -> square brand icon (1024×1024)
-//   /public/images/logos/icon-maroon-1024.png -> light mode
-//   /public/images/logos/icon-white-1024.png  -> dark mode
-// LARGE DEVICES (>= 640px) -> full logo (3000×1000, 3:1)
-//   /public/images/logos/light.png -> light mode
-//   /public/images/logos/dark.png  -> dark mode
-// - Fixed height, auto width -> keeps the ratio, never stretches
-// - Negative start margin cancels the transparent padding inside the PNGs
+// LOGO — ENEENA (FIXED FOR LIGHT MODE)
 // ============================================================
+const LOGO_BASE = "/images/logos";
+
+// Use absolute positioning and opacity for light/dark swap. 
+// This prevents Next.js from hiding the image if the theme context fails.
+const ICON_CLASS = "absolute inset-0 size-14 select-none object-contain transition-all duration-300 group-hover:scale-[1.04]";
+const FULL_CLASS = "absolute inset-0 h-20 w-auto select-none object-contain transition-all duration-300 group-hover:scale-[1.02]";
+
 function Logo() {
   return (
     <Link
       href="/"
-      aria-label="Alentah World — Home"
-      className="group -ms-1 flex shrink-0 items-center no-underline transition-opacity duration-200 hover:opacity-85 sm:-ms-4"
+      aria-label="ENEENA — Home"
+      className="group relative -ms-1 flex h-20 shrink-0 items-center no-underline transition-opacity duration-200 hover:opacity-85 sm:-ms-2"
     >
-      {/* SMALL DEVICES: brand icon */}
-      <span className="flex items-center sm:hidden">
-        {/* Light mode icon (maroon) */}
+      {/* SMALL DEVICES: square icon */}
+      <span className="relative flex h-14 w-14 items-center sm:hidden">
+        {/* Light mode -> maroon icon */}
         <Image
-          src="/images/logos/icon-maroon-1024.png"
-          alt="Alentah World"
+          src={`${LOGO_BASE}/icon-maroon-1024.png`}
+          alt="ENEENA"
           width={1024}
           height={1024}
           sizes="56px"
-          className="block size-14 select-none object-contain transition-transform duration-300 group-hover:scale-[1.04] dark:hidden"
+          priority
+          unoptimized
+          className={cn("block dark:hidden", ICON_CLASS)}
         />
-        {/* Dark mode icon (white) */}
+        {/* Dark mode -> white icon */}
         <Image
-          src="/images/logos/icon-white-1024.png"
-          alt="Alentah World"
+          src={`${LOGO_BASE}/icon-white-1024.png`}
+          alt="ENEENA"
           width={1024}
           height={1024}
           sizes="56px"
-          className="hidden size-14 select-none object-contain transition-transform duration-300 group-hover:scale-[1.04] dark:block"
+          priority
+          unoptimized
+          className={cn("hidden dark:block", ICON_CLASS)}
         />
       </span>
 
       {/* LARGE DEVICES: full logo */}
-      <span className="hidden items-center sm:flex">
-        {/* Light mode logo (maroon) */}
+      <span className="relative hidden h-20 w-[320px] items-center sm:flex">
+        {/* Light mode -> burgundy logo */}
         <Image
-          src="/images/logos/light.png"
-          alt="Alentah World"
-          width={3000}
-          height={1000}
-          sizes="240px"
-          className="block h-20 w-auto select-none object-contain transition-transform duration-300 group-hover:scale-[1.02] dark:hidden"
+          src={`${LOGO_BASE}/light.png`}
+          alt="ENEENA"
+          width={1600}
+          height={400}
+          sizes="320px"
+          priority
+          unoptimized
+          className={cn("block dark:hidden", FULL_CLASS)}
         />
-        {/* Dark mode logo (white) */}
+        {/* Dark mode -> white logo */}
         <Image
-          src="/images/logos/dark.png"
-          alt="Alentah World"
-          width={3000}
-          height={1000}
-          sizes="240px"
-          className="hidden h-20 w-auto select-none object-contain transition-transform duration-300 group-hover:scale-[1.02] dark:block"
+          src={`${LOGO_BASE}/dark.png`}
+          alt="ENEENA"
+          width={1600}
+          height={400}
+          sizes="320px"
+          priority
+          unoptimized
+          className={cn("hidden dark:block", FULL_CLASS)}
         />
       </span>
     </Link>
@@ -108,7 +113,16 @@ function Logo() {
 // ============================================================
 function ShieldIcon({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
       <path d="M12 2 4 5v6c0 5.25 3.4 9.74 8 11 4.6-1.26 8-5.75 8-11V5l-8-3Z" />
       <path d="M9 12l2 2 4-4" />
     </svg>
@@ -116,9 +130,7 @@ function ShieldIcon({ className }: { className?: string }) {
 }
 
 // ============================================================
-// CATEGORY CARD (Inside mega-menu) — compact
-// NOTE: no `truncate` / line-clamp on RTL text — it clips tall
-// Urdu/Arabic glyphs. RTL gets a roomy line-height instead.
+// CATEGORY CARD
 // ============================================================
 function CategoryCard({
   category,
@@ -150,7 +162,7 @@ function CategoryCard({
           </div>
         )}
 
-        <span className="min-w-0 flex-1 wrap-break-word py-0.5 text-[13px] font-bold leading-snug text-primary transition-opacity group-hover/card:opacity-80 ltr:line-clamp-2 rtl:text-[15px] rtl:leading-loose">
+        <span className="min-w-0 flex-1 break-words py-0.5 text-[13px] font-bold leading-snug text-primary transition-opacity group-hover/card:opacity-80 ltr:line-clamp-2 rtl:text-[15px] rtl:leading-loose">
           {category.name}
         </span>
       </Link>
@@ -169,7 +181,7 @@ function CategoryCard({
                     aria-hidden="true"
                     className="size-1 shrink-0 rounded-full bg-primary/40 transition-colors group-hover/sub:bg-primary"
                   />
-                  <span className="min-w-0 flex-1 wrap-break-word">{sub.name}</span>
+                  <span className="min-w-0 flex-1 break-words">{sub.name}</span>
                 </span>
                 <ChevronRight
                   className="size-3 shrink-0 opacity-40 transition-all group-hover/sub:translate-x-0.5 group-hover/sub:opacity-100 rtl:rotate-180 rtl:group-hover/sub:-translate-x-0.5"
@@ -185,7 +197,7 @@ function CategoryCard({
 }
 
 // ============================================================
-// EDITION HEADER (title is a link to the edition home)
+// EDITION HEADER
 // ============================================================
 function EditionHeader({
   language,
@@ -223,7 +235,7 @@ function EditionHeader({
       </Link>
 
       <div className="relative mt-3 h-px w-full bg-border/70">
-        <span className="absolute inset-s-0 top-0 h-px w-16 bg-primary" />
+        <span className="absolute start-0 top-0 h-px w-16 bg-primary" />
       </div>
     </div>
   );
@@ -253,7 +265,6 @@ export function NavbarClient({ categories, languages }: NavbarClientProps) {
   const [openLang, setOpenLang] = React.useState<string | null>(null);
   const [userMenuOpen, setUserMenuOpen] = React.useState(false);
 
-  // Close menus on route change
   const [prevPathname, setPrevPathname] = React.useState(pathname);
   if (prevPathname !== pathname) {
     setPrevPathname(pathname);
@@ -269,7 +280,6 @@ export function NavbarClient({ categories, languages }: NavbarClientProps) {
   const isAdminRoute = pathname === "/admin" || pathname.startsWith("/admin/");
   const isSavedRoute = pathname === "/saved";
 
-  // Outside click
   React.useEffect(() => {
     if (!openLang && !userMenuOpen) return;
     const onMouseDown = (e: MouseEvent) => {
@@ -282,7 +292,6 @@ export function NavbarClient({ categories, languages }: NavbarClientProps) {
     return () => document.removeEventListener("mousedown", onMouseDown);
   }, [openLang, userMenuOpen]);
 
-  // Escape key
   React.useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -296,7 +305,6 @@ export function NavbarClient({ categories, languages }: NavbarClientProps) {
 
   if (isAdminRoute) return null;
 
-  // Filter out Arabic, keeping only English and Urdu
   const activeLanguages = languages.filter((l) => l.code === "en" || l.code === "ur");
 
   const openLanguageData = activeLanguages.find((l) => l.code === openLang);
@@ -309,24 +317,24 @@ export function NavbarClient({ categories, languages }: NavbarClientProps) {
   return (
     <header className="relative z-50 w-full">
       <div className="flex h-20 items-center justify-between gap-2 sm:h-22 sm:gap-4">
+        
         {/* LEFT: Logo */}
         <Logo />
 
         {/* RIGHT: Languages, Actions */}
         <div className="flex shrink-0 items-center gap-1 sm:gap-2">
-          {/* LANGUAGE EDITIONS (Desktop) */}
+          
           <div ref={langGroupRef} className="relative hidden items-center gap-1 lg:flex">
             {activeLanguages.map((lang) => {
               const isOpen = openLang === lang.code;
               const isCurrent = currentLangCode === lang.code;
 
               return (
-                // Split button: name = link to the edition, arrow = open categories
                 <div
                   key={lang.id}
                   className={cn(
                     "inline-flex h-9 items-center rounded-full transition-colors hover:bg-muted",
-                    isOpen && "bg-muted",
+                    isOpen && "bg-muted"
                   )}
                 >
                   <Link
@@ -337,7 +345,7 @@ export function NavbarClient({ categories, languages }: NavbarClientProps) {
                       "inline-flex h-9 items-center rounded-full ps-3.5 pe-1 text-sm font-bold no-underline transition-colors",
                       isCurrent || isOpen
                         ? "text-primary"
-                        : "text-foreground/80 hover:text-foreground",
+                        : "text-foreground/80 hover:text-foreground"
                     )}
                   >
                     {lang.name}
@@ -354,7 +362,7 @@ export function NavbarClient({ categories, languages }: NavbarClientProps) {
                     <ChevronDown
                       className={cn(
                         "size-3.5 transition-transform duration-200",
-                        isOpen && "rotate-180 text-primary",
+                        isOpen && "rotate-180 text-primary"
                       )}
                       strokeWidth={1.75}
                     />
@@ -370,12 +378,7 @@ export function NavbarClient({ categories, languages }: NavbarClientProps) {
                   lang={openLang}
                   className={cn("w-[min(560px,calc(100vw-2rem))]", PANEL)}
                 >
-                  <div
-                    className={cn(
-                      "max-h-[70vh] overflow-y-auto p-4",
-                      HIDE_SCROLLBAR,
-                    )}
-                  >
+                  <div className={cn("max-h-[70vh] overflow-y-auto p-4", HIDE_SCROLLBAR)}>
                     <EditionHeader
                       language={openLanguageData}
                       onNavigate={() => setOpenLang(null)}
@@ -411,14 +414,13 @@ export function NavbarClient({ categories, languages }: NavbarClientProps) {
             )}
           </div>
 
-          {/* SAVED */}
           <Show when="signed-in">
             <Link
               href="/saved"
               aria-label="Saved articles"
               className={cn(
                 ICON_BTN,
-                isSavedRoute ? "bg-primary/10 text-primary" : "text-foreground/70",
+                isSavedRoute ? "bg-primary/10 text-primary" : "text-foreground/70"
               )}
             >
               <Bookmark
@@ -431,7 +433,6 @@ export function NavbarClient({ categories, languages }: NavbarClientProps) {
 
           <ModeToggle />
 
-          {/* LOGIN */}
           <Show when="signed-out">
             <SignInButton mode="modal" forceRedirectUrl="/" signUpForceRedirectUrl="/">
               <button
@@ -443,7 +444,6 @@ export function NavbarClient({ categories, languages }: NavbarClientProps) {
             </SignInButton>
           </Show>
 
-          {/* USER MENU */}
           <Show when="signed-in">
             <div className="relative" ref={userMenuRef}>
               <button
@@ -472,7 +472,7 @@ export function NavbarClient({ categories, languages }: NavbarClientProps) {
                 <div
                   className={cn(
                     "absolute right-0 top-full z-50 mt-3 w-[min(272px,calc(100vw-1.5rem))] overflow-hidden",
-                    USER_PANEL,
+                    USER_PANEL
                   )}
                 >
                   <div className="border-b border-border px-4 py-3.5">
