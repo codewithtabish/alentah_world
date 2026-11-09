@@ -1,3 +1,4 @@
+
 import "dotenv/config";
 import prisma from "@/lib/clients/prisma-client";
 
@@ -56,13 +57,64 @@ const languages = [
     isDefault: false,
     sortOrder: 6,
   },
+  {
+    code: "es",
+    name: "Spanish",
+    nativeName: "Español",
+    direction: "LTR" as const,
+    isActive: true,
+    isDefault: false,
+    sortOrder: 7,
+  },
+  {
+    code: "fr",
+    name: "French",
+    nativeName: "Français",
+    direction: "LTR" as const,
+    isActive: true,
+    isDefault: false,
+    sortOrder: 8,
+  },
+  {
+    code: "pt-BR",
+    name: "Portuguese (Brazil)",
+    nativeName: "Português (Brasil)",
+    direction: "LTR" as const,
+    isActive: true,
+    isDefault: false,
+    sortOrder: 9,
+  },
+  {
+    code: "ja",
+    name: "Japanese",
+    nativeName: "日本語",
+    direction: "LTR" as const,
+    isActive: true,
+    isDefault: false,
+    sortOrder: 10,
+  },
+  {
+    code: "bn",
+    name: "Bengali",
+    nativeName: "বাংলা",
+    direction: "LTR" as const,
+    isActive: true,
+    isDefault: false,
+    sortOrder: 11,
+  },
+  {
+    code: "id",
+    name: "Indonesian",
+    nativeName: "Bahasa Indonesia",
+    direction: "LTR" as const,
+    isActive: true,
+    isDefault: false,
+    sortOrder: 12,
+  },
 ];
 
 async function main() {
-  console.log(
-    "DATABASE_URL loaded:",
-    Boolean(process.env.DATABASE_URL),
-  );
+  console.log("DATABASE_URL loaded:", Boolean(process.env.DATABASE_URL));
 
   if (process.env.DATABASE_URL) {
     try {
@@ -74,10 +126,21 @@ async function main() {
       throw new Error("DATABASE_URL is not a valid URL.");
     }
   } else {
-    throw new Error(
-      "DATABASE_URL is missing. Check your .env file.",
-    );
+    throw new Error("DATABASE_URL is missing. Check your .env file.");
   }
+
+  // Ensure English remains the only default language.
+  await prisma.language.updateMany({
+    where: {
+      isDefault: true,
+      code: {
+        not: "en",
+      },
+    },
+    data: {
+      isDefault: false,
+    },
+  });
 
   for (const language of languages) {
     await prisma.language.upsert({
@@ -95,10 +158,10 @@ async function main() {
       create: language,
     });
 
-    console.log(`Seeded language: ${language.name}`);
+    console.log(`Seeded language: ${language.name} (${language.code})`);
   }
 
-  console.log("All six ENEENA languages seeded successfully.");
+  console.log("All 12 ENEENA languages seeded successfully.");
 }
 
 main()
