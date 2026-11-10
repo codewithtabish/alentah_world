@@ -422,7 +422,7 @@ export function HomeClient({ blogs }: HomeClientProps) {
           <div className="flex flex-col gap-8 lg:col-span-5 lg:items-end">
             <p style={{ textAlign: "left" }} className="max-w-md font-sans text-[15px] leading-7 text-white/90 [hyphens:none]">Thoughtful work, meaningful perspectives, and stories worth your time, in six languages.</p>
             <Link href="/en" hrefLang="en" className="group/cta inline-flex items-center gap-3 rounded-full bg-[#fffaf5] py-2 pe-2 ps-8 text-sm font-bold text-[#8f2f49] shadow-xl shadow-[#5c1a2c]/20 transition-all duration-300 hover:bg-white hover:shadow-2xl">
-              Explore Our Stories
+              Explore Our Stories -
               <span className="flex size-10 items-center justify-center rounded-full bg-[#8f2f49] text-[#fffaf5] transition-transform duration-300 group-hover/cta:translate-x-0.5"><ArrowRight className="size-4" aria-hidden="true" /></span>
             </Link>
           </div>
