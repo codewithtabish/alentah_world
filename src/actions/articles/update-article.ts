@@ -39,7 +39,7 @@ export async function updateArticleAction(data: UpdateArticleInput) {
     // 1. Fetch existing article to get old slugs for cache invalidation
     const existing = await prisma.blog.findUnique({
       where: { id: data.id },
-      include: { category: true, subcategory: true, language: true },
+      include: { category: true, subcategory: true, language: true, seo: true },
     });
 
     if (!existing) return { success: false, error: "Article not found." };
@@ -50,17 +50,29 @@ export async function updateArticleAction(data: UpdateArticleInput) {
       if (conflict) return { success: false, error: "This slug is already in use.", field: "slug" };
     }
 
-    // 3. Regenerate SEO if title or content changed
+    // 3. Fetch the new Category and Subcategory to get their slugs for the Canonical URL
+    const category = await prisma.category.findUnique({ where: { id: data.categoryId } });
+    const subcategory = await prisma.subcategory.findUnique({ where: { id: data.subcategoryId } });
+    const language = await prisma.language.findUnique({ where: { id: data.languageId } });
+
+    if (!category || !subcategory || !language) {
+      return { success: false, error: "Invalid language, category, or subcategory." };
+    }
+
+    // 4. Construct the Canonical URL dynamically using the .env URL
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "https://www.eneena.com";
+    const canonicalUrl = `${baseUrl}/${language.code}/${category.slug}/${subcategory.slug}/${data.slug}`;
+
+    // 5. Regenerate SEO if title or content changed
     let seo: SEOResult | null = null;
     if (existing.title !== data.title || JSON.stringify(existing.content) !== JSON.stringify(data.content)) {
-      // Extract text for SEO (simplified version of your create function)
       const textContent = data.content.blocks
         .map((b: any) => b.data?.text || b.data?.itemsContent || "")
         .join("\n");
       seo = await generateSEO(data.title, textContent, existing.language.code as SEOLanguage);
     }
 
-    // 4. Update DB
+    // 6. Update DB
     const isPublished = data.status === "PUBLISHED";
     
     const updated = await prisma.blog.update({
@@ -82,24 +94,38 @@ export async function updateArticleAction(data: UpdateArticleInput) {
         subcategoryId: data.subcategoryId,
         writtenBy: data.writtenBy?.trim() || null,
         writerImageUrl: data.writerImageUrl?.trim() || null,
-        ...(seo && {
-          seo: {
-            update: {
-              metaTitle: seo.metaTitle,
-              metaDescription: seo.metaDescription,
-              ogTitle: seo.metaTitle,
-              ogDescription: seo.metaDescription,
+        
+        // 👇 FIX: Update SEO and force the new Canonical URL
+        seo: {
+          upsert: {
+            create: {
+              metaTitle: seo?.metaTitle || data.title.trim(),
+              metaDescription: seo?.metaDescription || "",
+              canonicalUrl: canonicalUrl, // Created with new URL
+              ogTitle: seo?.metaTitle || data.title.trim(),
+              ogDescription: seo?.metaDescription || "",
               ogImage: data.ogImage.trim(),
-              twitterTitle: seo.metaTitle,
-              twitterDescription: seo.metaDescription,
+              twitterTitle: seo?.metaTitle || data.title.trim(),
+              twitterDescription: seo?.metaDescription || "",
+              twitterImage: data.ogImage.trim(),
+            },
+            update: {
+              metaTitle: seo?.metaTitle || data.title.trim(),
+              metaDescription: seo?.metaDescription || "",
+              canonicalUrl: canonicalUrl, // Updated with new URL
+              ogTitle: seo?.metaTitle || data.title.trim(),
+              ogDescription: seo?.metaDescription || "",
+              ogImage: data.ogImage.trim(),
+              twitterTitle: seo?.metaTitle || data.title.trim(),
+              twitterDescription: seo?.metaDescription || "",
               twitterImage: data.ogImage.trim(),
             },
           },
-        }),
+        },
       },
     });
 
-    // 5. PERFECT CACHE INVALIDATION
+    // 7. PERFECT CACHE INVALIDATION
     // Admin Paths
     revalidatePath("/admin/articles");
     revalidatePath("/admin");
@@ -109,9 +135,13 @@ export async function updateArticleAction(data: UpdateArticleInput) {
     
     // Old URL
     revalidatePath(`/${existing.language.code}/${existing.category.slug}/${existing.subcategory.slug}/${existing.slug}`);
+    
     // New URL
-    revalidatePath(`/${updated.languageId}/${data.categoryId}/${data.subcategoryId}/${updated.slug}`); // Note: Need slugs, not IDs, but for safety revalidating the whole path structure
+    revalidatePath(`/${language.code}/${category.slug}/${subcategory.slug}/${updated.slug}`);
+    
+    // Category & Subcategory Paths
     revalidatePath(`/${existing.language.code}/${existing.category.slug}`);
+    revalidatePath(`/${language.code}/${category.slug}`);
     
     // Tags
     revalidateTag(CACHE_TAGS.blog(existing.slug), "max");

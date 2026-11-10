@@ -17,18 +17,14 @@ const PAGE_URL = `${SITE_URL}/about`;
 
 const PAGE_TITLE = "About ENEENA | Independent Journalism & Global Perspectives";
 
-// Kept under ~160 characters so it isn't truncated in search results.
 const PAGE_DESCRIPTION =
-  "ENEENA is an independent international publication offering thoughtful journalism on world affairs, technology, science, business and culture in six languages.";
+  "ENEENA is an independent international publication offering thoughtful journalism on world affairs, technology, science, business and culture in 12 languages.";
 
 const OG_IMAGE = "/images/og-image.jpg";
 const OG_IMAGE_ALT = "ENEENA — Independent Journalism, Global Perspectives";
 
 // -----------------------------------------------------------------------------
 // Search engine metadata
-// Robots, authors, publisher, category and formatDetection are inherited
-// from the root layout, so they are not repeated here. openGraph and
-// twitter are replaced as a whole object, so they must be complete.
 // -----------------------------------------------------------------------------
 
 export const metadata: Metadata = {
@@ -38,10 +34,6 @@ export const metadata: Metadata = {
 
   description: PAGE_DESCRIPTION,
 
-  // The About page currently exists only at /about, so there is no
-  // hreflang cluster to declare here. Add `languages` only when real
-  // translated versions (e.g. /ur/about) exist, and make each one
-  // reference all the others plus itself.
   alternates: {
     canonical: PAGE_URL,
   },
@@ -53,7 +45,7 @@ export const metadata: Metadata = {
     description: PAGE_DESCRIPTION,
     url: PAGE_URL,
     locale: "en_US",
-    alternateLocale: ["ur_PK", "ar_AR", "de_DE", "hi_IN", "zh_CN"],
+    alternateLocale: ["ur_PK", "ar_AR", "de_DE", "hi_IN", "zh_CN", "es_ES", "fr_FR", "pt_BR", "ja_JP", "bn_BD", "id_ID"],
     images: [
       {
         url: OG_IMAGE,
@@ -75,9 +67,6 @@ export const metadata: Metadata = {
 
 // -----------------------------------------------------------------------------
 // Page-level structured data
-// Organization, WebSite and the founder are defined once in the root layout
-// and referenced here by @id, so they are not duplicated.
-// The breadcrumb below is also visible on the page, as Google requires.
 // -----------------------------------------------------------------------------
 
 const structuredData = {
@@ -124,7 +113,6 @@ const structuredData = {
 
 // -----------------------------------------------------------------------------
 // Reusable styling
-// Text sizes are kept at 12px or larger for readability on mobile.
 // -----------------------------------------------------------------------------
 
 const eyebrow =
@@ -159,8 +147,6 @@ const storyPoints = [
 
 // -----------------------------------------------------------------------------
 // Editorial principles
-// Written around accuracy, independence and accountability, which are the
-// trust signals search engines look for on a news publisher's About page.
 // -----------------------------------------------------------------------------
 
 const principles = [
@@ -187,54 +173,22 @@ const principles = [
 ];
 
 // -----------------------------------------------------------------------------
-// ENEENA's six editorial languages
-// Each links to its language home as a crawlable internal link with hrefLang.
-// Make sure /en, /ur, /ar, /de, /hi and /zh exist before shipping.
+// ENEENA's 12 Editorial Languages
 // -----------------------------------------------------------------------------
 
 const languages = [
-  {
-    name: "English",
-    nativeName: "English",
-    code: "en",
-    dir: "ltr",
-    className: "font-serif",
-  },
-  {
-    name: "Urdu",
-    nativeName: "اردو",
-    code: "ur",
-    dir: "rtl",
-    className: "font-urdu-display",
-  },
-  {
-    name: "Arabic",
-    nativeName: "العربية",
-    code: "ar",
-    dir: "rtl",
-    className: "font-arabic-display",
-  },
-  {
-    name: "German",
-    nativeName: "Deutsch",
-    code: "de",
-    dir: "ltr",
-    className: "font-serif",
-  },
-  {
-    name: "Hindi",
-    nativeName: "हिन्दी",
-    code: "hi",
-    dir: "ltr",
-    className: "font-hindi-display",
-  },
-  {
-    name: "Chinese",
-    nativeName: "中文",
-    code: "zh",
-    dir: "ltr",
-    className: "font-chinese-display",
-  },
+  { name: "English", nativeName: "English", code: "en", dir: "ltr", className: "font-serif" },
+  { name: "Urdu", nativeName: "اردو", code: "ur", dir: "rtl", className: "font-urdu-display" },
+  { name: "Arabic", nativeName: "العربية", code: "ar", dir: "rtl", className: "font-arabic-display" },
+  { name: "German", nativeName: "Deutsch", code: "de", dir: "ltr", className: "font-serif" },
+  { name: "Hindi", nativeName: "हिन्दी", code: "hi", dir: "ltr", className: "font-hindi-display" },
+  { name: "Chinese", nativeName: "中文", code: "zh", dir: "ltr", className: "font-chinese-display" },
+  { name: "Spanish", nativeName: "Español", code: "es", dir: "ltr", className: "font-serif" },
+  { name: "French", nativeName: "Français", code: "fr", dir: "ltr", className: "font-serif" },
+  { name: "Portuguese (Brazil)", nativeName: "Português (Brasil)", code: "pt-BR", dir: "ltr", className: "font-serif" },
+  { name: "Japanese", nativeName: "日本語", code: "ja", dir: "ltr", className: "font-serif" },
+  { name: "Bengali", nativeName: "বাংলা", code: "bn", dir: "ltr", className: "font-serif" },
+  { name: "Indonesian", nativeName: "Bahasa Indonesia", code: "id", dir: "ltr", className: "font-serif" },
 ] as const;
 
 // -----------------------------------------------------------------------------
@@ -514,7 +468,6 @@ export default function AboutPage() {
         <div className="mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-8 px-4 py-14 sm:px-6 lg:grid-cols-12 lg:gap-0 lg:px-8 lg:py-16">
           <div className="lg:col-span-4 lg:pe-10">
             <div className="relative aspect-3/2 w-full overflow-hidden">
-              {/* Decorative repeat of the portrait above, so alt is empty */}
               <Image
                 src="/images/about/editor.webp"
                 alt=""
@@ -670,7 +623,7 @@ export default function AboutPage() {
               )}
             >
               Explore the subjects and perspectives covered by ENEENA across
-              six independent editorial languages.
+              all 12 independent editorial languages.
             </p>
           </div>
 
@@ -689,7 +642,7 @@ export default function AboutPage() {
       </section>
 
       {/* ------------------------------------------------------------------ */}
-      {/* 7. SIX LANGUAGES */}
+      {/* 7. TWELVE LANGUAGES */}
       {/* ------------------------------------------------------------------ */}
 
       <section
@@ -716,7 +669,7 @@ export default function AboutPage() {
               titleFont,
             )}
           >
-            Six Languages.
+            Twelve Languages.
             <br />
             One Global Perspective.
           </h2>
@@ -759,7 +712,8 @@ export default function AboutPage() {
             )}
           >
             ENEENA publishes separate editorial content in English, Urdu,
-            Arabic, German, Hindi and Chinese. Each language has its own voice,
+            Arabic, German, Hindi, Chinese, Spanish, French, Portuguese,
+            Japanese, Bengali, and Indonesian. Each language has its own voice,
             perspective and reading experience, reflecting the cultures and
             audiences it serves. Our aim is to make thoughtful journalism
             accessible across linguistic and cultural boundaries.

@@ -1,4 +1,4 @@
-
+// src/components/site/pages/contact/contact-content.tsx
 import type { ReactNode } from "react";
 
 import Image from "next/image";
@@ -299,8 +299,9 @@ export function ContactContent() {
             className="-z-10 object-cover object-top transition-transform duration-1200 ease-out [@media(hover:hover)]:group-hover:scale-[1.03]"
           />
 
-          <div className="relative w-[88%] bg-[#4a0f17]/95 p-6 text-white shadow-2xl shadow-black/30 backdrop-blur-[2px] lg:p-7">
-            <span className="mb-3 block text-[10px] font-bold uppercase tracking-[0.22em] text-white/70">
+          {/* 👇 CHANGED to bg-primary */}
+          <div className="relative w-[88%] bg-primary p-6 text-primary-foreground shadow-2xl shadow-black/30 backdrop-blur-[2px] lg:p-7">
+            <span className="mb-3 block text-[10px] font-bold uppercase tracking-[0.22em] text-primary-foreground/70">
               For editorial
             </span>
 
@@ -310,7 +311,7 @@ export function ContactContent() {
 
             <p
               className={cn(
-                "mb-5 max-w-[16rem] text-[13px] leading-relaxed text-white/80",
+                "mb-5 max-w-[16rem] text-[13px] leading-relaxed text-primary-foreground/80",
                 cleanText,
               )}
             >
@@ -319,8 +320,8 @@ export function ContactContent() {
             </p>
 
             <Link
-              href="#contact-form"
-              className="group/link inline-flex items-center gap-2 border-b border-white/70 pb-0.5 text-[13px] font-semibold text-white transition-opacity hover:opacity-75"
+              href="/share-your-story"
+              className="group/link inline-flex items-center gap-2 border-b border-primary-foreground/70 pb-0.5 text-[13px] font-semibold text-primary-foreground transition-opacity hover:opacity-75"
             >
               Submit a Story
 

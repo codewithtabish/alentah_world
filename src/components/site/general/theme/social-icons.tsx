@@ -658,6 +658,9 @@ export function SparkFillIcon({ className }: IconProps) {
   );
 }
 
+
+
+
 // ============================================================
 // BATCH EXPORT (for programmatic use)
 // ============================================================

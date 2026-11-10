@@ -1,3 +1,4 @@
+// src/components/site/pages/home/home-wrapper.tsx
 import * as React from "react";
 import { getHomeBlogs } from "@/actions/articles/get-home-blogs";
 import { HomeClient, articleHref } from "./home-client";
@@ -23,7 +24,8 @@ async function HomeDataFetcher() {
 
   if (!result.success) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-center">
+      // 👇 Removed py-20 vertical padding
+      <div className="flex flex-col items-center justify-center text-center">
         <h1 className="sr-only">{PAGE_TITLE}</h1>
         <h2 className="font-serif text-2xl font-bold text-foreground">
           Unable to load stories
@@ -83,11 +85,13 @@ async function HomeDataFetcher() {
 
 function HomeSkeleton() {
   return (
+    // 👇 Removed vertical padding (py-...) and gap-12 from the wrapper
     <div
-      className="flex w-full animate-pulse flex-col gap-12"
+      className="flex w-full animate-pulse flex-col"
       aria-busy="true"
       aria-label="Loading stories"
     >
+      {/* Hero Skeleton */}
       <div className="grid h-150 grid-cols-1 gap-6 lg:grid-cols-12">
         <div className="h-full rounded-2xl bg-muted lg:col-span-8" />
         <div className="flex flex-col gap-6 lg:col-span-4">
@@ -96,7 +100,8 @@ function HomeSkeleton() {
         </div>
       </div>
 
-      <div className="flex flex-col gap-6">
+      {/* Latest Stories Skeleton */}
+      <div className="mt-16 flex flex-col gap-6">
         <div className="h-8 w-48 rounded bg-muted" />
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (

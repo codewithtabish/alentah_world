@@ -71,6 +71,7 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <>
+    
       <HomeWrapper />
 
       {/* Editorial letter: streams in after the main grid */}

@@ -3,7 +3,7 @@
 
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath, revalidateTag } from "next/cache";
-import { after } from "next/server"; // 👈 Corrected import for Next.js latest versions
+import { after } from "next/server";
 import { Prisma } from "@/generated/prisma/client";
 import prisma from "@/lib/clients/prisma-client";
 import { CACHE_TAGS } from "@/lib/cache-keys";
@@ -390,11 +390,21 @@ export async function createArticleAction(
     if (isPublished) {
       revalidatePath("/");
       revalidatePath(`/${langCode}/${catSlug}/${subCatSlug}/${article.slug}`);
+      
+      // Base caches
       revalidateTag(CACHE_TAGS.home, "max");
       revalidateTag(CACHE_TAGS.homeScreen, "max");
-      revalidateTag(CACHE_TAGS.categoryPageBlogs(catSlug), "max");
-      revalidateTag(CACHE_TAGS.subcategoryPageBlogs(subCatSlug), "max");
       revalidateTag(CACHE_TAGS.blog(article.slug), "max");
+
+      // 👇 FIXED: Revalidate the exact tags used in `get-category-blogs.ts`
+      revalidateTag(CACHE_TAGS.category(catSlug), "max");
+      revalidateTag(CACHE_TAGS.categoryPage(`${catSlug}:1`), "max"); 
+      
+      // Also revalidate the Next.js Page path directly for safety
+      revalidatePath(`/${langCode}/${catSlug}`);
+
+      // Subcategory caches (just in case you use them elsewhere)
+      revalidateTag(CACHE_TAGS.subcategoryPageBlogs(subCatSlug), "max");
 
       // 👇 BACKGROUND NOTIFICATION LOGIC
       const articleUrl = `/${langCode}/${catSlug}/${subCatSlug}/${article.slug}`;

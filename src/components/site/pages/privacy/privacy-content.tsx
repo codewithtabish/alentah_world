@@ -109,15 +109,16 @@ const SECTIONS: PolicySection[] = [
     body: (
       <>
         <P>
-          Welcome to <em>Alentah World</em>. This Privacy Policy explains how we
+          Welcome to <em>ENEENA</em>. This Privacy Policy explains how we
           collect, use, store, and protect your personal information when you
           visit our website, read our content, or interact with our services.
         </P>
         <P>
-          Alentah World is an independent, multilingual digital publication
-          available at alentah.com in English, Urdu, and Arabic. This policy
-          applies to all of our language editions and to every visitor, whether
-          you read anonymously or have an account.
+          ENEENA is an independent, multilingual digital publication
+          available at eneena.com in English, Urdu, Arabic, German, Hindi,
+          Chinese, Spanish, French, Portuguese, Japanese, Bengali, and
+          Indonesian. This policy applies to all of our language editions and
+          to every visitor, whether you read anonymously or have an account.
         </P>
         <P>
           We are committed to transparency and to ensuring that you can make
@@ -135,7 +136,7 @@ const SECTIONS: PolicySection[] = [
     body: (
       <>
         <P>
-          You can read Alentah World without creating an account. The
+          You can read ENEENA without creating an account. The
           information we collect depends on how you use the site.
         </P>
 
@@ -283,7 +284,7 @@ const SECTIONS: PolicySection[] = [
     body: (
       <>
         <P>
-          Alentah World may display advertisements and publish sponsored content
+          ENEENA may display advertisements and publish sponsored content
           or commercial partnerships to help fund independent journalism.
         </P>
 
@@ -327,7 +328,7 @@ const SECTIONS: PolicySection[] = [
     body: (
       <>
         <P>
-          We rely on trusted service providers to run Alentah World. Each
+          We rely on trusted service providers to run ENEENA. Each
           processes information only to provide its service to us.
         </P>
         <ProviderList
@@ -376,7 +377,7 @@ const SECTIONS: PolicySection[] = [
       <>
         <P>
           If you subscribe to our newsletter, we collect your email address and
-          use it to send you articles, updates, and news from Alentah World.
+          use it to send you articles, updates, and news from ENEENA.
           Subscribing is voluntary.
         </P>
         <P>
@@ -431,7 +432,7 @@ const SECTIONS: PolicySection[] = [
           ]}
         />
         <P>
-          This is used to create or link your Alentah World account, identify
+          This is used to create or link your ENEENA account, identify
           you when you sign in, keep your session secure, and display your name
           or profile image where the site supports it. We do not request access
           to your Gmail, Google Drive, Contacts, Calendar, YouTube, or other
@@ -619,7 +620,7 @@ const SECTIONS: PolicySection[] = [
     body: (
       <>
         <P>
-          Alentah World serves readers around the world, and the providers we
+          ENEENA serves readers around the world, and the providers we
           use may process information in countries other than your own,
           including countries whose data protection laws differ from yours.
         </P>
@@ -640,7 +641,7 @@ const SECTIONS: PolicySection[] = [
     body: (
       <>
         <P>
-          Alentah World is a general-audience publication and is not directed
+          ENEENA is a general-audience publication and is not directed
           at children. We do not knowingly collect personal information from
           children without any required parental consent.
         </P>
@@ -687,8 +688,8 @@ const SECTIONS: PolicySection[] = [
           update the “Last Updated” date at the top of this page.
         </P>
         <P>
-          Please review this page from time to time. Continuing to use Alentah
-          World after changes are posted means you accept the updated policy.
+          Please review this page from time to time. Continuing to use ENEENA
+          after changes are posted means you accept the updated policy.
         </P>
       </>
     ),
@@ -774,7 +775,7 @@ export function PrivacyContent() {
           </h1>
 
           <p className={`mb-3 max-w-md text-base leading-relaxed text-foreground/80 ${cleanText}`}>
-            At Alentah World, we respect your privacy and believe you should
+            At ENEENA, we respect your privacy and believe you should
             understand how information is collected, used, stored, and
             protected when you visit or interact with our publication.
           </p>
@@ -838,7 +839,7 @@ export function PrivacyContent() {
                   readers&apos; trust. If you have questions about this Privacy
                   Policy, wish to exercise an applicable privacy right, or have
                   concerns about how your information is handled, please
-                  contact Alentah World through its official contact channel.
+                  contact ENEENA through its official contact channel.
                 </p>
 
                 {PRIVACY_EMAIL && (
@@ -857,7 +858,7 @@ export function PrivacyContent() {
                   href={CONTACT_HREF}
                   className="group/btn inline-flex h-12 items-center gap-2.5 rounded-[3px] bg-primary px-6 text-[13px] font-bold text-primary-foreground shadow-lg shadow-primary/20 transition-colors duration-300 hover:bg-primary/90"
                 >
-                  Contact Alentah World
+                  Contact ENEENA
                   <ArrowRight
                     className="size-4 transition-transform duration-300 group-hover/btn:translate-x-0.5"
                     aria-hidden="true"

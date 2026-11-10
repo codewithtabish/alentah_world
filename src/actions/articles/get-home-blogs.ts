@@ -6,6 +6,13 @@ import prisma from "@/lib/clients/prisma-client";
 import { CACHE_TAGS } from "@/lib/cache-keys";
 
 // ============================================================
+// CONFIG
+// ============================================================
+
+// Latest stories shown on the homepage (all languages together)
+const HOME_BLOG_LIMIT = 30;
+
+// ============================================================
 // TYPES
 // ============================================================
 
@@ -18,7 +25,7 @@ export type HomeBlogItem = {
   publishedAt: Date | null;
   readingTime: number | null;
   featured: boolean;
-  
+
   // Guest Author
   writtenBy: string | null;
   writerImageUrl: string | null;
@@ -28,22 +35,26 @@ export type HomeBlogItem = {
     name: string;
     direction: string;
   };
-  
+
   category: {
     name: string;
     slug: string;
   };
-  
+
   subcategory: {
     name: string;
     slug: string;
   };
-  
+
   author: {
     firstName: string | null;
     lastName: string | null;
     imageUrl: string | null;
   };
+
+  seo: {
+    canonicalUrl: string | null;
+  } | null;
 };
 
 export type GetHomeBlogsResult =
@@ -57,7 +68,7 @@ export type GetHomeBlogsResult =
 async function getCachedHomeBlogs(): Promise<HomeBlogItem[]> {
   "use cache";
   cacheLife("max");
-  cacheTag(CACHE_TAGS.home); // Links to your central cache tags
+  cacheTag(CACHE_TAGS.home);
 
   const rows = await prisma.blog.findMany({
     where: {
@@ -67,7 +78,7 @@ async function getCachedHomeBlogs(): Promise<HomeBlogItem[]> {
     orderBy: {
       publishedAt: "desc",
     },
-    take: 25, // Only the latest 25 blogs
+    take: HOME_BLOG_LIMIT,
     select: {
       id: true,
       title: true,
@@ -103,6 +114,11 @@ async function getCachedHomeBlogs(): Promise<HomeBlogItem[]> {
           firstName: true,
           lastName: true,
           imageUrl: true,
+        },
+      },
+      seo: {
+        select: {
+          canonicalUrl: true,
         },
       },
     },

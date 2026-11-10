@@ -82,7 +82,7 @@ const SECTIONS: TermsSection[] = [
     body: (
       <>
         <P>
-          These Terms govern your access to and use of Alentah World. By
+          These Terms govern your access to and use of ENEENA. By
           accessing or using our website, you agree to comply with these Terms
           and our applicable policies. If you do not agree, please discontinue
           use of our website and services.
@@ -97,15 +97,15 @@ const SECTIONS: TermsSection[] = [
 
   /* 2 ------------------------------------------------------------- */
   {
-    id: "about-alentah-world",
-    title: "About Alentah World",
+    id: "about-eneena",
+    title: "About ENEENA",
     body: (
       <>
         <P>
-          Alentah World is an independent multilingual digital publication,
+          ENEENA is an independent multilingual digital publication,
           featuring journalism, analysis, and perspectives on a wide range of
-          topics. Our content may be available in English, Urdu, and Arabic,
-          with distinct editorial sections and content.
+          topics. Our content is available in twelve languages, with distinct
+          editorial sections and content.
         </P>
         <P>
           Each language edition is its own publishing environment, not an
@@ -123,14 +123,14 @@ const SECTIONS: TermsSection[] = [
     body: (
       <>
         <P>
-          Alentah World is open to anyone who can legally accept these Terms. By
+          ENEENA is open to anyone who can legally accept these Terms. By
           using our website, you confirm that you have the legal capacity to do
           so.
         </P>
         <P>
           If you are below the age at which you can enter a binding agreement or
           consent to the processing of your personal data in your country, you
-          should use Alentah World only with the permission and supervision of a
+          should use ENEENA only with the permission and supervision of a
           parent or legal guardian.
         </P>
       </>
@@ -145,7 +145,7 @@ const SECTIONS: TermsSection[] = [
       <>
         <P>
           We strive to ensure a reliable and accessible experience. However,
-          Alentah World may modify, suspend, or discontinue features at any
+          ENEENA may modify, suspend, or discontinue features at any
           time, and we do not guarantee uninterrupted availability of the
           website or its content.
         </P>
@@ -194,7 +194,7 @@ const SECTIONS: TermsSection[] = [
     title: "Acceptable Use",
     body: (
       <>
-        <P>You agree to use Alentah World lawfully and respectfully. In particular, you will:</P>
+        <P>You agree to use ENEENA lawfully and respectfully. In particular, you will:</P>
         <UL
           items={[
             "Follow all laws and regulations that apply to you",
@@ -223,7 +223,7 @@ const SECTIONS: TermsSection[] = [
             "Harass, threaten, defame, or discriminate against others",
             "Post unlawful, hateful, or sexually explicit content, or content that infringes someone else’s rights",
             "Interfere with advertising, for example through automated or fraudulent clicks",
-            "Use Alentah World for any unlawful or deceptive purpose",
+            "Use ENEENA for any unlawful or deceptive purpose",
           ]}
         />
       </>
@@ -237,9 +237,9 @@ const SECTIONS: TermsSection[] = [
     body: (
       <>
         <P>
-          The articles, images, design, logos, and other material on Alentah
-          World belong to us or our licensors and are protected by copyright and
-          other laws. The Alentah World name and logo may not be used without our
+          The articles, images, design, logos, and other material on ENEENA
+          belong to us or our licensors and are protected by copyright and
+          other laws. The ENEENA name and logo may not be used without our
           written permission.
         </P>
         <P>
@@ -287,7 +287,7 @@ const SECTIONS: TermsSection[] = [
     body: (
       <>
         <P>
-          “User content” means anything you post or send to Alentah World,
+          “User content” means anything you post or send to ENEENA,
           including comments and submissions. You remain responsible for what
           you post.
         </P>
@@ -295,7 +295,7 @@ const SECTIONS: TermsSection[] = [
           You confirm that your content is lawful, that you have the right to
           share it, and that it does not infringe anyone’s rights. By posting it
           publicly, you give us a non-exclusive, worldwide, royalty-free licence
-          to display and distribute it on Alentah World, and to remove or edit
+          to display and distribute it on ENEENA, and to remove or edit
           it where needed. We do not claim ownership of your content.
         </P>
         <P>
@@ -313,15 +313,13 @@ const SECTIONS: TermsSection[] = [
     title: "Article Submissions and Publishing Rights",
     body: (
       <>
-        <P>
-          Where we accept stories, pitches, or articles, the following applies:
-        </P>
+        <P>Where we accept stories, pitches, or articles, the following applies:</P>
         <UL
           items={[
             "Submitting does not guarantee publication, and we may decline any submission.",
             "You confirm the work is your own, original, and free of unlawful or infringing material.",
             "We may edit submissions for clarity, length, accuracy, style, and legal reasons.",
-            "If we publish your work, you give us a licence to publish it on Alentah World with the author name and details you provide.",
+            "If we publish your work, you give us a licence to publish it on ENEENA with the author name and details you provide.",
             "Unless we agree otherwise in writing, contributions are unpaid.",
           ]}
         />
@@ -404,7 +402,7 @@ const SECTIONS: TermsSection[] = [
     body: (
       <>
         <P>
-          Alentah World may display advertisements and publish sponsored content
+          ENEENA may display advertisements and publish sponsored content
           or commercial partnerships. Sponsored content is intended to be
           clearly identified, and advertising does not control our editorial
           decisions.
@@ -468,7 +466,7 @@ const SECTIONS: TermsSection[] = [
     body: (
       <>
         <P>
-          Alentah World and its content are provided “as is” and “as available”.
+          ENEENA and its content are provided “as is” and “as available”.
           To the fullest extent permitted by law, we make no warranties of any
           kind, express or implied, including about accuracy, completeness,
           reliability, availability, or fitness for a particular purpose.
@@ -489,7 +487,7 @@ const SECTIONS: TermsSection[] = [
     body: (
       <>
         <P>
-          To the fullest extent permitted by law, Alentah World and the people
+          To the fullest extent permitted by law, ENEENA and the people
           who run it will not be liable for any indirect, incidental, special,
           consequential, or punitive damages, or for any loss of data, profits,
           or reputation, arising from your use of, or inability to use, the
@@ -510,7 +508,7 @@ const SECTIONS: TermsSection[] = [
     body: (
       <>
         <P>
-          You agree to indemnify and hold harmless Alentah World and the people
+          You agree to indemnify and hold harmless ENEENA and the people
           who run it from claims, losses, and expenses, including reasonable
           legal fees, arising from content you post, your breach of these
           Terms, or your violation of any law or third-party right.
@@ -531,7 +529,7 @@ const SECTIONS: TermsSection[] = [
           us or others, or misuse the website.
         </P>
         <P>
-          You may stop using Alentah World at any time, and you can ask us to
+          You may stop using ENEENA at any time, and you can ask us to
           delete your account through the Contact page. Sections that by their
           nature should continue, such as intellectual property, disclaimers,
           and limitation of liability, will remain in effect after termination.
@@ -547,7 +545,7 @@ const SECTIONS: TermsSection[] = [
     body: (
       <>
         <P>
-          Alentah World is continually evolving. We may add, change, or remove
+          ENEENA is continually evolving. We may add, change, or remove
           content, features, editions, and services at any time, with or
           without notice, and we are not liable to you for doing so.
         </P>
@@ -564,7 +562,7 @@ const SECTIONS: TermsSection[] = [
         <P>
           We may update these Terms from time to time. When we do, we will
           change the “Last Updated” date at the top of this page. Your continued
-          use of Alentah World after an update means you accept the revised
+          use of ENEENA after an update means you accept the revised
           Terms, so please review this page periodically.
         </P>
       </>
@@ -580,7 +578,7 @@ const SECTIONS: TermsSection[] = [
         <P>
           {GOVERNING_JURISDICTION
             ? `These Terms are governed by the laws of ${GOVERNING_JURISDICTION}, without regard to conflict-of-law rules.`
-            : "These Terms are governed by the laws that apply to the operator of Alentah World, without regard to conflict-of-law rules."}{" "}
+            : "These Terms are governed by the laws that apply to the operator of ENEENA, without regard to conflict-of-law rules."}{" "}
           Nothing in this section limits any mandatory consumer rights you have
           in your own country.
         </P>
@@ -675,12 +673,12 @@ export function TermsContent() {
           </h1>
 
           <p className={`mb-3 max-w-md text-base leading-relaxed text-foreground/80 ${cleanText}`}>
-            Welcome to Alentah World. These Terms of Service explain the
+            Welcome to ENEENA. These Terms of Service explain the
             conditions governing your access to and use of our publication,
             website, and available services.
           </p>
           <p className={`mb-8 max-w-md text-base leading-relaxed text-foreground/80 ${cleanText}`}>
-            By accessing or using Alentah World, you agree to comply with these
+            By accessing or using ENEENA, you agree to comply with these
             Terms and our applicable policies.
           </p>
 
@@ -741,7 +739,7 @@ export function TermsContent() {
                 <p className={`mb-6 max-w-xl text-[15px] leading-[1.8] text-foreground/80 ${cleanText}`}>
                   If you have questions about these Terms of Service, need to
                   report a problem, or want to raise a concern, please contact
-                  Alentah World through its official contact channel.
+                  ENEENA through its official contact channel.
                 </p>
 
                 {CONTACT_EMAIL && (
@@ -757,7 +755,7 @@ export function TermsContent() {
                   href={CONTACT_HREF}
                   className="group/btn inline-flex h-12 items-center gap-2.5 rounded-[3px] bg-primary px-6 text-[13px] font-bold text-primary-foreground shadow-lg shadow-primary/20 transition-colors duration-300 hover:bg-primary/90"
                 >
-                  Contact Alentah World
+                  Contact ENEENA
                   <ArrowRight
                     className="size-4 transition-transform duration-300 group-hover/btn:translate-x-0.5"
                     aria-hidden="true"
