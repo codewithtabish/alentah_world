@@ -60,7 +60,17 @@ const SUPPORTED_LANGUAGES = new Set<SEOLanguage>([
   "en",
   "ur",
   "ar",
+  "de",
+  "hi",
+  "zh",
+  "es",
+  "fr",
+  "pt-BR",
+  "ja",
+  "bn",
+  "id",
 ]);
+
 
 function extractTextFromContent(content: {
   blocks: Array<Record<string, unknown>>;
