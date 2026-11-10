@@ -389,7 +389,7 @@ export function HomeClient({ blogs }: HomeClientProps) {
       )}
 
       {/* 3. READ IN YOUR LANGUAGE */}
-      {editionBlocks.length > 0 && (
+      {/* {editionBlocks.length > 0 && (
         <section aria-labelledby="languages-heading" className="flex flex-col gap-8">
           <header className="flex flex-col gap-3">
             <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-primary">Six editions</span>
@@ -399,7 +399,7 @@ export function HomeClient({ blogs }: HomeClientProps) {
             {editionBlocks.map(({ edition, blogs: list }) => <EditionBlock key={edition.code} edition={edition} blogs={list} />)}
           </div>
         </section>
-      )}
+      )} */}
 
       {/* 4. CLOSING BANNER */}
       <section dir="ltr" aria-labelledby="editions-heading" className="relative isolate overflow-hidden rounded-[8px] bg-linear-to-br from-[#a33a55] via-[#8f2f49] to-[#7a2540] px-6 py-14 text-[#fffaf5] shadow-2xl shadow-[#8f2f49]/20 ring-1 ring-inset ring-white/15 sm:px-14 sm:py-20">
