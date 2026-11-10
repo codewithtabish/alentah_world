@@ -30,15 +30,16 @@ export function SubcategoryClient({ langCode, subcategory, blogs, totalPages, cu
   const titleFont = isRTL ? "font-urdu-display" : "font-serif";
   const t = LABELS[(langCode as keyof typeof LABELS) in LABELS ? (langCode as keyof typeof LABELS) : "en"];
 
-  // ───── Anti-clipping helpers (Urdu/Arabic: tall ascenders + deep descenders) ─────
-  // Rules: big line-height, vertical padding, NO line-clamp / uppercase for RTL.
+  // ───── Anti-clipping helpers ─────
   const lhXL = isRTL ? "leading-[2]" : "leading-[1.2]";
   const lhTitle = isRTL ? "leading-[2.05]" : "leading-snug";
   const lhBody = isRTL ? "leading-[2.3]" : "leading-relaxed";
   const lhMeta = isRTL ? "leading-[2.2]" : "leading-normal";
   const pad = isRTL ? "py-1.5" : "";
-  const clamp2 = isRTL ? "" : "line-clamp-2";
-  const clamp3 = isRTL ? "" : "line-clamp-3";
+  
+  // FIXED: Force clamping even for RTL so the layout doesn't break
+  const clamp2 = "line-clamp-2";
+  const clamp3 = "line-clamp-3";
   const labelCase = isRTL ? "" : "uppercase tracking-wider";
 
   const href = (b: SubcategoryPageBlog) =>
@@ -103,7 +104,8 @@ export function SubcategoryClient({ langCode, subcategory, blogs, totalPages, cu
               href={href(heroBlog)}
               className="group grid grid-cols-1 items-center gap-6 overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-shadow hover:shadow-md lg:grid-cols-2 lg:gap-10"
             >
-              <div className="relative aspect-video w-full overflow-hidden lg:aspect-auto lg:h-100">
+              {/* FIXED: Made the image aspect ratio fixed instead of stretching with h-100 */}
+              <div className="relative aspect-video w-full overflow-hidden lg:aspect-4/3">
                 <Image
                   src={heroBlog.bannerImage}
                   alt={heroBlog.title}
@@ -141,6 +143,7 @@ export function SubcategoryClient({ langCode, subcategory, blogs, totalPages, cu
                   className={cn(
                     "wrap-break-word text-2xl font-bold text-foreground transition-colors group-hover:text-primary sm:text-3xl lg:text-4xl",
                     pad,
+                    clamp2, // FIXED: Ensure title doesn't overflow
                     lhXL,
                     titleFont
                   )}
@@ -153,7 +156,7 @@ export function SubcategoryClient({ langCode, subcategory, blogs, totalPages, cu
                     className={cn(
                       "text-sm text-muted-foreground sm:text-base",
                       pad,
-                      clamp3,
+                      clamp3, // FIXED: Force description to 3 lines max
                       lhBody,
                       fontClass
                     )}
@@ -164,13 +167,13 @@ export function SubcategoryClient({ langCode, subcategory, blogs, totalPages, cu
 
                 <div
                   className={cn(
-                    "mt-3 flex items-center gap-3 border-t border-border/50 pt-4 text-sm text-muted-foreground",
+                    "mt-auto flex items-center gap-3 border-t border-border/50 pt-4 text-sm text-muted-foreground",
                     lhMeta,
                     fontClass
                   )}
                 >
                   <div className="relative size-10 shrink-0 overflow-hidden rounded-full border border-border">
-                    <Image src={authorImg(heroBlog)} alt="" fill className="object-cover" />
+                    <Image src={authorImg(heroBlog)} alt="" fill sizes="40px" className="object-cover" />
                   </div>
                   <span className="font-bold text-foreground">{authorName(heroBlog)}</span>
                 </div>

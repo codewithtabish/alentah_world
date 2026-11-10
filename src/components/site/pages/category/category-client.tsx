@@ -9,7 +9,6 @@ import { ChevronRight, ChevronLeft, ChevronDown, ArrowRight, Globe, MapPin, Brie
 import type { CategoryPageBlog, CategoryPageData } from "@/actions/articles/get-category-blogs";
 import { Breadcrumbs } from "../shared/breadcrumbs";
 
-// Shape of the category editor (add the same type to your get-category-blogs action)
 export type CategoryEditor = {
   name: string;
   role?: string | null;
@@ -72,7 +71,6 @@ const LABELS = {
   },
 } as const;
 
-// ───── Social icons (inline so no lucide brand-icon version issues) ─────
 const XIcon = (p: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden {...p}>
     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
@@ -130,14 +128,15 @@ export function CategoryClient({ langCode, category, blogs, totalPages, currentP
   const titleFont = isRTL ? "font-urdu-display" : "font-serif";
   const t = LABELS[(langCode as keyof typeof LABELS) in LABELS ? (langCode as keyof typeof LABELS) : "en"];
 
-  // ───── Anti-clipping helpers (Urdu/Arabic have tall ascenders + deep descenders) ─────
   const lhXL = isRTL ? "leading-[2]" : "leading-[1.2]";
   const lhTitle = isRTL ? "leading-[2.05]" : "leading-snug";
   const lhBody = isRTL ? "leading-[2.3]" : "leading-relaxed";
   const lhMeta = isRTL ? "leading-[2.2]" : "leading-normal";
   const pad = isRTL ? "py-1.5" : "";
-  const clamp2 = isRTL ? "" : "line-clamp-2";
-  const clamp3 = isRTL ? "" : "line-clamp-3";
+  
+  // 👇 FIXED: Force truncation so long Arabic text doesn't break the layout
+  const clamp2 = "line-clamp-2";
+  const clamp3 = "line-clamp-3";
 
   const editor = category.editor ?? null;
   const total = totalCount ?? blogs.length;
@@ -153,7 +152,6 @@ export function CategoryClient({ langCode, category, blogs, totalPages, currentP
   const base = `/${langCode}/${category.slug}`;
   const pageHref = (n: number) => (n === 1 ? base : `${base}?page=${n}`);
 
-  // Page 1: first story is featured. Other pages: grid only.
   const isFirstPage = currentPage === 1;
   const heroBlog = isFirstPage ? blogs[0] : null;
   const gridBlogs = isFirstPage ? blogs.slice(1) : blogs;
@@ -170,7 +168,6 @@ export function CategoryClient({ langCode, category, blogs, totalPages, currentP
       ].filter((s) => !!s.url)
     : [];
 
-  // Subcategory dropdown (native <details>, no state needed)
   const subMenu =
     category.subcategories.length > 0 ? (
       <details className="group rounded-md border border-border bg-background text-start">
@@ -214,10 +211,8 @@ export function CategoryClient({ langCode, category, blogs, totalPages, currentP
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col px-4 pb-20 pt-6 sm:px-6 lg:pt-8" dir={isRTL ? "rtl" : "ltr"}>
-      {/* ───────── 0. BREADCRUMBS ───────── */}
       <Breadcrumbs items={breadcrumbItems} isRTL={isRTL} className="mb-6 lg:mb-8" />
 
-      {/* ───────── 1. HERO BANNER (title never overflows, cover is optional) ───────── */}
       <section className="relative isolate overflow-hidden rounded-2xl border border-border bg-card">
         {category.coverImage && (
           <div className="absolute inset-0 -z-10 lg:w-3/5 lg:ltr:left-auto lg:ltr:right-0 lg:rtl:right-auto lg:rtl:left-0">
@@ -259,7 +254,6 @@ export function CategoryClient({ langCode, category, blogs, totalPages, currentP
         </div>
       </section>
 
-      {/* ───────── 2. EDITOR CARD + SUBCATEGORY DROPDOWN ───────── */}
       {editor ? (
         <section className="mx-auto mt-14 w-full max-w-xl">
           <div className="relative rounded-md border border-border bg-card px-5 pb-6 pt-10 text-center sm:px-8">
@@ -336,7 +330,6 @@ export function CategoryClient({ langCode, category, blogs, totalPages, currentP
           <div className={cn("py-24 text-center text-muted-foreground", lhBody, fontClass)}>{t.empty}</div>
         ) : (
           <>
-            {/* ───────── 3. FEATURED STORY (page 1) ───────── */}
             {heroBlog && (
               <article className="group grid grid-cols-1 items-center gap-6 md:grid-cols-2 lg:gap-12">
                 <div className="order-2 flex min-w-0 flex-col items-start gap-3 md:order-1">
@@ -355,6 +348,7 @@ export function CategoryClient({ langCode, category, blogs, totalPages, currentP
                       className={cn(
                         "wrap-break-word text-2xl font-bold text-foreground transition-colors hover:text-primary sm:text-3xl lg:text-4xl",
                         pad,
+                        clamp2, // FIXED: Apply clamp to title
                         lhXL,
                         titleFont
                       )}
@@ -411,7 +405,6 @@ export function CategoryClient({ langCode, category, blogs, totalPages, currentP
               </article>
             )}
 
-            {/* ───────── 4. LATEST STORIES GRID ───────── */}
             {gridBlogs.length > 0 && (
               <section className="flex flex-col gap-6">
                 <div className="flex items-center gap-4">
@@ -483,7 +476,6 @@ export function CategoryClient({ langCode, category, blogs, totalPages, currentP
           </>
         )}
 
-        {/* ───────── 5. PAGINATION (numbered) ───────── */}
         {totalPages > 1 && (
           <nav aria-label="Pagination" className="flex flex-wrap items-center justify-center gap-2">
             {currentPage > 1 && (

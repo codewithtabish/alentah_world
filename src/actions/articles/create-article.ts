@@ -1,4 +1,4 @@
-// src/actions/articles/create-article.ts
+
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
@@ -114,9 +114,14 @@ function extractTextFromContent(content: {
             const nestedText = Array.isArray(entry.items)
               ? entry.items
                   .map((nestedItem) => {
-                    if (typeof nestedItem === "string") return nestedItem;
+                    if (typeof nestedItem === "string") {
+                      return nestedItem;
+                    }
 
-                    if (typeof nestedItem === "object" && nestedItem !== null) {
+                    if (
+                      typeof nestedItem === "object" &&
+                      nestedItem !== null
+                    ) {
                       const nested = nestedItem as {
                         content?: unknown;
                         text?: unknown;
@@ -216,7 +221,10 @@ export async function createArticleAction(
       };
     }
 
-    if (!Array.isArray(data.content?.blocks) || data.content.blocks.length === 0) {
+    if (
+      !Array.isArray(data.content?.blocks) ||
+      data.content.blocks.length === 0
+    ) {
       return {
         success: false,
         error: "Article content is empty.",
@@ -304,7 +312,7 @@ export async function createArticleAction(
     const catSlug = subcategory.category.slug;
     const subCatSlug = subcategory.slug;
 
-    // 5. Generate language-specific SEO.
+    // 5. Generate language-specific SEO
     const contentText = extractTextFromContent(data.content);
     let seo: SEOResult;
 
@@ -319,6 +327,7 @@ export async function createArticleAction(
         "[createArticleAction] SEO generation failed; using fallback:",
         seoError,
       );
+
       seo = createFallbackSEO(
         data.title.trim(),
         langCode,
@@ -335,6 +344,7 @@ export async function createArticleAction(
       "http://localhost:3000";
 
     const baseUrl = configuredBaseUrl.replace(/\/+$/, "");
+
     const canonicalUrl = `${baseUrl}/${langCode}/${catSlug}/${subCatSlug}/${data.slug}`;
 
     // 7. Prepare article status and dates
@@ -348,14 +358,17 @@ export async function createArticleAction(
         slug: data.slug.trim(),
         shortDescription: seo.excerpt,
         content: data.content as unknown as Prisma.InputJsonValue,
-        tableOfContents: (data.tableOfContents ?? []) as unknown as Prisma.InputJsonValue,
+        tableOfContents: (data.tableOfContents ??
+          []) as unknown as Prisma.InputJsonValue,
         type: (data.type as any) || "ARTICLE",
         status: status as any,
         bannerImage: data.bannerImage.trim(),
         bannerImageAlt: data.bannerImageAlt?.trim() || data.title.trim(),
         featured: data.featured ?? false,
         publishedAt: isPublished ? new Date() : null,
-        scheduledAt: data.scheduledAt ? new Date(data.scheduledAt) : null,
+        scheduledAt: data.scheduledAt
+          ? new Date(data.scheduledAt)
+          : null,
         authorId: user.id,
         languageId: data.languageId,
         categoryId: data.categoryId,
@@ -386,40 +399,66 @@ export async function createArticleAction(
     revalidatePath("/admin/articles");
     revalidatePath("/admin");
 
-    // 10. Invalidate public pages and send notifications
+    // 10. Immediately expire public page caches after publication
     if (isPublished) {
+      const articlePath = `/${langCode}/${catSlug}/${subCatSlug}/${article.slug}`;
+      const languageHomePath = `/${langCode}`;
+      const categoryPath = `/${langCode}/${catSlug}`;
+      const subcategoryPath = `/${langCode}/${catSlug}/${subCatSlug}`;
+
+      // Revalidate homepage routes
       revalidatePath("/");
-      revalidatePath(`/${langCode}/${catSlug}/${subCatSlug}/${article.slug}`);
-      
-      // Base caches
-      revalidateTag(CACHE_TAGS.home, "max");
-      revalidateTag(CACHE_TAGS.homeScreen, "max");
-      revalidateTag(CACHE_TAGS.blog(article.slug), "max");
+      revalidatePath(languageHomePath);
 
-      // 👇 FIXED: Revalidate the exact tags used in `get-category-blogs.ts`
-      revalidateTag(CACHE_TAGS.category(catSlug), "max");
-      revalidateTag(CACHE_TAGS.categoryPage(`${catSlug}:1`), "max"); 
-      
-      // Also revalidate the Next.js Page path directly for safety
-      revalidatePath(`/${langCode}/${catSlug}`);
+      // Revalidate category and subcategory routes
+      revalidatePath(categoryPath);
+      revalidatePath(subcategoryPath);
 
-      // Subcategory caches (just in case you use them elsewhere)
-      revalidateTag(CACHE_TAGS.subcategoryPageBlogs(subCatSlug), "max");
+      // Revalidate the published article route
+      revalidatePath(articlePath);
 
-      // 👇 BACKGROUND NOTIFICATION LOGIC
-      const articleUrl = `/${langCode}/${catSlug}/${subCatSlug}/${article.slug}`;
-      
+      // Immediately expire homepage caches
+      revalidateTag(CACHE_TAGS.home, { expire: 0 });
+      revalidateTag(CACHE_TAGS.homeScreen, { expire: 0 });
+
+      // Immediately expire article cache
+      revalidateTag(CACHE_TAGS.blog(article.slug), { expire: 0 });
+
+      // Immediately expire category caches
+      revalidateTag(CACHE_TAGS.category(catSlug), { expire: 0 });
+      revalidateTag(CACHE_TAGS.categoryPage(catSlug), { expire: 0 });
+
+      // Immediately expire subcategory caches
+      revalidateTag(
+        CACHE_TAGS.subcategoryPageBlogs(subCatSlug),
+        { expire: 0 },
+      );
+
+      revalidateTag(
+        CACHE_TAGS.subcategoryPage(`${subCatSlug}:1`),
+        { expire: 0 },
+      );
+
+      // Background push notifications
       after(async () => {
         try {
-          console.log("Sending background push notifications for:", article.title);
+          console.log(
+            "Sending background push notifications for:",
+            article.title,
+          );
+
           await sendPushNotificationToAll({
             title: "New Article Published!",
             body: article.title,
-            url: articleUrl,
+            url: articlePath,
           });
-          console.log("Push notifications sent successfully.");
+
+          console.log("Background push notifications sent successfully.");
         } catch (error) {
-          console.error("Background push notification failed:", error);
+          console.error(
+            "Background push notification failed:",
+            error,
+          );
         }
       });
     }
