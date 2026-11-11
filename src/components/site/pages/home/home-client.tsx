@@ -396,7 +396,7 @@ function StoryCard({ blog, variant = "grid" }: { blog: HomeBlogItem; variant?: "
 }
 
 /* ------------------------------------------------------------------ */
-/* Language tile                                                       */
+/* Language tile (compact, single row)                                 */
 /* ------------------------------------------------------------------ */
 
 function LanguageTile({ edition }: { edition: Edition }) {
@@ -405,22 +405,40 @@ function LanguageTile({ edition }: { edition: Edition }) {
       href={`/${edition.code}`}
       hrefLang={edition.code}
       title={`ENEENA in ${edition.name}`}
-      className="group relative flex h-full min-h-36 flex-col justify-between gap-6 overflow-hidden rounded-lg border border-border bg-card p-4 text-card-foreground transition-all duration-300 hover:-translate-y-0.5 hover:border-primary hover:bg-primary hover:text-primary-foreground hover:shadow-lg hover:shadow-primary/20 sm:p-5"
+      className="group relative flex h-full items-center gap-3 overflow-hidden rounded-xl border border-border bg-card px-3 py-2.5 text-card-foreground transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-primary hover:bg-primary hover:text-primary-foreground hover:shadow-lg hover:shadow-primary/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
     >
-      <Flag code={edition.code} className="size-10 ring-1 ring-border transition-transform duration-300 group-hover:scale-105" />
-      <span className="flex flex-col gap-1">
+      {/* Soft sheen that appears on hover */}
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-linear-to-br from-primary-foreground/15 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+      />
+
+      <Flag
+        code={edition.code}
+        className="relative size-9 shadow-sm ring-1 ring-border transition-all duration-300 group-hover:scale-110 group-hover:ring-primary-foreground/40"
+      />
+
+      <span className="relative flex min-w-0 flex-1 flex-col">
         <span
           lang={edition.code}
           dir={edition.dir}
-          className={cn("self-start text-balance text-xl font-bold leading-[1.7] sm:text-2xl", edition.display)}
+          className={cn(
+            "self-start text-balance text-[15px] font-bold sm:text-base",
+            edition.latin ? "leading-tight" : "py-0.5 leading-[1.8]",
+            edition.display,
+          )}
         >
           {edition.native}
         </span>
-        <span className="flex items-center justify-between gap-2 text-xs font-semibold uppercase tracking-[0.14em] opacity-70 transition-opacity group-hover:opacity-100">
-          <span>{edition.name}</span>
-          <ArrowUpRight className="size-4 shrink-0 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden="true" />
+        <span className="truncate text-[10px] font-semibold uppercase tracking-[0.14em] opacity-60 transition-opacity duration-300 group-hover:opacity-90">
+          {edition.name}
         </span>
       </span>
+
+      <ArrowUpRight
+        className="relative size-3.5 shrink-0 opacity-40 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:opacity-100 rtl:-scale-x-100"
+        aria-hidden="true"
+      />
     </Link>
   );
 }
@@ -567,10 +585,15 @@ export function HomeClient({ blogs }: HomeClientProps) {
         )}
       </section>
 
-      {/* 2. READ IN YOUR LANGUAGE */}
-      <section aria-labelledby="languages-heading" className="flex flex-col gap-8">
-        <SectionHeader id="languages-heading" eyebrow="12 editions" title="Read ENEENA in Your Language" />
-        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-6">
+      {/* 2. READ IN YOUR LANGUAGE (compact cards) */}
+      <section aria-labelledby="languages-heading" className="flex flex-col gap-6">
+        <SectionHeader
+          id="languages-heading"
+          eyebrow={`${EDITIONS.length} editions`}
+          title="Read ENEENA in Your Language"
+          titleClassName="text-2xl sm:text-4xl"
+        />
+        <ul className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6">
           {EDITIONS.map((edition) => (
             <li key={edition.code}>
               <LanguageTile edition={edition} />
@@ -648,7 +671,7 @@ export function HomeClient({ blogs }: HomeClientProps) {
           </div>
           <div className="flex flex-col gap-8 lg:col-span-5 lg:items-end">
             <p className="max-w-md text-start font-sans text-base leading-7 opacity-90 [hyphens:none] sm:text-lg sm:leading-8">
-              Share your story with ENEENA in any of our 12 languages. Real voices and real experiences, in the language you think in.
+              Share your story with ENEENA in any of our {EDITIONS.length} languages. Real voices and real experiences, in the language you think in.
             </p>
             <div className="flex flex-wrap items-center gap-3">
               <Link
