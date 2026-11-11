@@ -396,7 +396,7 @@ function StoryCard({ blog, variant = "grid" }: { blog: HomeBlogItem; variant?: "
 }
 
 /* ------------------------------------------------------------------ */
-/* Language tile (compact, single row)                                 */
+/* Language tile (compact, vertical, theme tokens only)                */
 /* ------------------------------------------------------------------ */
 
 function LanguageTile({ edition }: { edition: Edition }) {
@@ -405,41 +405,90 @@ function LanguageTile({ edition }: { edition: Edition }) {
       href={`/${edition.code}`}
       hrefLang={edition.code}
       title={`ENEENA in ${edition.name}`}
-      className="group relative flex h-full items-center gap-3 overflow-hidden rounded-xl border border-border bg-card px-3 py-2.5 text-card-foreground transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-primary hover:bg-primary hover:text-primary-foreground hover:shadow-lg hover:shadow-primary/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+      className="group relative flex h-full flex-col items-center gap-2.5 overflow-hidden rounded-xl border border-border bg-card px-2.5 pb-3 pt-4 text-center text-card-foreground transition-all duration-300 ease-out hover:-translate-y-1 hover:border-primary hover:bg-primary hover:text-primary-foreground hover:shadow-xl hover:shadow-primary/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
     >
-      {/* Soft sheen that appears on hover */}
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-linear-to-br from-primary-foreground/15 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-      />
-
       <Flag
         code={edition.code}
-        className="relative size-9 shadow-sm ring-1 ring-border transition-all duration-300 group-hover:scale-110 group-hover:ring-primary-foreground/40"
+        className="size-12 shadow-md shadow-foreground/10 ring-1 ring-border transition-all duration-500 group-hover:scale-110 group-hover:ring-primary-foreground/40"
       />
 
-      <span className="relative flex min-w-0 flex-1 flex-col">
+      {/* Fixed min-height keeps every card aligned, even when a name wraps to 2 lines */}
+      <span className="flex min-h-11 w-full flex-col items-center justify-center gap-0.5">
         <span
           lang={edition.code}
           dir={edition.dir}
           className={cn(
-            "self-start text-balance text-[15px] font-bold sm:text-base",
+            "text-balance text-base font-bold",
             edition.latin ? "leading-tight" : "py-0.5 leading-[1.8]",
             edition.display,
           )}
         >
           {edition.native}
         </span>
-        <span className="truncate text-[10px] font-semibold uppercase tracking-[0.14em] opacity-60 transition-opacity duration-300 group-hover:opacity-90">
+        <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground transition-colors duration-300 group-hover:text-primary-foreground/80">
           {edition.name}
         </span>
       </span>
 
-      <ArrowUpRight
-        className="relative size-3.5 shrink-0 opacity-40 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:opacity-100 rtl:-scale-x-100"
+      <ArrowRight
+        className="size-4 text-primary/60 transition-all duration-300 group-hover:translate-x-1 group-hover:text-primary-foreground rtl:rotate-180 rtl:group-hover:-translate-x-1"
         aria-hidden="true"
       />
     </Link>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Languages section                                                   */
+/*                                                                     */
+/* Hidden on small devices (below 640px). Visible from `sm` and up.    */
+/* To hide it on tablets too, change `sm:flex` to `md:flex`.           */
+/* ------------------------------------------------------------------ */
+
+function LanguagesSection() {
+  return (
+    <section
+      aria-labelledby="languages-heading"
+      className="hidden flex-col gap-10 sm:flex sm:gap-12"
+    >
+      {/* Header */}
+      <header className="mx-auto flex max-w-3xl flex-col items-center gap-5 text-center">
+        <div className="flex w-full items-center gap-4">
+          <span aria-hidden="true" className="h-px flex-1 bg-linear-to-r from-transparent to-primary/40" />
+          <span className="inline-flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.28em] text-primary sm:text-xs">
+            <span aria-hidden="true" className="size-2 rotate-45 bg-primary" />
+            {EDITIONS.length} independent editions
+          </span>
+          <span aria-hidden="true" className="h-px flex-1 bg-linear-to-l from-transparent to-primary/40" />
+        </div>
+
+        <h2
+          id="languages-heading"
+          className="text-balance font-serif text-3xl font-bold leading-[1.1] tracking-tight text-foreground sm:text-5xl"
+        >
+          Read ENEENA in Your Language
+        </h2>
+
+        <p className="max-w-2xl text-balance font-serif text-sm leading-7 text-muted-foreground sm:text-lg sm:leading-8">
+          Explore stories, perspectives, and ideas through {EDITIONS.length} independent language editions, each created for its own readers and culture.
+        </p>
+
+        <div aria-hidden="true" className="flex w-full max-w-md items-center gap-3">
+          <span className="h-px flex-1 bg-linear-to-r from-transparent to-primary/30" />
+          <span className="size-1.5 rotate-45 bg-primary" />
+          <span className="h-px flex-1 bg-linear-to-l from-transparent to-primary/30" />
+        </div>
+      </header>
+
+      {/* Cards */}
+      <ul className="grid grid-cols-3 gap-3 md:grid-cols-4 xl:grid-cols-6">
+        {EDITIONS.map((edition) => (
+          <li key={edition.code}>
+            <LanguageTile edition={edition} />
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 
@@ -585,22 +634,8 @@ export function HomeClient({ blogs }: HomeClientProps) {
         )}
       </section>
 
-      {/* 2. READ IN YOUR LANGUAGE (compact cards) */}
-      <section aria-labelledby="languages-heading" className="flex flex-col gap-6">
-        <SectionHeader
-          id="languages-heading"
-          eyebrow={`${EDITIONS.length} editions`}
-          title="Read ENEENA in Your Language"
-          titleClassName="text-2xl sm:text-4xl"
-        />
-        <ul className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6">
-          {EDITIONS.map((edition) => (
-            <li key={edition.code}>
-              <LanguageTile edition={edition} />
-            </li>
-          ))}
-        </ul>
-      </section>
+      {/* 2. READ IN YOUR LANGUAGE (hidden on small devices) */}
+      <LanguagesSection />
 
       {/* 3. LATEST STORIES */}
       {latestBlogs.length > 0 && (
