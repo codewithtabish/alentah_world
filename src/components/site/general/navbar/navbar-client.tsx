@@ -6,14 +6,11 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 
 import {
-  ArrowRight,
   Bookmark,
   Check,
   ChevronDown,
   Globe,
   LogOut,
-  Menu,
-  Search,
   User as UserIcon,
   X,
 } from "lucide-react";
@@ -46,95 +43,8 @@ const MENU_ITEM =
   "flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-[13px] text-popover-foreground/85 no-underline transition-colors hover:bg-accent hover:text-foreground";
 
 // ============================================================
-// LOCALIZED COPY
+// HELPERS
 // ============================================================
-
-type EditionCopy = {
-  title: string;
-  tagline: string;
-  open: string;
-  empty: string;
-};
-
-const EDITION_COPY: Record<string, EditionCopy> = {
-  ur: {
-    title: "اردو ایڈیشن",
-    tagline: "آزاد اردو نیوز روم",
-    open: "اردو ایڈیشن کھولیں",
-    empty: "ابھی کوئی زمرہ نہیں ہے۔",
-  },
-  ar: {
-    title: "النسخة العربية",
-    tagline: "غرفة أخبار عربية مستقلة",
-    open: "افتح النسخة العربية",
-    empty: "لا توجد تصنيفات بعد.",
-  },
-  de: {
-    title: "Deutsche Ausgabe",
-    tagline: "Unabhängige deutsche Redaktion",
-    open: "Deutsche Ausgabe öffnen",
-    empty: "Noch keine Kategorien.",
-  },
-  hi: {
-    title: "हिंदी संस्करण",
-    tagline: "स्वतंत्र हिंदी न्यूज़रूम",
-    open: "हिंदी संस्करण खोलें",
-    empty: "अभी कोई श्रेणी नहीं है।",
-  },
-  zh: {
-    title: "中文版",
-    tagline: "独立中文新闻编辑部",
-    open: "打开中文版",
-    empty: "暂无分类。",
-  },
-  bn: {
-    title: "বাংলা সংস্করণ",
-    tagline: "স্বাধীন বাংলা নিউজরুম",
-    open: "বাংলা সংস্করণ খুলুন",
-    empty: "এখনও কোনো বিভাগ নেই।",
-  },
-  id: {
-    title: "Edisi Indonesia",
-    tagline: "Ruang berita Indonesia yang independen",
-    open: "Buka edisi Indonesia",
-    empty: "Belum ada kategori.",
-  },
-  es: {
-    title: "Edición en español",
-    tagline: "Redacción independiente en español",
-    open: "Abrir edición en español",
-    empty: "Aún no hay categorías.",
-  },
-  fr: {
-    title: "Édition française",
-    tagline: "Rédaction française indépendante",
-    open: "Ouvrir l'édition française",
-    empty: "Aucune catégorie pour le moment.",
-  },
-  pt: {
-    title: "Edição em português",
-    tagline: "Redação independente em português",
-    open: "Abrir edição em português",
-    empty: "Ainda não há categorias.",
-  },
-  ja: {
-    title: "日本語版",
-    tagline: "独立系の日本語ニュースルーム",
-    open: "日本語版を開く",
-    empty: "カテゴリはまだありません。",
-  },
-};
-
-function getCopy(language: LanguageListItem): EditionCopy {
-  return (
-    EDITION_COPY[language.code] ?? {
-      title: `${language.name} Edition`,
-      tagline: `Independent ${language.name} newsroom`,
-      open: `Open ${language.name} edition`,
-      empty: "No categories yet.",
-    }
-  );
-}
 
 function getLanguageFromPathname(pathname: string) {
   return pathname.split("/").filter(Boolean)[0] || "en";
@@ -423,8 +333,15 @@ function MobileLanguageSelector({
         setOpen(false);
       }
     };
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
   }, [open]);
 
   if (!currentLanguage) return null;
@@ -504,24 +421,23 @@ function MobileLanguageSelector({
 // ============================================================
 
 interface NavbarClientProps {
-  categories: CategoryListItem[];
+  // Kept optional so the parent component doesn't break (no longer used here).
+  categories?: CategoryListItem[];
   languages: LanguageListItem[];
 }
 
-export function NavbarClient({ categories, languages }: NavbarClientProps) {
+export function NavbarClient({ languages }: NavbarClientProps) {
   const pathname = usePathname();
   const { user } = useUser();
   const { signOut } = useClerk();
 
   const currentLangCode = getLanguageFromPathname(pathname);
   const [userMenuOpen, setUserMenuOpen] = React.useState(false);
-  const [mobileOpen, setMobileOpen] = React.useState(false);
   const [prevPathname, setPrevPathname] = React.useState(pathname);
 
   if (prevPathname !== pathname) {
     setPrevPathname(pathname);
     setUserMenuOpen(false);
-    setMobileOpen(false);
   }
 
   const userMenuRef = React.useRef<HTMLDivElement>(null);
@@ -537,61 +453,31 @@ export function NavbarClient({ categories, languages }: NavbarClientProps) {
         setUserMenuOpen(false);
       }
     };
-    document.addEventListener("mousedown", onMouseDown);
-    return () => document.removeEventListener("mousedown", onMouseDown);
-  }, [userMenuOpen]);
-
-  React.useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setUserMenuOpen(false);
-        setMobileOpen(false);
-      }
+      if (event.key === "Escape") setUserMenuOpen(false);
     };
+    document.addEventListener("mousedown", onMouseDown);
     document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, []);
-
-  React.useEffect(() => {
-    if (!mobileOpen) return;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = previous; };
-  }, [mobileOpen]);
-
-  React.useEffect(() => {
-    const mq = window.matchMedia("(min-width: 1280px)");
-    const onChange = () => { if (mq.matches) setMobileOpen(false); };
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
+    return () => {
+      document.removeEventListener("mousedown", onMouseDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [userMenuOpen]);
 
   if (isAdminRoute) return null;
 
   const activeLanguages = languages.filter((language) => language.isActive);
-  const currentLanguage = activeLanguages.find((language) => language.code === currentLangCode) ?? activeLanguages.find((language) => language.isDefault) ?? activeLanguages[0];
-  const mobileCategories = categories.filter((category) => category.language.code === currentLanguage?.code);
-  const searchHref = "/search";
+  const currentLanguage =
+    activeLanguages.find((language) => language.code === currentLangCode) ??
+    activeLanguages.find((language) => language.isDefault) ??
+    activeLanguages[0];
 
   return (
     <header className="relative z-50 w-full">
-      {/* 👇 REMOVED PADDING FROM THE TOP LEVEL DIV */}
-      <div className="flex  items-center justify-between ">
-        
+      <div className="flex items-center justify-between">
         {/* LEFT: LOGO */}
         <div className="flex min-w-0 items-center gap-1 sm:gap-2 xl:gap-4">
-          <button
-            type="button"
-            aria-label="Open menu"
-            aria-expanded={mobileOpen}
-            onClick={() => setMobileOpen(true)}
-            className={cn(ICON_BTN, "text-foreground/80 xl:hidden")}
-          >
-            <Menu className="size-5" strokeWidth={1.75} />
-          </button>
-
           <Logo />
-
           <span aria-hidden="true" className="hidden h-9 w-px bg-border xl:block" />
         </div>
 
@@ -600,12 +486,12 @@ export function NavbarClient({ categories, languages }: NavbarClientProps) {
           <DesktopLanguageDropdown languages={activeLanguages} currentLangCode={currentLangCode} />
           <MobileLanguageSelector languages={activeLanguages} currentLanguage={currentLanguage} />
 
-          <Link href={searchHref} aria-label="Search" className={cn(ICON_BTN, "hidden text-foreground/70 sm:inline-flex")}>
-            <Search className="size-4.5" strokeWidth={1.75} />
-          </Link>
-
           <Show when="signed-in">
-            <Link href="/saved" aria-label="Saved articles" className={cn(ICON_BTN, "hidden sm:inline-flex", isSavedRoute ? "bg-primary/10 text-primary" : "text-foreground/70")}>
+            <Link
+              href="/saved"
+              aria-label="Saved articles"
+              className={cn(ICON_BTN, isSavedRoute ? "bg-primary/10 text-primary" : "text-foreground/70")}
+            >
               <Bookmark className="size-4.5" strokeWidth={1.75} fill={isSavedRoute ? "currentColor" : "none"} />
             </Link>
           </Show>
@@ -615,7 +501,10 @@ export function NavbarClient({ categories, languages }: NavbarClientProps) {
 
           <Show when="signed-out">
             <SignInButton mode="modal" forceRedirectUrl="/" signUpForceRedirectUrl="/">
-              <button type="button" className="inline-flex h-9 items-center justify-center rounded-full bg-primary px-4 text-[13px] font-bold text-primary-foreground shadow-sm transition-opacity hover:opacity-90 sm:h-10 sm:px-6 sm:text-sm">
+              <button
+                type="button"
+                className="inline-flex h-9 items-center justify-center rounded-full bg-primary px-4 text-[13px] font-bold text-primary-foreground shadow-sm transition-opacity hover:opacity-90 sm:h-10 sm:px-6 sm:text-sm"
+              >
                 Login
               </button>
             </SignInButton>
@@ -634,10 +523,14 @@ export function NavbarClient({ categories, languages }: NavbarClientProps) {
                   {user?.imageUrl ? (
                     <Image src={user.imageUrl} alt="User" width={40} height={40} className="h-full w-full object-cover" />
                   ) : (
-                    <span className="flex h-full w-full items-center justify-center bg-primary text-xs font-bold text-primary-foreground">{user?.firstName?.[0]?.toUpperCase() ?? "U"}</span>
+                    <span className="flex h-full w-full items-center justify-center bg-primary text-xs font-bold text-primary-foreground">
+                      {user?.firstName?.[0]?.toUpperCase() ?? "U"}
+                    </span>
                   )}
                 </span>
-                <ChevronDown className={cn("me-1 hidden size-3.5 text-muted-foreground transition-transform duration-200 sm:block", userMenuOpen && "rotate-180")} />
+                <ChevronDown
+                  className={cn("me-1 hidden size-3.5 text-muted-foreground transition-transform duration-200 sm:block", userMenuOpen && "rotate-180")}
+                />
               </button>
 
               {userMenuOpen && (
@@ -647,26 +540,55 @@ export function NavbarClient({ categories, languages }: NavbarClientProps) {
                       {user?.imageUrl ? (
                         <Image src={user.imageUrl} alt="" width={44} height={44} className="h-full w-full object-cover" />
                       ) : (
-                        <span className="flex h-full w-full items-center justify-center bg-primary text-sm font-bold text-primary-foreground">{user?.firstName?.[0]?.toUpperCase() ?? "U"}</span>
+                        <span className="flex h-full w-full items-center justify-center bg-primary text-sm font-bold text-primary-foreground">
+                          {user?.firstName?.[0]?.toUpperCase() ?? "U"}
+                        </span>
                       )}
                     </span>
                     <div className="min-w-0">
                       <p className="truncate text-[14px] font-bold text-foreground">{user?.fullName ?? "Reader"}</p>
-                      <p className="truncate text-[12px] text-muted-foreground">{user?.username ? `@${user.username}` : user?.primaryEmailAddress?.emailAddress}</p>
+                      <p className="truncate text-[12px] text-muted-foreground">
+                        {user?.username ? `@${user.username}` : user?.primaryEmailAddress?.emailAddress}
+                      </p>
                     </div>
                   </div>
+
                   <ul className="p-1.5">
-                    <li><Link href="/profile" onClick={() => setUserMenuOpen(false)} className={MENU_ITEM}><UserIcon className="size-4" /> Profile</Link></li>
-                    <li><Link href="/saved" onClick={() => setUserMenuOpen(false)} className={MENU_ITEM}><Bookmark className="size-4" /> Saved</Link></li>
+                    <li>
+                      <Link href="/profile" onClick={() => setUserMenuOpen(false)} className={MENU_ITEM}>
+                        <UserIcon className="size-4" /> Profile
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/saved" onClick={() => setUserMenuOpen(false)} className={MENU_ITEM}>
+                        <Bookmark className="size-4" /> Saved
+                      </Link>
+                    </li>
                     {isAdmin && (
                       <>
                         <li className="mx-3 my-1 h-px bg-border" />
-                        <li><Link href="/admin" onClick={() => setUserMenuOpen(false)} className={cn(MENU_ITEM, "font-medium text-primary hover:bg-primary/10")}><ShieldIcon className="size-4" /> Admin</Link></li>
+                        <li>
+                          <Link
+                            href="/admin"
+                            onClick={() => setUserMenuOpen(false)}
+                            className={cn(MENU_ITEM, "font-medium text-primary hover:bg-primary/10")}
+                          >
+                            <ShieldIcon className="size-4" /> Admin
+                          </Link>
+                        </li>
                       </>
                     )}
                   </ul>
+
                   <div className="border-t border-border p-1.5">
-                    <button type="button" onClick={() => { setUserMenuOpen(false); signOut({ redirectUrl: "/" }); }} className={cn(MENU_ITEM, "hover:text-destructive")}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        signOut({ redirectUrl: "/" });
+                      }}
+                      className={cn(MENU_ITEM, "hover:text-destructive")}
+                    >
                       <LogOut className="size-4" /> Sign out
                     </button>
                   </div>
@@ -676,68 +598,6 @@ export function NavbarClient({ categories, languages }: NavbarClientProps) {
           </Show>
         </div>
       </div>
-
-      {/* MOBILE DRAWER */}
-      {mobileOpen && (
-        <div className="fixed inset-0 z-60 xl:hidden">
-          <button type="button" aria-label="Close menu" onClick={() => setMobileOpen(false)} className="absolute inset-0 bg-black/50 backdrop-blur-[2px] animate-in fade-in duration-200" />
-          <nav aria-label="Main menu" dir={currentLanguage?.direction === "RTL" ? "rtl" : "ltr"} className={cn("absolute inset-y-0 inset-s-0 flex w-[min(340px,88vw)] flex-col bg-popover text-popover-foreground shadow-2xl animate-in duration-300", "ltr:slide-in-from-left rtl:slide-in-from-right")}>
-            <div className="flex h-16 shrink-0 items-center justify-between border-b border-border px-4">
-              <span className="text-sm font-bold text-primary">{currentLanguage ? getCopy(currentLanguage).title : "Menu"}</span>
-              <button type="button" aria-label="Close menu" onClick={() => setMobileOpen(false)} className="inline-flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
-                <X className="size-5" strokeWidth={1.75} />
-              </button>
-            </div>
-            <div className={cn("flex-1 overflow-y-auto px-3 py-3 pb-[max(1rem,env(safe-area-inset-bottom))]", HIDE_SCROLLBAR)}>
-              <div className="space-y-1">
-                <Link href={searchHref} onClick={() => setMobileOpen(false)} className={MENU_ITEM}><Search className="size-4" /> Search</Link>
-                <Show when="signed-in">
-                  <Link href="/saved" onClick={() => setMobileOpen(false)} className={MENU_ITEM}><Bookmark className="size-4" /> Saved</Link>
-                </Show>
-              </div>
-              <div className="my-3 h-px bg-border" />
-              {currentLanguage && (
-                <Link href={`/${currentLanguage.code}`} onClick={() => setMobileOpen(false)} className="mb-1 flex items-center gap-3 rounded-xl px-3.5 py-2.5 no-underline transition-colors hover:bg-muted">
-                  <Flag code={currentLanguage.code} size={24} />
-                  <span className="flex-1 text-[14px] font-bold text-primary rtl:text-[16px]">{getCopy(currentLanguage).open}</span>
-                  <ArrowRight className="size-4 text-primary rtl:rotate-180" strokeWidth={2} />
-                </Link>
-              )}
-              <ul className="space-y-1">
-                {mobileCategories.map((category) => {
-                  const href = `/${category.language.code}/${category.slug}`;
-                  return (
-                    <li key={category.id} className="rounded-xl px-1 py-1">
-                      <Link href={href} onClick={() => setMobileOpen(false)} className="flex items-center gap-3 rounded-lg px-2.5 py-2 no-underline transition-colors hover:bg-muted">
-                        <span className="relative size-10 shrink-0 overflow-hidden rounded-lg ring-1 ring-border/60">
-                          {category.coverImage ? (
-                            <Image src={category.coverImage} alt="" fill sizes="40px" className="object-cover" />
-                          ) : (
-                            <span className="flex h-full w-full items-center justify-center bg-muted text-muted-foreground"><Globe className="size-4" /></span>
-                          )}
-                        </span>
-                        <span className="min-w-0 flex-1 wrap-break-word text-[14px] font-bold leading-snug text-foreground rtl:text-[16px] rtl:leading-loose">{category.name}</span>
-                      </Link>
-                      {category.subcategories.length > 0 && (
-                        <ul className="ms-13 mt-0.5 flex flex-wrap gap-1.5 pb-1">
-                          {category.subcategories.map((sub) => (
-                            <li key={sub.id}>
-                              <Link href={`${href}/${sub.slug}`} onClick={() => setMobileOpen(false)} className="inline-flex rounded-full bg-muted/70 px-2.5 py-1 text-[12px] text-muted-foreground no-underline transition-colors hover:bg-primary/10 hover:text-primary rtl:text-[13px]">{sub.name}</Link>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-              {mobileCategories.length === 0 && currentLanguage && (
-                <p className="px-3.5 py-2 text-sm text-muted-foreground">{getCopy(currentLanguage).empty}</p>
-              )}
-            </div>
-          </nav>
-        </div>
-      )}
     </header>
   );
 }
