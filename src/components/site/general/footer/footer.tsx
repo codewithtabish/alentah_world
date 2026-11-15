@@ -1,8 +1,9 @@
+
 // src/components/site/general/layout/footer.tsx
+
 import * as React from "react";
 import { Suspense } from "react";
 
-import { getCategories } from "@/actions/categories/get-categories";
 import { getLanguages } from "@/actions/language/get-languages";
 
 import { FooterClient } from "./footer-client";
@@ -10,30 +11,22 @@ import { FooterSkeleton } from "./footer-skeleton";
 
 // ============================================================
 // ENEENA — PUBLIC FOOTER
-// Server component
+// Server Component
 // ============================================================
 
 async function FooterData() {
-  const [categoriesRes, languagesRes] = await Promise.all([
-    getCategories(),
-    getLanguages(),
-  ]);
+  const languagesRes = await getLanguages();
 
-  if (!categoriesRes.success || !languagesRes.success) {
+  if (!languagesRes.success) {
     return null;
   }
 
-  // 👇 Pass ALL active languages, not just EN and UR
-  const languages = languagesRes.languages.filter(
-    (language) => language.isActive
-  );
+  // Pass all active languages to the client footer
+  const languages = languagesRes.languages
+    .filter((language) => language.isActive)
+    .sort((a, b) => a.sortOrder - b.sortOrder);
 
-  return (
-    <FooterClient
-      categories={categoriesRes.categories}
-      languages={languages}
-    />
-  );
+  return <FooterClient languages={languages} />;
 }
 
 export function Footer() {

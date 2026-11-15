@@ -54,10 +54,12 @@ const EDITIONS: readonly Edition[] = [
 
 const EDITION_BY_CODE = new Map(EDITIONS.map((e) => [e.code, e]));
 
-// Order used to give the "Top Stories" list language variety.
-const SIDE_LANGUAGE_ORDER = ["ur", "ar", "hi", "zh", "de", "es", "fr", "pt-BR", "ja", "bn", "id", "en"];
 const SIDE_COUNT = 4;
 const LATEST_COUNT = 10; // 1 lead + 9 grid cards (3 x 3)
+
+// false = "Top Stories" are simply the next newest stories (always fresh).
+// true  = prefer one story per language first, still newest-first within that.
+const PREFER_LANGUAGE_VARIETY = false;
 
 /* ------------------------------------------------------------------ */
 /* Helpers                                                             */
@@ -65,6 +67,12 @@ const LATEST_COUNT = 10; // 1 lead + 9 grid cards (3 x 3)
 
 export function articleHref(blog: HomeBlogItem) {
   return `/${blog.language.code}/${blog.category.slug}/${blog.subcategory.slug}/${blog.slug}`;
+}
+
+function publishedTime(blog: HomeBlogItem) {
+  if (!blog.publishedAt) return 0;
+  const t = new Date(blog.publishedAt).getTime();
+  return Number.isNaN(t) ? 0 : t;
 }
 
 function isRtlBlog(blog: HomeBlogItem) {
@@ -170,7 +178,7 @@ function Flag({ code, className }: { code: string; className?: string }) {
 function LanguageBadge({ blog }: { blog: HomeBlogItem }) {
   const latin = isLatinBlog(blog);
   return (
-    <span className={cn("inline-flex items-center gap-1.5 rounded-[3px] bg-primary px-2.5 py-1.5 text-xs font-bold text-primary-foreground shadow-md shadow-foreground/20", latin ? "uppercase leading-none tracking-[0.14em]" : "leading-normal")}>
+    <span className={cn("inline-flex items-center gap-1.5 rounded-[3px] bg-primary px-2.5 py-1.5 text-xs font-bold text-primary-foreground shadow-md shadow-black/20", latin ? "uppercase leading-none tracking-[0.14em]" : "leading-normal")}>
       <Flag code={blog.language.code} className="size-4 ring-1 ring-primary-foreground/30" />
       {getLanguageLabel(blog)}
     </span>
@@ -179,7 +187,7 @@ function LanguageBadge({ blog }: { blog: HomeBlogItem }) {
 
 function ArrowChip({ className }: { className?: string }) {
   return (
-    <span aria-hidden="true" className={cn("pointer-events-none absolute bottom-3 inset-e-3 z-10 hidden size-10 items-center justify-center rounded-full bg-card text-primary shadow-lg shadow-foreground/25", "translate-y-2 opacity-0 transition-all duration-500 ease-out", "[@media(hover:hover)]:flex [@media(hover:hover)]:group-hover:translate-y-0 [@media(hover:hover)]:group-hover:opacity-100", className)}>
+    <span aria-hidden="true" className={cn("pointer-events-none absolute bottom-3 inset-e-3 z-10 hidden size-10 items-center justify-center rounded-full bg-card text-primary shadow-lg shadow-black/25", "translate-y-2 opacity-0 transition-all duration-500 ease-out", "[@media(hover:hover)]:flex [@media(hover:hover)]:group-hover:translate-y-0 [@media(hover:hover)]:group-hover:opacity-100", className)}>
       <ArrowUpRight className="size-4.5 rtl:-scale-x-100" />
     </span>
   );
@@ -242,20 +250,20 @@ function StoryMeta({ blog, tone = "plain" }: { blog: HomeBlogItem; tone?: "plain
   const textFont = getTextFont(blog);
 
   const avatar = (
-    <span className={cn("relative block shrink-0 overflow-hidden rounded-full bg-muted", tone === "overlay" ? "size-9 ring-2 ring-background/40" : "size-7 ring-1 ring-border")}>
+    <span className={cn("relative block shrink-0 overflow-hidden rounded-full bg-muted", tone === "overlay" ? "size-9 ring-2 ring-white/40" : "size-7 ring-1 ring-border")}>
       <Image src={getAuthorImage(blog)} alt="" fill sizes="36px" quality={60} className="object-cover" />
     </span>
   );
 
   if (tone === "overlay") {
     return (
-      <div className={cn("flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-background/90", textFont, !latin && "leading-[1.9]")}>
+      <div className={cn("flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-white/90", textFont, !latin && "leading-[1.9]")}>
         <span className="flex min-w-0 items-center gap-2.5">
           {avatar}
           <span className="truncate py-1 font-semibold leading-[1.9]">{name}</span>
         </span>
-        {reading && <span className="inline-flex items-center gap-1.5 text-background/75"><Clock className="size-3.5" aria-hidden="true" /> {reading}</span>}
-        {date && <span className="inline-flex items-center gap-1.5 text-background/75"><CalendarDays className="size-3.5" aria-hidden="true" /><time dateTime={iso}>{date}</time></span>}
+        {reading && <span className="inline-flex items-center gap-1.5 text-white/75"><Clock className="size-3.5" aria-hidden="true" /> {reading}</span>}
+        {date && <span className="inline-flex items-center gap-1.5 text-white/75"><CalendarDays className="size-3.5" aria-hidden="true" /><time dateTime={iso}>{date}</time></span>}
       </div>
     );
   }
@@ -369,7 +377,7 @@ function StoryCard({ blog, variant = "grid" }: { blog: HomeBlogItem; variant?: "
           sizes={isWide ? "(min-width: 1024px) 640px, 100vw" : "(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw"}
           className="object-cover transition-transform duration-900 ease-out [@media(hover:hover)]:group-hover:scale-[1.045]"
         />
-        <div className="absolute inset-0 bg-linear-to-t from-foreground/25 via-transparent to-transparent opacity-0 transition-opacity duration-500 [@media(hover:hover)]:group-hover:opacity-100" />
+        <div className="absolute inset-0 bg-linear-to-t from-black/25 via-transparent to-transparent opacity-0 transition-opacity duration-500 [@media(hover:hover)]:group-hover:opacity-100" />
         <div className="absolute inset-s-2 top-2 sm:inset-s-3 sm:top-3"><LanguageBadge blog={blog} /></div>
         <ArrowChip />
       </div>
@@ -508,36 +516,47 @@ export function HomeClient({ blogs }: HomeClientProps) {
     );
   }
 
-  /* ---------- Pick which story goes where (no duplicates) ---------- */
-  const used = new Set<string>();
-  const byLang = (code: string) => blogs.filter((b) => b.language.code === code);
+  /* ---------- Pick which story goes where (newest first, no duplicates) ---------- */
 
-  const hero = byLang("en")[0] ?? blogs[0];
+  // Always sort here so the page never depends on the order the query returned.
+  const sorted = [...blogs].sort((a, b) => publishedTime(b) - publishedTime(a));
+
+  const used = new Set<string>();
+
+  // HERO = the newest story overall.
+  const hero = sorted[0];
   used.add(hero.id);
 
-  // "Top Stories" list: one story per language first, for variety.
+  // TOP STORIES = the next newest stories.
   const sideBlogs: HomeBlogItem[] = [];
   const take = (b: HomeBlogItem) => {
     used.add(b.id);
     sideBlogs.push(b);
   };
-  for (const code of SIDE_LANGUAGE_ORDER) {
-    if (sideBlogs.length >= SIDE_COUNT) break;
-    const found = byLang(code).find((b) => !used.has(b.id));
-    if (found) take(found);
+
+  if (PREFER_LANGUAGE_VARIETY) {
+    const seenLangs = new Set<string>([hero.language.code]);
+    for (const b of sorted) {
+      if (sideBlogs.length >= SIDE_COUNT) break;
+      if (used.has(b.id) || seenLangs.has(b.language.code)) continue;
+      seenLangs.add(b.language.code);
+      take(b);
+    }
   }
-  for (const b of blogs) {
+  for (const b of sorted) {
     if (sideBlogs.length >= SIDE_COUNT) break;
     if (!used.has(b.id)) take(b);
   }
+  sideBlogs.sort((a, b) => publishedTime(b) - publishedTime(a));
 
-  const latestBlogs = blogs.filter((b) => !used.has(b.id)).slice(0, LATEST_COUNT);
+  // LATEST = everything else, newest first.
+  const latestBlogs = sorted.filter((b) => !used.has(b.id)).slice(0, LATEST_COUNT);
   const leadBlog = latestBlogs[0];
   const restBlogs = latestBlogs.slice(1);
 
   // Topic chips derived from the stories on the page (unique language + category).
   const topics = Array.from(
-    new Map(blogs.map((b) => [`${b.language.code}/${b.category.slug}`, b])).values(),
+    new Map(sorted.map((b) => [`${b.language.code}/${b.category.slug}`, b])).values(),
   ).slice(0, 16);
 
   const heroHref = articleHref(hero);
@@ -557,7 +576,7 @@ export function HomeClient({ blogs }: HomeClientProps) {
         <article
           dir={heroRtl ? "rtl" : "ltr"}
           lang={hero.language.code}
-          className="group relative isolate min-h-112 overflow-hidden rounded-lg bg-muted shadow-xl shadow-foreground/10 ring-1 ring-foreground/5 sm:min-h-136 lg:col-span-8 lg:min-h-164"
+          className="group relative isolate min-h-112 overflow-hidden rounded-lg bg-muted shadow-xl shadow-black/10 ring-1 ring-foreground/5 sm:min-h-136 lg:col-span-8 lg:min-h-164"
         >
           <Image
             src={hero.bannerImage}
@@ -571,22 +590,22 @@ export function HomeClient({ blogs }: HomeClientProps) {
             className="object-cover transition-transform duration-1400 ease-out [@media(hover:hover)]:group-hover:scale-[1.035]"
           />
 
-          {/* Overlays use theme tokens only (foreground = dark scrim, primary = brand tint) */}
-          <div className="absolute inset-0 bg-linear-to-t from-foreground/90 via-foreground/30 to-foreground/5" />
+          {/* Overlays use fixed black/white so they look the same in light AND dark mode */}
+          <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/35 to-black/5" />
           <div className="absolute inset-x-0 bottom-0 h-3/5 bg-linear-to-t from-primary/30 to-transparent mix-blend-multiply" />
-          <div className="absolute inset-x-0 top-0 h-28 bg-linear-to-b from-foreground/30 to-transparent" />
-          <div aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-lg ring-1 ring-inset ring-background/10" />
+          <div className="absolute inset-x-0 top-0 h-28 bg-linear-to-b from-black/35 to-transparent" />
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-lg ring-1 ring-inset ring-white/10" />
 
-          <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center justify-between p-5 text-background sm:p-8 lg:p-10">
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center justify-between p-5 text-white sm:p-8 lg:p-10">
             <div className="flex items-center gap-3">
               <LanguageBadge blog={hero} />
-              <span className="inline-flex items-center gap-2 rounded-full border border-background/30 bg-foreground/25 px-3 py-1.5 text-xs font-bold uppercase leading-none tracking-[0.18em] backdrop-blur-md">
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-black/30 px-3 py-1.5 text-xs font-bold uppercase leading-none tracking-[0.18em] text-white backdrop-blur-md">
                 <span aria-hidden="true" className="size-1.5 rounded-full bg-current" /> Featured
               </span>
             </div>
           </div>
 
-          <div className="pointer-events-none absolute inset-0 z-10 flex flex-col justify-end p-5 text-background sm:p-8 lg:p-10">
+          <div className="pointer-events-none absolute inset-0 z-10 flex flex-col justify-end p-5 text-white sm:p-8 lg:p-10">
             <div className="mb-4 flex items-center gap-4 sm:mb-5">
               <span aria-hidden="true" className="h-px w-10 bg-current opacity-70" />
               <span className={cn("text-xs font-bold opacity-90", heroLatin ? "uppercase tracking-[0.22em]" : cn("py-1 leading-[1.9]", heroTextFont))}>{hero.category.name}</span>
@@ -595,7 +614,7 @@ export function HomeClient({ blogs }: HomeClientProps) {
             <h2
               className={cn(
                 heroTitleFont,
-                "mb-4 max-w-3xl text-balance text-4xl font-bold [text-shadow:0_2px_24px_var(--foreground)] sm:text-5xl xl:text-6xl",
+                "mb-4 max-w-3xl text-balance text-4xl font-bold text-white [text-shadow:0_2px_24px_rgb(0_0_0/0.6)] sm:text-5xl xl:text-6xl",
                 heroLatin ? "leading-[1.08] tracking-tight" : "py-1 leading-[1.9] tracking-normal sm:leading-[1.9]",
               )}
             >
@@ -603,14 +622,14 @@ export function HomeClient({ blogs }: HomeClientProps) {
             </h2>
 
             {hero.shortDescription && (
-              <div className={cn("mb-6 line-clamp-2 max-w-2xl text-start text-base opacity-85 sm:text-lg", heroTextFont, heroLatin ? "leading-6 sm:leading-7" : "leading-[2.2] sm:leading-[2.3]")}>
+              <div className={cn("mb-6 line-clamp-2 max-w-2xl text-start text-base text-white/85 sm:text-lg", heroTextFont, heroLatin ? "leading-6 sm:leading-7" : "leading-[2.2] sm:leading-[2.3]")}>
                 {hero.shortDescription}
               </div>
             )}
 
-            <div className="flex items-end justify-between gap-4 border-t border-background/20 pt-5">
+            <div className="flex items-end justify-between gap-4 border-t border-white/20 pt-5">
               <StoryMeta blog={hero} tone="overlay" />
-              <span aria-hidden="true" className="hidden shrink-0 items-center gap-2 rounded-full bg-card px-5 py-3 text-sm font-bold text-primary shadow-lg shadow-foreground/30 transition-transform duration-500 group-hover:translate-x-0.5 sm:inline-flex">
+              <span aria-hidden="true" className="hidden shrink-0 items-center gap-2 rounded-full bg-card px-5 py-3 text-sm font-bold text-primary shadow-lg shadow-black/30 transition-transform duration-500 group-hover:translate-x-0.5 sm:inline-flex">
                 Read story <ArrowRight className="size-4 rtl:rotate-180" />
               </span>
             </div>
@@ -711,7 +730,7 @@ export function HomeClient({ blogs }: HomeClientProps) {
             <div className="flex flex-wrap items-center gap-3">
               <Link
                 href={SHARE_STORY_HREF}
-                className="group/cta inline-flex items-center gap-3 rounded-full bg-card py-2 pe-2 ps-8 text-sm font-bold text-primary shadow-xl shadow-foreground/20 transition-all duration-300 hover:shadow-2xl"
+                className="group/cta inline-flex items-center gap-3 rounded-full bg-card py-2 pe-2 ps-8 text-sm font-bold text-primary shadow-xl shadow-black/20 transition-all duration-300 hover:shadow-2xl"
               >
                 Share Your Story
                 <span className="flex size-10 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform duration-300 group-hover/cta:translate-x-0.5">
