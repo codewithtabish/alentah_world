@@ -1,6 +1,4 @@
 
-// src/app/sitemap.ts
-
 import type { MetadataRoute } from "next";
 import { connection } from "next/server";
 import prisma from "@/lib/clients/prisma-client";
@@ -12,12 +10,11 @@ function absoluteUrl(path: string): string {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  // Ensure the database-backed sitemap is generated at request time.
-  // This works with Next.js Cache Components.
+  // Generate the database-backed sitemap at request time.
   await connection();
 
   // ==========================================================
-  // 1. FETCH ACTIVE LANGUAGES
+  // 1. ACTIVE LANGUAGES
   // ==========================================================
 
   const languages = await prisma.language.findMany({
@@ -37,7 +34,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   );
 
   // ==========================================================
-  // 2. FETCH ACTIVE CATEGORIES
+  // 2. ACTIVE CATEGORIES
   // ==========================================================
 
   const categories = await prisma.category.findMany({
@@ -62,7 +59,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   );
 
   // ==========================================================
-  // 3. FETCH ACTIVE SUBCATEGORIES
+  // 3. ACTIVE SUBCATEGORIES
   // ==========================================================
 
   const subcategories = await prisma.subcategory.findMany({
@@ -95,7 +92,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   );
 
   // ==========================================================
-  // 4. FETCH PUBLISHED ARTICLES
+  // 4. PUBLISHED ARTICLES
   // ==========================================================
 
   const articles = await prisma.blog.findMany({
@@ -147,8 +144,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   });
 
-  // Prevent accidentally generating a URL using mismatched
-  // language and category relationships.
+  // Ensure article and category languages match.
   const validArticles = articles.filter(
     (article) =>
       activeLanguageCodes.has(article.language.code) &&
@@ -156,55 +152,33 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   );
 
   // ==========================================================
-  // 5. LANGUAGE HOMEPAGE ALTERNATES
-  // ==========================================================
-
-  const languageAlternates: Record<string, string> = {
-    "x-default": absoluteUrl("/"),
-  };
-
-  for (const language of languages) {
-    languageAlternates[language.code] = absoluteUrl(
-      `/${language.code}`
-    );
-  }
-
-  // ==========================================================
-  // 6. MAIN ROOT HOMEPAGE
+  // 5. ROOT HOMEPAGE
   // ==========================================================
 
   const rootHomepage: MetadataRoute.Sitemap = [
     {
       url: absoluteUrl("/"),
       changeFrequency: "daily",
-      priority: 1,
-      alternates: {
-        languages: languageAlternates,
-      },
+      priority: 1.0,
     },
   ];
 
   // ==========================================================
-  // 7. ALL LANGUAGE HOMEPAGES
+  // 6. LANGUAGE HOMEPAGES
   // ==========================================================
 
   const languageHomepages: MetadataRoute.Sitemap = languages.map(
     (language) => ({
       url: absoluteUrl(`/${language.code}`),
       changeFrequency: "daily",
-      priority: 1,
-      alternates: {
-        languages: languageAlternates,
-      },
+      priority: 1.0,
     })
   );
 
   // ==========================================================
-  // 8. PUBLIC STATIC PAGES
+  // 7. PUBLIC STATIC PAGES
   // ==========================================================
 
-  // These are root-level public URLs.
-  // Keep only paths that actually exist in your application.
   const publicPages = [
     "/about",
     "/contact",
@@ -215,16 +189,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/privacy-policy",
   ];
 
-  const staticPages: MetadataRoute.Sitemap = publicPages.map(
-    (path) => ({
-      url: absoluteUrl(path),
-      changeFrequency: "monthly",
-      priority: 0.6,
-    })
-  );
+  const staticPages: MetadataRoute.Sitemap = publicPages.map((path) => ({
+    url: absoluteUrl(path),
+    changeFrequency: "monthly",
+    priority: 0.6,
+  }));
 
   // ==========================================================
-  // 9. CATEGORY PAGES
+  // 8. CATEGORY PAGES
   // ==========================================================
 
   const categoryPages: MetadataRoute.Sitemap = validCategories.map(
@@ -238,7 +210,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   );
 
   // ==========================================================
-  // 10. SUBCATEGORY PAGES
+  // 9. SUBCATEGORY PAGES
   // ==========================================================
 
   const subcategoryPages: MetadataRoute.Sitemap =
@@ -251,7 +223,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }));
 
   // ==========================================================
-  // 11. ARTICLE PAGES
+  // 10. ARTICLE PAGES
   // ==========================================================
 
   const articlePages: MetadataRoute.Sitemap = validArticles.map(
@@ -260,12 +232,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         `/${article.language.code}/${article.category.slug}/${article.subcategory.slug}/${article.slug}`
       ),
 
-      ...(article.updatedAt || article.publishedAt
-        ? {
-            lastModified:
-              article.updatedAt ?? article.publishedAt ?? undefined,
-          }
-        : {}),
+      lastModified: article.updatedAt ?? article.publishedAt ?? undefined,
 
       changeFrequency: "monthly",
       priority: 0.9,
@@ -273,7 +240,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   );
 
   // ==========================================================
-  // 12. COMPLETE SITEMAP
+  // 11. COMPLETE ENEENA SITEMAP
   // ==========================================================
 
   return [
