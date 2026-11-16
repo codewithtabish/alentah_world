@@ -16,6 +16,7 @@ export type SavedArticleItem = {
   publishedAt: Date | null;
   readingTime: number | null;
   category: { name: string; slug: string };
+  subcategory: { name: string; slug: string }; // 👈 Added subcategory
   language: { code: string };
   author: {
     firstName: string | null;
@@ -29,7 +30,7 @@ export async function getSavedArticles() {
   const { userId } = await auth();
 
   if (!userId) {
-    return { success: true, blogs: [] }; // Return empty instead of erroring for guests
+    return { success: true, blogs: [] };
   }
 
   try {
@@ -40,7 +41,6 @@ export async function getSavedArticles() {
 
     if (!user) return { success: true, blogs: [] };
 
-    // Note: Using "use cache" inside a function so it's tagged correctly
     const fetchSaved = async () => {
       "use cache";
       cacheLife("max");
@@ -54,6 +54,7 @@ export async function getSavedArticles() {
           blog: {
             include: {
               category: true,
+              subcategory: true, // 👈 Added here
               language: true,
               author: true,
             },
@@ -73,6 +74,10 @@ export async function getSavedArticles() {
         category: {
           name: b.blog.category.name,
           slug: b.blog.category.slug,
+        },
+        subcategory: {
+          name: b.blog.subcategory.name,
+          slug: b.blog.subcategory.slug,
         },
         language: {
           code: b.blog.language.code,

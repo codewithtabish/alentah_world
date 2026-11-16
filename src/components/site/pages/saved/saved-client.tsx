@@ -4,7 +4,6 @@
 import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { formatDistanceToNow } from "date-fns";
 import { Bookmark, Search, ArrowRight, Clock, Trash2, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SavedArticleItem } from "@/actions/articles/get-saved-articles";
@@ -33,13 +32,7 @@ export function SavedClient({ initialBlogs }: { initialBlogs: SavedArticleItem[]
     result.sort((a, b) => {
       if (sort === "recent") return new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime();
       if (sort === "oldest") return new Date(a.savedAt).getTime() - new Date(b.savedAt).getTime();
-      if (sort === "published") {
-        const aDate = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
-        const bDate = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
-        return bDate - aDate;
-      }
-      if (sort === "newest") {
-        // Assuming "newest" means newest published
+      if (sort === "published" || sort === "newest") {
         const aDate = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
         const bDate = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
         return bDate - aDate;
@@ -104,71 +97,76 @@ export function SavedClient({ initialBlogs }: { initialBlogs: SavedArticleItem[]
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredBlogs.map((blog) => (
-            <article
-              key={blog.id}
-              className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all hover:shadow-md"
-            >
-              <Link href={`/${blog.language.code}/${blog.category.slug}/${blog.slug}`} className="relative aspect-video w-full overflow-hidden bg-muted">
-                {blog.bannerImage ? (
-                  <Image
-                    src={blog.bannerImage}
-                    alt={blog.bannerImageAlt || blog.title}
-                    fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-primary/5 text-primary/30">
-                    <Bookmark className="size-12" />
-                  </div>
-                )}
-                <div className="absolute inset-s-3 top-3 rounded-full bg-background/95 px-2.5 py-1 text-xs font-bold text-foreground shadow-sm backdrop-blur">
-                  {blog.category.name}
-                </div>
-              </Link>
+          {filteredBlogs.map((blog) => {
+            // 👇 FIXED: Added subcategory.slug to the URL
+            const articleUrl = `/${blog.language.code}/${blog.category.slug}/${blog.subcategory.slug}/${blog.slug}`;
 
-              <div className="flex flex-1 flex-col p-5">
-                <Link href={`/${blog.language.code}/${blog.category.slug}/${blog.slug}`}>
-                  <h3 className="mb-2 text-lg font-bold leading-tight hover:text-primary transition-colors line-clamp-2">
-                    {blog.title}
-                  </h3>
+            return (
+              <article
+                key={blog.id}
+                className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all hover:shadow-md"
+              >
+                <Link href={articleUrl} className="relative aspect-video w-full overflow-hidden bg-muted">
+                  {blog.bannerImage ? (
+                    <Image
+                      src={blog.bannerImage}
+                      alt={blog.bannerImageAlt || blog.title}
+                      fill
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-primary/5 text-primary/30">
+                      <Bookmark className="size-12" />
+                    </div>
+                  )}
+                  <div className="absolute inset-s-3 top-3 rounded-full bg-background/95 px-2.5 py-1 text-xs font-bold text-foreground shadow-sm backdrop-blur">
+                    {blog.category.name}
+                  </div>
                 </Link>
-                {blog.shortDescription && (
-                  <p className="mb-4 text-sm text-muted-foreground line-clamp-2">
-                    {blog.shortDescription}
-                  </p>
-                )}
 
-                <div className="mt-auto flex items-center gap-2 text-xs text-muted-foreground mb-4">
-                  <span>
-                    By {blog.author.firstName} {blog.author.lastName}
-                  </span>
-                  <span>•</span>
-                  <span className="flex items-center gap-1">
-                    <Clock className="size-3" />
-                    {blog.readingTime || 1} min read
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between border-t border-border pt-4 mt-auto">
-                  <Link
-                    href={`/${blog.language.code}/${blog.category.slug}/${blog.slug}`}
-                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
-                  >
-                    Read Article <ArrowRight className="size-4" />
+                <div className="flex flex-1 flex-col p-5">
+                  <Link href={articleUrl}>
+                    <h3 className="mb-2 text-lg font-bold leading-tight hover:text-primary transition-colors line-clamp-2">
+                      {blog.title}
+                    </h3>
                   </Link>
-                  <div className="flex items-center gap-1">
-                    <button className="p-2 text-muted-foreground hover:bg-muted rounded-full transition-colors" title="Share">
-                      <Share2 className="size-4" />
-                    </button>
-                    <button className="p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive rounded-full transition-colors" title="Remove">
-                      <Trash2 className="size-4" />
-                    </button>
+                  {blog.shortDescription && (
+                    <p className="mb-4 text-sm text-muted-foreground line-clamp-2">
+                      {blog.shortDescription}
+                    </p>
+                  )}
+
+                  <div className="mt-auto flex items-center gap-2 text-xs text-muted-foreground mb-4">
+                    <span>
+                      By {blog.author.firstName} {blog.author.lastName}
+                    </span>
+                    <span>•</span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="size-3" />
+                      {blog.readingTime || 1} min read
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between border-t border-border pt-4 mt-auto">
+                    <Link
+                      href={articleUrl}
+                      className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
+                    >
+                      Read Article <ArrowRight className="size-4" />
+                    </Link>
+                    <div className="flex items-center gap-1">
+                      <button className="p-2 text-muted-foreground hover:bg-muted rounded-full transition-colors" title="Share">
+                        <Share2 className="size-4" />
+                      </button>
+                      <button className="p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive rounded-full transition-colors" title="Remove">
+                        <Trash2 className="size-4" />
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </article>
-          ))}
+              </article>
+            );
+          })}
         </div>
       )}
     </div>
