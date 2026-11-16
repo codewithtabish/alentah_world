@@ -1,4 +1,3 @@
-
 import type { Metadata, Viewport } from "next";
 import type { CSSProperties, ReactNode } from "react";
 
@@ -56,6 +55,18 @@ const LANGUAGE_NAMES = [
   "Bengali",
   "Indonesian",
 ] as const;
+
+// ======================================================
+// GOOGLE ADSENSE
+//
+// Publisher ID copied from the AdSense verification
+// screen. Double-check it against the Copy button in
+// AdSense before deploying.
+// ======================================================
+
+const ADSENSE_CLIENT_ID = "ca-pub-7966396390181709";
+
+const ADSENSE_SCRIPT_URL = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT_ID}`;
 
 // ======================================================
 // BRAND ASSETS
@@ -566,6 +577,21 @@ export default function RootLayout({
         <link
           rel="stylesheet"
           href={GOOGLE_FONTS_URL}
+        />
+
+        {/*
+          Google AdSense — site verification + ad serving.
+
+          Deliberately a plain <script> tag (not next/script):
+          it appears in the server-rendered HTML exactly as
+          AdSense expects, and avoids the data-nscript
+          attribute that AdSense's code checker dislikes.
+        */}
+
+        <script
+          async
+          src={ADSENSE_SCRIPT_URL}
+          crossOrigin="anonymous"
         />
       </head>
 
