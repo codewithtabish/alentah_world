@@ -1,3 +1,4 @@
+
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import Image from "next/image";
@@ -15,16 +16,19 @@ const SITE_URL = "https://www.eneena.com";
 const SITE_NAME = "ENEENA";
 const PAGE_URL = `${SITE_URL}/about`;
 
-const PAGE_TITLE = "About ENEENA | Independent Journalism & Global Perspectives";
+const PAGE_TITLE =
+  "About ENEENA: Our Mission, Editorial Standards & Global Reach";
 
 const PAGE_DESCRIPTION =
-  "ENEENA is an independent international publication offering thoughtful journalism on world affairs, technology, science, business and culture in 12 languages.";
+  "Discover ENEENA, an independent international publication exploring world affairs, technology, science, business and culture through original journalism in 12 languages.";
 
-const OG_IMAGE = "/images/og-image.jpg";
-const OG_IMAGE_ALT = "ENEENA — Independent Journalism, Global Perspectives";
+const OG_IMAGE = `${SITE_URL}/images/og-image.jpg`;
+
+const OG_IMAGE_ALT =
+  "ENEENA — Independent Journalism, Global Perspectives";
 
 // -----------------------------------------------------------------------------
-// Search engine metadata
+// Page metadata
 // -----------------------------------------------------------------------------
 
 export const metadata: Metadata = {
@@ -38,6 +42,18 @@ export const metadata: Metadata = {
     canonical: PAGE_URL,
   },
 
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+
   openGraph: {
     type: "website",
     siteName: SITE_NAME,
@@ -45,7 +61,7 @@ export const metadata: Metadata = {
     description: PAGE_DESCRIPTION,
     url: PAGE_URL,
     locale: "en_US",
-    alternateLocale: ["ur_PK", "ar_AR", "de_DE", "hi_IN", "zh_CN", "es_ES", "fr_FR", "pt_BR", "ja_JP", "bn_BD", "id_ID"],
+
     images: [
       {
         url: OG_IMAGE,
@@ -61,38 +77,60 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,
-    images: [{ url: OG_IMAGE, alt: OG_IMAGE_ALT }],
+    images: [
+      {
+        url: OG_IMAGE,
+        alt: OG_IMAGE_ALT,
+      },
+    ],
   },
 };
 
 // -----------------------------------------------------------------------------
-// Page-level structured data
+// Structured data — AboutPage + BreadcrumbList
 // -----------------------------------------------------------------------------
 
 const structuredData = {
   "@context": "https://schema.org",
+
   "@graph": [
     {
       "@type": "AboutPage",
       "@id": `${PAGE_URL}#webpage`,
       url: PAGE_URL,
       name: "About ENEENA",
+      headline: "About ENEENA: Our Mission, Editorial Standards & Global Reach",
       description: PAGE_DESCRIPTION,
-      isPartOf: { "@id": `${SITE_URL}/#website` },
-      about: { "@id": `${SITE_URL}/#organization` },
-      mainEntity: { "@id": `${SITE_URL}/#organization` },
-      breadcrumb: { "@id": `${PAGE_URL}#breadcrumb` },
+
+      isPartOf: {
+        "@id": `${SITE_URL}/#website`,
+      },
+
+      about: {
+        "@id": `${SITE_URL}/#organization`,
+      },
+
+      mainEntity: {
+        "@id": `${SITE_URL}/#organization`,
+      },
+
+      breadcrumb: {
+        "@id": `${PAGE_URL}#breadcrumb`,
+      },
+
       primaryImageOfPage: {
         "@type": "ImageObject",
-        url: `${SITE_URL}${OG_IMAGE}`,
-        width: 1200,
-        height: 630,
+        url: `${SITE_URL}/images/about/about_cover.webp`,
+        caption: "ENEENA — Independent Journalism, Global Perspectives",
       },
+
       inLanguage: "en",
     },
+
     {
       "@type": "BreadcrumbList",
       "@id": `${PAGE_URL}#breadcrumb`,
+
       itemListElement: [
         {
           "@type": "ListItem",
@@ -111,12 +149,21 @@ const structuredData = {
   ],
 };
 
+// Safely serialize JSON-LD to prevent HTML parsing issues.
+const serializedStructuredData = JSON.stringify(structuredData)
+  .replace(/</g, "\\u003c")
+  .replace(/\u2028/g, "\\u2028")
+  .replace(/\u2029/g, "\\u2029");
+
 // -----------------------------------------------------------------------------
 // Reusable styling
 // -----------------------------------------------------------------------------
 
 const eyebrow =
   "mb-3 block text-xs font-bold uppercase tracking-[0.2em] text-primary";
+
+const fontClass = "font-sans";
+const titleFont = "font-serif";
 
 // -----------------------------------------------------------------------------
 // Editorial philosophy
@@ -173,22 +220,94 @@ const principles = [
 ];
 
 // -----------------------------------------------------------------------------
-// ENEENA's 12 Editorial Languages
+// ENEENA's 12 editorial languages
 // -----------------------------------------------------------------------------
 
 const languages = [
-  { name: "English", nativeName: "English", code: "en", dir: "ltr", className: "font-serif" },
-  { name: "Urdu", nativeName: "اردو", code: "ur", dir: "rtl", className: "font-urdu-display" },
-  { name: "Arabic", nativeName: "العربية", code: "ar", dir: "rtl", className: "font-arabic-display" },
-  { name: "German", nativeName: "Deutsch", code: "de", dir: "ltr", className: "font-serif" },
-  { name: "Hindi", nativeName: "हिन्दी", code: "hi", dir: "ltr", className: "font-hindi-display" },
-  { name: "Chinese", nativeName: "中文", code: "zh", dir: "ltr", className: "font-chinese-display" },
-  { name: "Spanish", nativeName: "Español", code: "es", dir: "ltr", className: "font-serif" },
-  { name: "French", nativeName: "Français", code: "fr", dir: "ltr", className: "font-serif" },
-  { name: "Portuguese (Brazil)", nativeName: "Português (Brasil)", code: "pt-BR", dir: "ltr", className: "font-serif" },
-  { name: "Japanese", nativeName: "日本語", code: "ja", dir: "ltr", className: "font-serif" },
-  { name: "Bengali", nativeName: "বাংলা", code: "bn", dir: "ltr", className: "font-serif" },
-  { name: "Indonesian", nativeName: "Bahasa Indonesia", code: "id", dir: "ltr", className: "font-serif" },
+  {
+    name: "English",
+    nativeName: "English",
+    code: "en",
+    dir: "ltr",
+    className: "font-serif",
+  },
+  {
+    name: "Urdu",
+    nativeName: "اردو",
+    code: "ur",
+    dir: "rtl",
+    className: "font-urdu-display",
+  },
+  {
+    name: "Arabic",
+    nativeName: "العربية",
+    code: "ar",
+    dir: "rtl",
+    className: "font-arabic-display",
+  },
+  {
+    name: "German",
+    nativeName: "Deutsch",
+    code: "de",
+    dir: "ltr",
+    className: "font-serif",
+  },
+  {
+    name: "Hindi",
+    nativeName: "हिन्दी",
+    code: "hi",
+    dir: "ltr",
+    className: "font-hindi-display",
+  },
+  {
+    name: "Chinese",
+    nativeName: "中文",
+    code: "zh",
+    dir: "ltr",
+    className: "font-chinese-display",
+  },
+  {
+    name: "Spanish",
+    nativeName: "Español",
+    code: "es",
+    dir: "ltr",
+    className: "font-serif",
+  },
+  {
+    name: "French",
+    nativeName: "Français",
+    code: "fr",
+    dir: "ltr",
+    className: "font-serif",
+  },
+  {
+    name: "Portuguese (Brazil)",
+    nativeName: "Português (Brasil)",
+    code: "pt-BR",
+    dir: "ltr",
+    className: "font-serif",
+  },
+  {
+    name: "Japanese",
+    nativeName: "日本語",
+    code: "ja",
+    dir: "ltr",
+    className: "font-serif",
+  },
+  {
+    name: "Bengali",
+    nativeName: "বাংলা",
+    code: "bn",
+    dir: "ltr",
+    className: "font-serif",
+  },
+  {
+    name: "Indonesian",
+    nativeName: "Bahasa Indonesia",
+    code: "id",
+    dir: "ltr",
+    className: "font-serif",
+  },
 ] as const;
 
 // -----------------------------------------------------------------------------
@@ -196,16 +315,13 @@ const languages = [
 // -----------------------------------------------------------------------------
 
 export default function AboutPage() {
-  const fontClass = "font-sans";
-  const titleFont = "font-serif";
-
   return (
-    <div className="flex flex-col pb-0" dir="ltr">
-      {/* Structured data for search engines */}
+    <div className="flex w-full flex-col" dir="ltr">
+      {/* Structured data */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(structuredData).replace(/</g, "\\u003c"),
+          __html: serializedStructuredData,
         }}
       />
 
@@ -213,7 +329,10 @@ export default function AboutPage() {
       {/* 1. HERO */}
       {/* ------------------------------------------------------------------ */}
 
-      <section className="relative w-full overflow-hidden bg-[#faf7f2] dark:bg-background">
+      <section
+        aria-labelledby="about-heading"
+        className="relative w-full overflow-hidden"
+      >
         <div
           className={cn(
             "absolute inset-0 lg:left-auto lg:right-0 lg:w-[64%]",
@@ -223,7 +342,7 @@ export default function AboutPage() {
         >
           <Image
             src="/images/about/about_cover.webp"
-            alt="ENEENA — Independent journalism and global perspectives"
+            alt="ENEENA's vision of independent journalism and global perspectives"
             fill
             priority
             sizes="(min-width: 1024px) 64vw, 100vw"
@@ -231,25 +350,33 @@ export default function AboutPage() {
           />
         </div>
 
-        <div className="absolute inset-0 bg-[#faf7f2]/70 dark:bg-background/70 lg:hidden" />
+        <div className="absolute inset-0 bg-muted/70 lg:hidden" />
 
-        <div className="relative mx-auto flex min-h-105 w-full max-w-7xl items-center px-4 py-16 sm:px-6 lg:min-h-125 lg:px-8 lg:py-24">
-          <div className="max-w-xl">
-            {/* Visible breadcrumb (matches the BreadcrumbList structured data) */}
+        <div className="relative flex min-h-104 w-full items-center py-16 lg:min-h-124 lg:py-24">
+          <div className="w-full max-w-xl">
+            {/* Breadcrumb */}
             <nav aria-label="Breadcrumb" className="mb-6">
               <ol
                 className={cn(
-                  "flex items-center gap-2 text-xs text-foreground/70",
+                  "flex items-center gap-2 text-xs text-muted-foreground",
                   fontClass,
                 )}
               >
                 <li>
-                  <Link href="/" className="hover:text-primary hover:underline">
+                  <Link
+                    href="/"
+                    className="transition-colors hover:text-primary hover:underline"
+                  >
                     Home
                   </Link>
                 </li>
+
                 <li aria-hidden="true">/</li>
-                <li aria-current="page" className="font-semibold text-primary">
+
+                <li
+                  aria-current="page"
+                  className="font-semibold text-primary"
+                >
                   About
                 </li>
               </ol>
@@ -258,6 +385,7 @@ export default function AboutPage() {
             <span className={eyebrow}>About ENEENA</span>
 
             <h1
+              id="about-heading"
               className={cn(
                 "mb-6 text-4xl font-bold leading-[1.1] text-primary sm:text-5xl lg:text-[3.5rem]",
                 titleFont,
@@ -270,7 +398,7 @@ export default function AboutPage() {
 
             <p
               className={cn(
-                "mb-8 max-w-md text-base leading-relaxed text-foreground/80",
+                "mb-8 text-base leading-relaxed text-foreground/80",
                 fontClass,
               )}
             >
@@ -281,7 +409,7 @@ export default function AboutPage() {
 
             <Link
               href="#our-story"
-              className="inline-flex w-fit items-center gap-3 text-xs font-bold uppercase tracking-[0.15em] text-primary"
+              className="inline-flex w-fit items-center gap-3 text-xs font-bold uppercase tracking-[0.15em] text-primary transition-opacity hover:opacity-75"
             >
               <span className="h-px w-10 bg-primary" />
               Our Story
@@ -298,9 +426,9 @@ export default function AboutPage() {
       <section
         id="our-story"
         aria-labelledby="our-story-heading"
-        className="w-full bg-[#faf7f2] dark:bg-background"
+        className="w-full bg-muted/30"
       >
-        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-10 px-4 py-14 sm:px-6 lg:grid-cols-12 lg:gap-0 lg:px-8 lg:py-16">
+        <div className="grid w-full grid-cols-1 items-center gap-10 py-14 lg:grid-cols-12 lg:gap-0 lg:py-16">
           <div className="lg:col-span-4 lg:pe-10">
             <span className={eyebrow}>Our Story</span>
 
@@ -374,14 +502,14 @@ export default function AboutPage() {
       </section>
 
       {/* ------------------------------------------------------------------ */}
-      {/* 3. EDITORIAL LEADERSHIP — FOUNDER ONLY */}
+      {/* 3. EDITORIAL LEADERSHIP */}
       {/* ------------------------------------------------------------------ */}
 
       <section
         aria-labelledby="leadership-heading"
-        className="w-full bg-[#f5f0e8] dark:bg-muted/30"
+        className="w-full"
       >
-        <div className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-16">
+        <div className="w-full py-14 lg:py-16">
           <span className={eyebrow}>The Person Behind ENEENA</span>
 
           <h2
@@ -396,7 +524,7 @@ export default function AboutPage() {
 
           <p
             className={cn(
-              "mb-10 max-w-md text-sm text-muted-foreground",
+              "mb-10 text-sm text-muted-foreground",
               fontClass,
             )}
           >
@@ -405,17 +533,17 @@ export default function AboutPage() {
           </p>
 
           <div className="flex flex-col items-start gap-6 sm:flex-row">
-            <div className="relative aspect-4/5 w-full shrink-0 overflow-hidden sm:w-64">
+            <div className="relative aspect-4/5 w-full shrink-0 overflow-hidden sm:w-1/3 lg:w-1/4">
               <Image
                 src="/images/about/editor.webp"
                 alt="Talha Tabish, Founder and Editor-in-Chief of ENEENA"
                 fill
-                sizes="(min-width: 640px) 256px, 100vw"
+                sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 100vw"
                 className="object-cover object-top"
               />
             </div>
 
-            <div className="max-w-xl flex-1 sm:py-4">
+            <div className="flex-1 sm:py-4">
               <h3
                 className={cn(
                   "mb-1 text-2xl font-bold text-primary sm:text-3xl",
@@ -462,10 +590,10 @@ export default function AboutPage() {
       {/* ------------------------------------------------------------------ */}
 
       <section
-        aria-label="From the Editor"
-        className="w-full bg-[#faf7f2] dark:bg-background"
+        aria-labelledby="editor-message-heading"
+        className="w-full bg-muted/30"
       >
-        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-8 px-4 py-14 sm:px-6 lg:grid-cols-12 lg:gap-0 lg:px-8 lg:py-16">
+        <div className="grid w-full grid-cols-1 items-center gap-8 py-14 lg:grid-cols-12 lg:gap-0 lg:py-16">
           <div className="lg:col-span-4 lg:pe-10">
             <div className="relative aspect-3/2 w-full overflow-hidden">
               <Image
@@ -480,6 +608,13 @@ export default function AboutPage() {
 
           <div className="lg:col-span-5 lg:pe-10">
             <span className={eyebrow}>From the Editor</span>
+
+            <h2
+              id="editor-message-heading"
+              className="sr-only"
+            >
+              A message from ENEENA's editor
+            </h2>
 
             <blockquote
               className={cn(
@@ -540,14 +675,14 @@ export default function AboutPage() {
       </section>
 
       {/* ------------------------------------------------------------------ */}
-      {/* 5. WHAT GUIDES US */}
+      {/* 5. EDITORIAL STANDARDS */}
       {/* ------------------------------------------------------------------ */}
 
       <section
         aria-labelledby="guides-heading"
-        className="w-full bg-[#f5f0e8] dark:bg-muted/30"
+        className="w-full"
       >
-        <div className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-16">
+        <div className="w-full py-14 lg:py-16">
           <span className={eyebrow}>Our Editorial Standards</span>
 
           <h2
@@ -561,13 +696,13 @@ export default function AboutPage() {
           </h2>
 
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-0">
-            {principles.map((item, i) => (
+            {principles.map((item, index) => (
               <div
                 key={item.num}
                 className={cn(
                   "flex flex-col gap-2",
-                  i > 0 && "lg:border-s lg:border-border lg:ps-8",
-                  i < principles.length - 1 && "lg:pe-8",
+                  index > 0 && "lg:border-s lg:border-border lg:ps-8",
+                  index < principles.length - 1 && "lg:pe-8",
                 )}
               >
                 <h3
@@ -595,14 +730,14 @@ export default function AboutPage() {
       </section>
 
       {/* ------------------------------------------------------------------ */}
-      {/* 6. OUR EDITORIAL LANDSCAPE */}
+      {/* 6. EDITORIAL LANDSCAPE */}
       {/* ------------------------------------------------------------------ */}
 
       <section
         aria-labelledby="landscape-heading"
-        className="w-full bg-[#faf7f2] dark:bg-background"
+        className="w-full bg-muted/30"
       >
-        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 items-start gap-8 px-4 py-14 sm:px-6 lg:grid-cols-12 lg:px-8 lg:py-16">
+        <div className="grid w-full grid-cols-1 items-start gap-8 py-14 lg:grid-cols-12 lg:py-16">
           <div className="lg:col-span-3">
             <span className={eyebrow}>What We Cover</span>
 
@@ -630,7 +765,10 @@ export default function AboutPage() {
           <div className="lg:col-span-9">
             <Suspense
               fallback={
-                <div className="flex h-32 animate-pulse items-center justify-center text-muted-foreground">
+                <div
+                  className="flex min-h-32 animate-pulse items-center justify-center text-sm text-muted-foreground"
+                  aria-label="Loading editorial categories"
+                >
                   Loading editorial categories...
                 </div>
               }
@@ -642,14 +780,14 @@ export default function AboutPage() {
       </section>
 
       {/* ------------------------------------------------------------------ */}
-      {/* 7. TWELVE LANGUAGES */}
+      {/* 7. TWELVE EDITORIAL LANGUAGES */}
       {/* ------------------------------------------------------------------ */}
 
       <section
         aria-labelledby="languages-heading"
-        className="grid w-full grid-cols-1 border-y border-border bg-[#faf7f2] dark:bg-background lg:grid-cols-12"
+        className="grid w-full grid-cols-1 border-y border-border lg:grid-cols-12"
       >
-        <div className="relative min-h-55 w-full lg:col-span-3">
+        <div className="relative min-h-56 w-full lg:col-span-3">
           <Image
             src="/images/about/books.webp"
             alt="Books representing ENEENA's multilingual editorial approach"
@@ -659,7 +797,7 @@ export default function AboutPage() {
           />
         </div>
 
-        <div className="flex flex-col justify-center px-6 py-10 lg:col-span-4 lg:px-12">
+        <div className="flex flex-col justify-center py-10 lg:col-span-4 lg:pe-10">
           <span className={eyebrow}>A Multilingual Publication</span>
 
           <h2
@@ -675,11 +813,14 @@ export default function AboutPage() {
           </h2>
         </div>
 
-        <div className="flex flex-col justify-center px-6 pb-10 lg:col-span-5 lg:border-s lg:border-border lg:px-12 lg:py-10">
+        <div className="flex flex-col justify-center pb-10 lg:col-span-5 lg:border-s lg:border-border lg:py-10 lg:ps-10">
           <nav aria-label="ENEENA editions by language">
             <ul className="mb-5 flex flex-wrap items-center gap-x-3 gap-y-3">
               {languages.map((language, index) => (
-                <li key={language.code} className="flex items-center gap-3">
+                <li
+                  key={language.code}
+                  className="flex items-center gap-3"
+                >
                   <Link
                     href={`/${language.code}`}
                     hrefLang={language.code}
@@ -707,13 +848,13 @@ export default function AboutPage() {
 
           <p
             className={cn(
-              "max-w-md text-sm leading-relaxed text-muted-foreground",
+              "text-sm leading-relaxed text-muted-foreground",
               fontClass,
             )}
           >
             ENEENA publishes separate editorial content in English, Urdu,
             Arabic, German, Hindi, Chinese, Spanish, French, Portuguese,
-            Japanese, Bengali, and Indonesian. Each language has its own voice,
+            Japanese, Bengali and Indonesian. Each language has its own voice,
             perspective and reading experience, reflecting the cultures and
             audiences it serves. Our aim is to make thoughtful journalism
             accessible across linguistic and cultural boundaries.
@@ -722,22 +863,25 @@ export default function AboutPage() {
       </section>
 
       {/* ------------------------------------------------------------------ */}
-      {/* 8. BOTTOM BANNER */}
+      {/* 8. CLOSING EDITORIAL COMMITMENT */}
       {/* ------------------------------------------------------------------ */}
 
       <section
         aria-labelledby="commitment-heading"
-        className="w-full bg-[#5E1428] py-14 text-[#FAF8F5]"
+        className="w-full bg-primary py-14 text-primary-foreground"
       >
-        <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-8 px-4 sm:px-6 lg:grid-cols-12 lg:gap-0 lg:px-8">
+        <div className="grid w-full grid-cols-1 items-center gap-8 lg:grid-cols-12 lg:gap-0">
           <div className="lg:col-span-4 lg:pe-10">
-            <span className="mb-3 block text-xs font-bold uppercase tracking-[0.2em] text-white/80">
+            <span className="mb-3 block text-xs font-bold uppercase tracking-[0.2em] opacity-80">
               Our Commitment to Readers
             </span>
 
             <h2
               id="commitment-heading"
-              className={cn("text-3xl font-bold leading-tight", titleFont)}
+              className={cn(
+                "text-3xl font-bold leading-tight",
+                titleFont,
+              )}
             >
               Your Curiosity Deserves Better Stories.
             </h2>
@@ -745,7 +889,7 @@ export default function AboutPage() {
 
           <div
             className={cn(
-              "text-sm leading-relaxed text-white/85 lg:col-span-5 lg:border-s lg:border-white/20 lg:px-10",
+              "text-sm leading-relaxed opacity-85 lg:col-span-5 lg:border-s lg:border-primary-foreground/20 lg:px-10",
               fontClass,
             )}
           >
@@ -754,11 +898,11 @@ export default function AboutPage() {
             work, meaningful perspectives and stories worth their time.
           </div>
 
-          <div className="flex justify-start lg:col-span-3 lg:justify-end lg:border-s lg:border-white/20 lg:ps-10">
+          <div className="flex justify-start lg:col-span-3 lg:justify-end lg:border-s lg:border-primary-foreground/20 lg:ps-10">
             <Link
               href="/en"
               hrefLang="en"
-              className="inline-flex items-center gap-2 border-b border-white/80 pb-1 text-sm font-bold text-white transition-opacity hover:opacity-80"
+              className="inline-flex items-center gap-2 border-b border-primary-foreground/80 pb-1 text-sm font-bold transition-opacity hover:opacity-75"
             >
               Explore Our Stories
               <ArrowRight className="size-4" aria-hidden="true" />

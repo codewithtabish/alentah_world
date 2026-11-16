@@ -1,6 +1,4 @@
 
-// src/app/(marketing)/write-for-us/page.tsx
-
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -14,84 +12,49 @@ import {
   Handshake,
   Info,
   BookOpen,
-  Search,
-  Languages,
   Lightbulb,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { WritingCategories } from "@/components/site/pages/write/writing-categories";
 
+// -----------------------------------------------------------------------------
+// ENEENA — Website identity
+// -----------------------------------------------------------------------------
+
 const SITE_URL = "https://www.eneena.com";
+const SITE_NAME = "ENEENA";
 const PAGE_URL = `${SITE_URL}/write-for-us`;
-const OG_IMAGE = `${SITE_URL}/images/og-image.png`;
+
+// -----------------------------------------------------------------------------
+// SEO configuration
+// -----------------------------------------------------------------------------
 
 const PAGE_TITLE =
   "Write for ENEENA | Become a Contributor to Our Global Publication";
 
 const PAGE_DESCRIPTION =
-  "Contribute to ENEENA, an international multilingual publication. Submit original articles, research, analysis, ideas and stories across six editorial languages.";
+  "Write for ENEENA, an independent international publication available in 12 languages. Submit original articles, research, analysis, opinions and personal stories to our editorial team.";
+
+// -----------------------------------------------------------------------------
+// Social sharing
+// -----------------------------------------------------------------------------
+
+const OG_IMAGE = `${SITE_URL}/images/og-image.jpg`;
+
+const OG_IMAGE_ALT =
+  "ENEENA — Independent Journalism, Global Perspectives";
+
+// -----------------------------------------------------------------------------
+// Metadata
+// -----------------------------------------------------------------------------
 
 export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
-
   title: {
     absolute: PAGE_TITLE,
   },
 
   description: PAGE_DESCRIPTION,
-
-  applicationName: "ENEENA",
-
-  keywords: [
-    "write for ENEENA",
-    "write for us",
-    "become a contributor",
-    "submit an article",
-    "submit a guest article",
-    "contribute to an international publication",
-    "international writers",
-    "global publication",
-    "multilingual publication",
-    "independent journalism",
-    "guest writing opportunities",
-    "article submissions",
-    "journalism contributors",
-    "world affairs",
-    "geopolitics",
-    "politics",
-    "technology",
-    "artificial intelligence",
-    "science",
-    "business",
-    "finance",
-    "economics",
-    "history",
-    "culture",
-    "society",
-    "education",
-    "philosophy",
-    "environment",
-    "human stories",
-    "research and analysis",
-    "English articles",
-    "Urdu articles",
-    "Arabic articles",
-    "German articles",
-    "Hindi articles",
-    "Chinese articles",
-  ],
-
-  authors: [
-    {
-      name: "ENEENA Editorial Team",
-      url: SITE_URL,
-    },
-  ],
-
-  creator: "ENEENA",
-  publisher: "ENEENA",
-  category: "Writing and Journalism",
 
   alternates: {
     canonical: PAGE_URL,
@@ -100,29 +63,31 @@ export const metadata: Metadata = {
   robots: {
     index: true,
     follow: true,
+
     googleBot: {
       index: true,
       follow: true,
-      noimageindex: false,
-      "max-video-preview": -1,
       "max-image-preview": "large",
       "max-snippet": -1,
+      "max-video-preview": -1,
     },
   },
 
   openGraph: {
     type: "website",
-    locale: "en_US",
-    url: PAGE_URL,
-    siteName: "ENEENA",
+    siteName: SITE_NAME,
     title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,
+    url: PAGE_URL,
+    locale: "en_US",
+
     images: [
       {
         url: OG_IMAGE,
         width: 1200,
         height: 630,
-        alt: "ENEENA — An International Multilingual Publication",
+        alt: OG_IMAGE_ALT,
+        type: "image/jpeg",
       },
     ],
   },
@@ -131,20 +96,19 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,
+
     images: [
       {
         url: OG_IMAGE,
-        alt: "ENEENA — An International Multilingual Publication",
+        alt: OG_IMAGE_ALT,
       },
     ],
   },
-
-  formatDetection: {
-    email: false,
-    address: false,
-    telephone: false,
-  },
 };
+
+// -----------------------------------------------------------------------------
+// Contributor guidelines
+// -----------------------------------------------------------------------------
 
 const GUIDELINES = [
   "Submit original work that you have the right to publish.",
@@ -154,6 +118,10 @@ const GUIDELINES = [
   "Use images only when you have the necessary rights.",
   "Maintain respectful, professional and responsible language.",
 ];
+
+// -----------------------------------------------------------------------------
+// Contributor benefits
+// -----------------------------------------------------------------------------
 
 const BENEFITS = [
   {
@@ -178,9 +146,13 @@ const BENEFITS = [
     icon: Handshake,
     title: "A Wider Community",
     description:
-      "Become part of a growing international community of writers, researchers and thinkers.",
+      "Become part of an international community of writers, researchers and thinkers.",
   },
 ];
+
+// -----------------------------------------------------------------------------
+// Submission process
+// -----------------------------------------------------------------------------
 
 const SUBMISSION_STEPS = [
   {
@@ -209,6 +181,10 @@ const SUBMISSION_STEPS = [
   },
 ];
 
+// -----------------------------------------------------------------------------
+// Frequently asked questions
+// -----------------------------------------------------------------------------
+
 const FAQS = [
   {
     question: "Who can contribute to ENEENA?",
@@ -223,7 +199,7 @@ const FAQS = [
   {
     question: "Can I submit an article in my own language?",
     answer:
-      "ENEENA supports separate editorial content in English, Urdu, Arabic, German, Hindi and Chinese. You may contact us about a submission in any of these languages. Each submission should be written naturally for its intended language audience, rather than being an automatically translated copy.",
+      "ENEENA publishes editorial content across 12 language editions: English, Urdu, Arabic, German, Hindi, Chinese, Spanish, French, Brazilian Portuguese, Japanese, Bengali and Indonesian. Contact our editorial team about a submission in your preferred language. Each contribution should be written naturally for its intended audience rather than being an automatically translated copy.",
   },
   {
     question: "What should I include in my submission?",
@@ -252,8 +228,13 @@ const FAQS = [
   },
 ];
 
+// -----------------------------------------------------------------------------
+// Structured data — WebPage, BreadcrumbList and FAQPage
+// -----------------------------------------------------------------------------
+
 const jsonLd = {
   "@context": "https://schema.org",
+
   "@graph": [
     {
       "@type": "WebPage",
@@ -262,23 +243,40 @@ const jsonLd = {
       name: PAGE_TITLE,
       description: PAGE_DESCRIPTION,
       inLanguage: "en",
+
       isPartOf: {
         "@id": `${SITE_URL}/#website`,
       },
+
+      publisher: {
+        "@id": `${SITE_URL}/#organization`,
+      },
+
       about: {
         "@id": `${SITE_URL}/#organization`,
       },
+
+      mainEntity: {
+        "@id": `${PAGE_URL}#faq`,
+      },
+
       breadcrumb: {
         "@id": `${PAGE_URL}#breadcrumb`,
       },
+
       primaryImageOfPage: {
         "@type": "ImageObject",
         url: OG_IMAGE,
+        width: 1200,
+        height: 630,
+        caption: OG_IMAGE_ALT,
       },
     },
+
     {
       "@type": "BreadcrumbList",
       "@id": `${PAGE_URL}#breadcrumb`,
+
       itemListElement: [
         {
           "@type": "ListItem",
@@ -294,12 +292,19 @@ const jsonLd = {
         },
       ],
     },
+
     {
       "@type": "FAQPage",
       "@id": `${PAGE_URL}#faq`,
+
+      isPartOf: {
+        "@id": `${PAGE_URL}#webpage`,
+      },
+
       mainEntity: FAQS.map((faq) => ({
         "@type": "Question",
         name: faq.question,
+
         acceptedAnswer: {
           "@type": "Answer",
           text: faq.answer,
@@ -309,7 +314,18 @@ const jsonLd = {
   ],
 };
 
-const serializedJsonLd = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
+// -----------------------------------------------------------------------------
+// Safely serialize structured data
+// -----------------------------------------------------------------------------
+
+const serializedJsonLd = JSON.stringify(jsonLd)
+  .replace(/</g, "\\u003c")
+  .replace(/\u2028/g, "\\u2028")
+  .replace(/\u2029/g, "\\u2029");
+
+// -----------------------------------------------------------------------------
+// Write for ENEENA page
+// -----------------------------------------------------------------------------
 
 export default function WriteForUsPage() {
   const titleFont = "font-serif";
@@ -344,12 +360,13 @@ export default function WriteForUsPage() {
             />
           </div>
 
-          <div className="relative z-10 mx-auto w-full max-w-7xl px-4 py-20 sm:px-6 lg:py-28">
+          <div className="relative z-10 mx-auto w-full max-w-7xl py-20 lg:py-28">
             <div className="max-w-3xl">
               <div className="mb-6 flex items-center gap-3">
                 <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/85">
                   Contribute to ENEENA
                 </span>
+
                 <span
                   aria-hidden="true"
                   className="h-px w-12 bg-white/60"
@@ -405,7 +422,7 @@ export default function WriteForUsPage() {
           aria-labelledby="why-write-title"
           className="w-full border-b border-border"
         >
-          <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:py-20">
+          <div className="mx-auto max-w-7xl py-16 lg:py-20">
             <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
               <div className="lg:col-span-3">
                 <span className="mb-3 block text-xs font-bold uppercase tracking-[0.18em] text-primary">
@@ -479,7 +496,7 @@ export default function WriteForUsPage() {
           aria-labelledby="writing-categories-heading"
           className="w-full py-16 lg:py-20"
         >
-          <div className="mx-auto max-w-7xl px-4 sm:px-6">
+          <div className="mx-auto max-w-7xl">
             <Suspense
               fallback={
                 <div
@@ -500,9 +517,9 @@ export default function WriteForUsPage() {
         <section
           id="guidelines"
           aria-labelledby="guidelines-heading"
-          className="w-full border-y border-border bg-[#5E1428]/4 py-16 lg:py-20"
+          className="w-full border-y border-border bg-muted/30 py-16 lg:py-20"
         >
-          <div className="mx-auto flex max-w-7xl flex-col items-center gap-10 px-4 sm:px-6 lg:flex-row lg:gap-16">
+          <div className="mx-auto flex max-w-7xl flex-col items-center gap-10 lg:flex-row lg:gap-16">
             <div className="relative aspect-4/3 w-full overflow-hidden rounded-xl border border-border/60 lg:aspect-square lg:w-1/3">
               <Image
                 src="/images/write/book.webp"
@@ -541,10 +558,7 @@ export default function WriteForUsPage() {
 
               <ul className="mb-8 grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2">
                 {GUIDELINES.map((rule) => (
-                  <li
-                    key={rule}
-                    className="flex items-start gap-3"
-                  >
+                  <li key={rule} className="flex items-start gap-3">
                     <CheckCircle2
                       className="mt-0.5 size-5 shrink-0 text-primary"
                       strokeWidth={1.7}
@@ -585,7 +599,7 @@ export default function WriteForUsPage() {
           aria-labelledby="submission-process-heading"
           className="w-full py-16 lg:py-20"
         >
-          <div className="mx-auto max-w-7xl px-4 sm:px-6">
+          <div className="mx-auto max-w-7xl">
             <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:gap-16">
               <div className="w-full lg:w-1/4">
                 <span className="mb-3 block text-xs font-bold uppercase tracking-[0.18em] text-primary">
@@ -657,7 +671,7 @@ export default function WriteForUsPage() {
           aria-labelledby="submission-contact-heading"
           className="w-full border-y border-border py-16 lg:py-20"
         >
-          <div className="mx-auto max-w-4xl px-4 text-center sm:px-6">
+          <div className="mx-auto max-w-4xl text-center">
             <span className="mb-3 block text-xs font-bold uppercase tracking-[0.18em] text-primary">
               Start a conversation
             </span>
@@ -739,7 +753,7 @@ export default function WriteForUsPage() {
           aria-labelledby="faq-heading"
           className="w-full border-t border-border py-16 lg:py-20"
         >
-          <div className="mx-auto max-w-4xl px-4 sm:px-6">
+          <div className="mx-auto max-w-4xl">
             <div className="mb-10 text-center">
               <span className="mb-3 block text-xs font-bold uppercase tracking-[0.18em] text-primary">
                 Before you submit
@@ -771,7 +785,7 @@ export default function WriteForUsPage() {
                 <details
                   key={faq.question}
                   className="group overflow-hidden rounded-lg border border-border bg-background"
-                  open={index === 0 ? undefined : false}
+                  open={index === 0}
                 >
                   <summary
                     className={cn(
@@ -804,37 +818,47 @@ export default function WriteForUsPage() {
         </section>
 
         {/* FINAL CONTRIBUTOR CTA */}
-        <section className="relative w-full overflow-hidden bg-[#5E1428] py-16 text-[#FAF8F5] lg:py-20">
+        <section className="relative w-full overflow-hidden bg-primary py-16 text-primary-foreground lg:py-20">
           <div
             aria-hidden="true"
             className="absolute inset-0 bg-[url('/images/world-map.png')] bg-cover bg-center opacity-[0.09] mix-blend-overlay"
           />
 
-          <div className="relative z-10 mx-auto flex max-w-7xl flex-col items-center justify-between gap-8 px-4 sm:px-6 md:flex-row">
+          <div className="relative z-10 mx-auto flex max-w-7xl flex-col items-center justify-between gap-8 md:flex-row">
             <div className="max-w-2xl text-center md:text-left">
               <div className="mb-3 flex items-center justify-center gap-2 md:justify-start">
                 <Lightbulb
-                  className="size-5 text-white/80"
+                  className="size-5 text-primary-foreground/80"
                   aria-hidden="true"
                 />
 
-                <span className="text-xs font-bold uppercase tracking-[0.18em] text-white/75">
+                <span className="text-xs font-bold uppercase tracking-[0.18em] text-primary-foreground/75">
                   Ideas that travel
                 </span>
               </div>
 
-              <h2 className={cn("mb-3 text-3xl font-bold sm:text-4xl", titleFont)}>
+              <h2
+                className={cn(
+                  "mb-3 text-3xl font-bold sm:text-4xl",
+                  titleFont,
+                )}
+              >
                 Every Great Publication Begins With a Voice.
               </h2>
 
-              <p className={cn("text-base leading-relaxed text-white/80", bodyFont)}>
+              <p
+                className={cn(
+                  "text-base leading-relaxed text-primary-foreground/80",
+                  bodyFont,
+                )}
+              >
                 Bring your knowledge, curiosity and perspective to ENEENA.
               </p>
             </div>
 
             <Link
               href="/contact"
-              className="inline-flex min-h-12 shrink-0 items-center justify-center rounded-full bg-[#FAF8F5] px-8 text-sm font-bold text-[#5E1428] transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#5E1428]"
+              className="inline-flex min-h-12 shrink-0 items-center justify-center rounded-full bg-background px-8 text-sm font-bold text-foreground transition-colors hover:bg-background/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
             >
               Become a Contributor
               <ArrowRight className="ms-2 size-4" aria-hidden="true" />

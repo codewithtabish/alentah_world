@@ -1,66 +1,186 @@
+
 // src/app/[lang]/page.tsx
-import * as React from "react";
+
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { cacheLife, cacheTag } from "next/cache";
+
 import { LanguageWrapper } from "@/components/site/pages/language/language-wrapper";
+
 import { getLanguages } from "@/actions/language/get-languages";
+
+import {
+  HOME_SHARED_SEO,
+  getHomeLanguageAlternates,
+  getHomeSEO,
+} from "@/data/home";
+
 import { CACHE_TAGS } from "@/lib/cache-keys";
 import prisma from "@/lib/clients/prisma-client";
 
+// -----------------------------------------------------------------------------
+// Page props
+// -----------------------------------------------------------------------------
+
 type PageProps = {
-  params: Promise<{ lang: string }>;
+  params: Promise<{
+    lang: string;
+  }>;
 };
 
-// 👇 1. TELL NEXT.JS TO PRE-BUILD THESE AT DEPLOY TIME (STATIC)
+// -----------------------------------------------------------------------------
+// Generate static homepage routes for active languages
+// -----------------------------------------------------------------------------
+
 export async function generateStaticParams() {
   const languages = await prisma.language.findMany({
-    where: { isActive: true },
-    select: { code: true },
+    where: {
+      isActive: true,
+    },
+
+    select: {
+      code: true,
+    },
   });
 
-  return languages.map((lang) => ({
-    lang: lang.code,
+  return languages.map((language) => ({
+    lang: language.code,
   }));
 }
 
-// 👇 2. SEO METADATA
-export async function generateMetadata({ params }: PageProps) {
+// -----------------------------------------------------------------------------
+// Dynamic multilingual SEO metadata
+// -----------------------------------------------------------------------------
+
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const { lang } = await params;
-  
-  const langNames: Record<string, string> = {
-    en: "English Edition",
-    ur: "اردو ایڈیشن",
-    ar: "النسخة العربية",
-  };
+
+  const seo = getHomeSEO(lang);
+
+  // Do not allow unsupported language metadata to be indexed.
+  if (!seo) {
+    return {
+      title: "Page Not Found | ENEENA",
+      robots: {
+        index: false,
+        follow: false,
+      },
+    };
+  }
+
+  const canonicalUrl = `${HOME_SHARED_SEO.siteUrl}/${lang}`;
+
+  const languageAlternates = getHomeLanguageAlternates();
 
   return {
-    title: `${langNames[lang] || "Edition"} | Alentah World`,
-    description: `Read the latest articles, analysis, and stories from the Alentah World ${langNames[lang] || "language"} edition.`,
+    title: {
+      absolute: seo.title,
+    },
+
+    description: seo.description,
+
+    alternates: {
+      canonical: canonicalUrl,
+      languages: languageAlternates,
+    },
+
+    robots: {
+      index: true,
+      follow: true,
+
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+        "max-video-preview": -1,
+      },
+    },
+
+    openGraph: {
+      type: "website",
+      siteName: HOME_SHARED_SEO.siteName,
+
+      title: seo.title,
+      description: seo.description,
+
+      url: canonicalUrl,
+      locale: seo.locale,
+
+      images: [
+        {
+          url: HOME_SHARED_SEO.ogImage,
+          width: HOME_SHARED_SEO.ogImageWidth,
+          height: HOME_SHARED_SEO.ogImageHeight,
+          alt: HOME_SHARED_SEO.ogImageAlt,
+        },
+      ],
+    },
+
+    twitter: {
+      card: HOME_SHARED_SEO.twitterCard,
+
+      title: seo.title,
+      description: seo.description,
+
+      images: [
+        {
+          url: HOME_SHARED_SEO.ogImage,
+          alt: HOME_SHARED_SEO.ogImageAlt,
+        },
+      ],
+    },
   };
 }
 
-// 👇 3. FULL STATIC PAGE (Served instantly like the Slug Page)
-export default async function LanguagePage({ params }: PageProps) {
-  "use cache";
-  cacheLife("max");
+// -----------------------------------------------------------------------------
+// Cached language homepage
+// -----------------------------------------------------------------------------
 
-  const { lang } = await params;
+async function CachedLanguageHomepage({
+  lang,
+}: {
+  lang: string;
+}) {
+  "use cache";
+
+  cacheLife("max");
 
   cacheTag(CACHE_TAGS.languagePageBlogs(lang));
   cacheTag(CACHE_TAGS.language(lang));
 
-  // Validate language
-  const languagesRes = await getLanguages();
-  const isValid = languagesRes.success && languagesRes.languages.some((l) => l.code === lang);
-  
-  if (!isValid) {
-    notFound();
-  }
-
-  // Render directly (No Suspense, No Wrapper delay)
   return (
     <main className="w-full min-h-screen">
       <LanguageWrapper langCode={lang} />
     </main>
   );
+}
+
+// -----------------------------------------------------------------------------
+// Language homepage
+// -----------------------------------------------------------------------------
+
+export default async function LanguagePage({
+  params,
+}: PageProps) {
+  // Resolve route parameters outside the cached component.
+  const { lang } = await params;
+
+  // Validate against active database languages.
+  const languagesRes = await getLanguages();
+
+  const isValid =
+    languagesRes.success &&
+    languagesRes.languages.some(
+      (language) => language.code === lang && language.isActive,
+    );
+
+  if (!isValid) {
+    notFound();
+  }
+
+  // Render the cached homepage for the validated language.
+  return <CachedLanguageHomepage lang={lang} />;
 }

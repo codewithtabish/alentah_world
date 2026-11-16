@@ -1,4 +1,4 @@
-// src/actions/articles/get-article-by-slug.ts
+
 "use server";
 
 import { cacheTag, cacheLife } from "next/cache";
@@ -19,35 +19,47 @@ export type ArticlePageData = {
   bannerImage: string;
   bannerImageAlt: string | null;
   publishedAt: Date | null;
-  updatedAt: Date | null; // 👈 ADDED THIS
+  updatedAt: Date | null;
   readingTime: number | null;
   writtenBy: string | null;
   writerImageUrl: string | null;
-  
+
   language: {
     code: string;
     name: string;
     direction: string;
   };
+
   category: {
     name: string;
     slug: string;
   };
+
   subcategory: {
     name: string;
     slug: string;
   };
+
   author: {
     firstName: string | null;
     lastName: string | null;
     imageUrl: string | null;
     bio: string | null;
   };
+
   seo: {
-    metaTitle: string;
-    metaDescription: string;
+    metaTitle: string | null;
+    metaDescription: string | null;
     canonicalUrl: string | null;
+    noIndex: boolean;
+    noFollow: boolean;
+    ogTitle: string | null;
+    ogDescription: string | null;
     ogImage: string | null;
+    twitterTitle: string | null;
+    twitterDescription: string | null;
+    twitterImage: string | null;
+    schemaType: string | null;
   } | null;
 };
 
@@ -66,8 +78,10 @@ async function getCachedArticleBySlug(
   slug: string
 ): Promise<ArticlePageData | null> {
   "use cache";
+
   cacheLife("max");
-  // Link the cache to the specific blog slug AND the general blogs tag
+
+  // Link the cache to the specific blog slug and general blogs tag.
   cacheTag(CACHE_TAGS.blog(slug));
   cacheTag(CACHE_TAGS.blogs);
 
@@ -75,9 +89,15 @@ async function getCachedArticleBySlug(
     where: {
       slug,
       status: "PUBLISHED",
-      language: { code: lang },
-      category: { slug: category },
-      subcategory: { slug: subcategory },
+      language: {
+        code: lang,
+      },
+      category: {
+        slug: category,
+      },
+      subcategory: {
+        slug: subcategory,
+      },
     },
     include: {
       language: true,
@@ -88,7 +108,9 @@ async function getCachedArticleBySlug(
     },
   });
 
-  if (!article) return null;
+  if (!article) {
+    return null;
+  }
 
   return article as ArticlePageData;
 }
@@ -104,15 +126,30 @@ export async function getArticleBySlug(
   slug: string
 ): Promise<GetArticleResult> {
   try {
-    const article = await getCachedArticleBySlug(lang, category, subcategory, slug);
+    const article = await getCachedArticleBySlug(
+      lang,
+      category,
+      subcategory,
+      slug
+    );
 
     if (!article) {
-      return { success: false, error: "Article not found." };
+      return {
+        success: false,
+        error: "Article not found.",
+      };
     }
 
-    return { success: true, article };
+    return {
+      success: true,
+      article,
+    };
   } catch (error) {
     console.error("[getArticleBySlug]", error);
-    return { success: false, error: "Failed to load article." };
+
+    return {
+      success: false,
+      error: "Failed to load article.",
+    };
   }
 }

@@ -3,87 +3,60 @@ import type { Metadata } from "next";
 
 import { AdvertiseContent } from "@/components/site/pages/advertise/advertise-content";
 
-/* -------------------------------------------------------------------------- */
-/* ENEENA — Website identity                                                  */
-/* -------------------------------------------------------------------------- */
+// -----------------------------------------------------------------------------
+// ENEENA — Brand identity
+// -----------------------------------------------------------------------------
 
 const SITE_URL = "https://www.eneena.com";
 const SITE_NAME = "ENEENA";
 
 const PAGE_URL = `${SITE_URL}/advertise`;
 
+// -----------------------------------------------------------------------------
+// Page SEO
+// -----------------------------------------------------------------------------
+
 const PAGE_TITLE =
-  "Advertise With ENEENA | Global Media, Brand Partnerships & Sponsorships";
+  "Advertise With ENEENA | Global Media & Brand Partnerships";
 
 const PAGE_DESCRIPTION =
-  "Discover advertising and brand partnership opportunities with ENEENA, an independent international multilingual publication. Connect your brand with readers interested in world affairs, technology, business, finance, science, culture, society and ideas.";
+  "Explore advertising and brand partnership opportunities with ENEENA, an independent international publication covering world affairs, technology, business, science and culture in 12 languages.";
 
-/* -------------------------------------------------------------------------- */
-/* Social sharing                                                             */
-/* -------------------------------------------------------------------------- */
-
-const OG_IMAGE = "/images/og-image.png";
+// Use the existing ENEENA global social sharing image.
+const OG_IMAGE = `${SITE_URL}/images/og-image.jpg`;
 
 const OG_IMAGE_ALT =
-  "ENEENA — Independent Journalism and Global Perspectives";
+  "ENEENA — Independent Journalism, Global Perspectives";
 
-/* -------------------------------------------------------------------------- */
-/* SEO metadata                                                               */
-/* -------------------------------------------------------------------------- */
+// -----------------------------------------------------------------------------
+// Supported editorial languages
+// -----------------------------------------------------------------------------
+
+const LANGUAGE_CODES = [
+  "en",
+  "ur",
+  "ar",
+  "de",
+  "hi",
+  "zh",
+  "es",
+  "fr",
+  "pt-BR",
+  "ja",
+  "bn",
+  "id",
+] as const;
+
+// -----------------------------------------------------------------------------
+// Search engine metadata
+// -----------------------------------------------------------------------------
 
 export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
-
-  applicationName: SITE_NAME,
-
   title: {
     absolute: PAGE_TITLE,
   },
 
   description: PAGE_DESCRIPTION,
-
-  keywords: [
-    "Advertise with ENEENA",
-    "ENEENA advertising",
-    "advertising opportunities",
-    "international media advertising",
-    "global advertising opportunities",
-    "digital advertising",
-    "online publication advertising",
-    "brand partnerships",
-    "media partnerships",
-    "media sponsorships",
-    "sponsorship opportunities",
-    "digital media partnerships",
-    "content partnerships",
-    "editorial sponsorships",
-    "sponsored articles",
-    "sponsored content",
-    "display advertising",
-    "newsletter advertising",
-    "brand visibility",
-    "advertising for businesses",
-    "advertising for agencies",
-    "international publication",
-    "multilingual publication",
-    "independent journalism",
-    "global media platform",
-    "business and finance media",
-    "technology publication",
-    "culture and society publication",
-    "advertising enquiries",
-  ],
-
-  authors: [
-    {
-      name: "ENEENA Editorial Team",
-      url: SITE_URL,
-    },
-  ],
-
-  creator: SITE_NAME,
-  publisher: SITE_NAME,
-  category: "Advertising and Media",
 
   alternates: {
     canonical: PAGE_URL,
@@ -92,15 +65,13 @@ export const metadata: Metadata = {
   robots: {
     index: true,
     follow: true,
-    nocache: false,
 
     googleBot: {
       index: true,
       follow: true,
-      noimageindex: false,
-      "max-video-preview": -1,
       "max-image-preview": "large",
       "max-snippet": -1,
+      "max-video-preview": -1,
     },
   },
 
@@ -118,7 +89,7 @@ export const metadata: Metadata = {
         width: 1200,
         height: 630,
         alt: OG_IMAGE_ALT,
-        type: "image/png",
+        type: "image/jpeg",
       },
     ],
   },
@@ -135,62 +106,23 @@ export const metadata: Metadata = {
       },
     ],
   },
-
-  formatDetection: {
-    telephone: false,
-    date: false,
-    address: false,
-    email: false,
-    url: false,
-  },
 };
 
-/* -------------------------------------------------------------------------- */
-/* Structured data                                                            */
-/* -------------------------------------------------------------------------- */
+// -----------------------------------------------------------------------------
+// Structured data — Advertising page
+// -----------------------------------------------------------------------------
 
 const structuredData = {
   "@context": "https://schema.org",
 
   "@graph": [
     {
-      "@type": "Organization",
-      "@id": `${SITE_URL}/#organization`,
-      name: SITE_NAME,
-      url: SITE_URL,
-
-      description:
-        "ENEENA is an independent international multilingual publication exploring world affairs, geopolitics, technology, science, business, finance, history, culture, society and ideas.",
-
-      knowsLanguage: [
-        "English",
-        "Urdu",
-        "Arabic",
-        "German",
-        "Hindi",
-        "Chinese",
-      ],
-    },
-
-    {
-      "@type": "WebSite",
-      "@id": `${SITE_URL}/#website`,
-      name: SITE_NAME,
-      url: SITE_URL,
-
-      publisher: {
-        "@id": `${SITE_URL}/#organization`,
-      },
-
-      inLanguage: ["en", "ur", "ar", "de", "hi", "zh"],
-    },
-
-    {
       "@type": "WebPage",
-      "@id": `${PAGE_URL}/#webpage`,
+      "@id": `${PAGE_URL}#webpage`,
       url: PAGE_URL,
       name: PAGE_TITLE,
       description: PAGE_DESCRIPTION,
+      inLanguage: "en",
 
       isPartOf: {
         "@id": `${SITE_URL}/#website`,
@@ -205,18 +137,29 @@ const structuredData = {
       },
 
       mainEntity: {
-        "@id": `${PAGE_URL}/#advertising-service`,
+        "@id": `${PAGE_URL}#advertising-service`,
       },
 
-      inLanguage: "en",
+      breadcrumb: {
+        "@id": `${PAGE_URL}#breadcrumb`,
+      },
+
+      primaryImageOfPage: {
+        "@type": "ImageObject",
+        url: OG_IMAGE,
+        width: 1200,
+        height: 630,
+        caption: OG_IMAGE_ALT,
+      },
     },
 
     {
       "@type": "Service",
-      "@id": `${PAGE_URL}/#advertising-service`,
+      "@id": `${PAGE_URL}#advertising-service`,
       name: "Advertising and Brand Partnership Enquiries",
+
       description:
-        "Advertising, sponsorship, sponsored content and brand partnership opportunities offered by ENEENA, subject to availability and editorial standards.",
+        "Explore advertising, sponsorship and brand partnership opportunities with ENEENA. Potential collaborations are subject to availability, audience relevance and ENEENA's editorial standards.",
 
       serviceType: [
         "Digital advertising enquiries",
@@ -224,6 +167,7 @@ const structuredData = {
         "Sponsored content enquiries",
         "Newsletter advertising enquiries",
         "Brand partnership enquiries",
+        "Media partnership enquiries",
       ],
 
       provider: {
@@ -237,12 +181,41 @@ const structuredData = {
 
       url: PAGE_URL,
     },
+
+    {
+      "@type": "BreadcrumbList",
+      "@id": `${PAGE_URL}#breadcrumb`,
+
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Home",
+          item: SITE_URL,
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: "Advertise",
+          item: PAGE_URL,
+        },
+      ],
+    },
   ],
 };
 
-/* -------------------------------------------------------------------------- */
-/* Page                                                                       */
-/* -------------------------------------------------------------------------- */
+// -----------------------------------------------------------------------------
+// Safely serialize structured data
+// -----------------------------------------------------------------------------
+
+const serializedStructuredData = JSON.stringify(structuredData)
+  .replace(/</g, "\\u003c")
+  .replace(/\u2028/g, "\\u2028")
+  .replace(/\u2029/g, "\\u2029");
+
+// -----------------------------------------------------------------------------
+// Advertise page
+// -----------------------------------------------------------------------------
 
 export default function AdvertisePage() {
   return (
@@ -250,7 +223,7 @@ export default function AdvertisePage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(structuredData).replace(/</g, "\\u003c"),
+          __html: serializedStructuredData,
         }}
       />
 

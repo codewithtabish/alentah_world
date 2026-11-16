@@ -3,61 +3,62 @@ import type { Metadata } from "next";
 
 import { ContactContent } from "@/components/site/pages/contact/contact-content";
 
+// -----------------------------------------------------------------------------
+// ENEENA — Website identity
+// -----------------------------------------------------------------------------
+
 const SITE_URL = "https://www.eneena.com";
 const SITE_NAME = "ENEENA";
-
 const PAGE_URL = `${SITE_URL}/contact`;
+
+// -----------------------------------------------------------------------------
+// Contact page SEO
+// -----------------------------------------------------------------------------
 
 const PAGE_TITLE =
   "Contact ENEENA | Editorial Enquiries, Story Submissions & Partnerships";
 
 const PAGE_DESCRIPTION =
-  "Get in touch with ENEENA, an independent international publication. Submit a story idea, share feedback, contact our editorial team, or explore advertising and partnership opportunities.";
+  "Contact ENEENA for editorial enquiries, story submissions, reader feedback, press enquiries and business partnerships. Connect with our independent international publication.";
 
-const OG_IMAGE = "/images/og-image.png";
+// -----------------------------------------------------------------------------
+// Social sharing
+// -----------------------------------------------------------------------------
+
+const OG_IMAGE = `${SITE_URL}/images/og-image.jpg`;
 
 const OG_IMAGE_ALT =
-  "ENEENA — Independent Journalism and Global Perspectives";
+  "ENEENA — Independent Journalism, Global Perspectives";
+
+// -----------------------------------------------------------------------------
+// ENEENA's 12 editorial languages
+// -----------------------------------------------------------------------------
+
+const LANGUAGE_CODES = [
+  "en",
+  "ur",
+  "ar",
+  "de",
+  "hi",
+  "zh",
+  "es",
+  "fr",
+  "pt-BR",
+  "ja",
+  "bn",
+  "id",
+] as const;
+
+// -----------------------------------------------------------------------------
+// Search engine metadata
+// -----------------------------------------------------------------------------
 
 export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
-
-  applicationName: SITE_NAME,
-
   title: {
     absolute: PAGE_TITLE,
   },
 
   description: PAGE_DESCRIPTION,
-
-  keywords: [
-    "Contact ENEENA",
-    "ENEENA contact",
-    "ENEENA editorial team",
-    "ENEENA journalism",
-    "contact international publication",
-    "editorial enquiries",
-    "story submissions",
-    "submit a story",
-    "journalism contributions",
-    "advertising enquiries",
-    "media partnerships",
-    "business partnerships",
-    "independent journalism",
-    "global publication",
-    "press enquiries",
-  ],
-
-  authors: [
-    {
-      name: "ENEENA Editorial Team",
-      url: SITE_URL,
-    },
-  ],
-
-  creator: SITE_NAME,
-  publisher: SITE_NAME,
-  category: "News and Journalism",
 
   alternates: {
     canonical: PAGE_URL,
@@ -66,15 +67,13 @@ export const metadata: Metadata = {
   robots: {
     index: true,
     follow: true,
-    nocache: false,
 
     googleBot: {
       index: true,
       follow: true,
-      noimageindex: false,
-      "max-video-preview": -1,
       "max-image-preview": "large",
       "max-snippet": -1,
+      "max-video-preview": -1,
     },
   },
 
@@ -92,7 +91,7 @@ export const metadata: Metadata = {
         width: 1200,
         height: 630,
         alt: OG_IMAGE_ALT,
-        type: "image/png",
+        type: "image/jpeg",
       },
     ],
   },
@@ -101,6 +100,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,
+
     images: [
       {
         url: OG_IMAGE,
@@ -108,61 +108,87 @@ export const metadata: Metadata = {
       },
     ],
   },
-
-  formatDetection: {
-    telephone: false,
-    date: false,
-    address: false,
-    email: false,
-    url: false,
-  },
 };
+
+// -----------------------------------------------------------------------------
+// Structured data — ContactPage + BreadcrumbList
+// -----------------------------------------------------------------------------
 
 const structuredData = {
   "@context": "https://schema.org",
+
   "@graph": [
     {
-      "@type": "Organization",
-      "@id": `${SITE_URL}/#organization`,
-      name: SITE_NAME,
-      url: SITE_URL,
-    },
-    {
-      "@type": "WebSite",
-      "@id": `${SITE_URL}/#website`,
-      name: SITE_NAME,
-      url: SITE_URL,
-      publisher: {
-        "@id": `${SITE_URL}/#organization`,
-      },
-      inLanguage: [
-        "en",
-        "ur",
-        "ar",
-        "de",
-        "hi",
-        "zh",
-      ],
-    },
-    {
       "@type": "ContactPage",
-      "@id": `${PAGE_URL}/#webpage`,
+      "@id": `${PAGE_URL}#webpage`,
       url: PAGE_URL,
       name: PAGE_TITLE,
       description: PAGE_DESCRIPTION,
+      inLanguage: "en",
+
       isPartOf: {
         "@id": `${SITE_URL}/#website`,
       },
+
       about: {
         "@id": `${SITE_URL}/#organization`,
       },
+
       publisher: {
         "@id": `${SITE_URL}/#organization`,
       },
-      inLanguage: "en",
+
+      mainEntity: {
+        "@id": `${SITE_URL}/#organization`,
+      },
+
+      breadcrumb: {
+        "@id": `${PAGE_URL}#breadcrumb`,
+      },
+
+      primaryImageOfPage: {
+        "@type": "ImageObject",
+        url: OG_IMAGE,
+        width: 1200,
+        height: 630,
+        caption: OG_IMAGE_ALT,
+      },
+    },
+
+    {
+      "@type": "BreadcrumbList",
+      "@id": `${PAGE_URL}#breadcrumb`,
+
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Home",
+          item: SITE_URL,
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: "Contact",
+          item: PAGE_URL,
+        },
+      ],
     },
   ],
 };
+
+// -----------------------------------------------------------------------------
+// Safely serialize JSON-LD
+// -----------------------------------------------------------------------------
+
+const serializedStructuredData = JSON.stringify(structuredData)
+  .replace(/</g, "\\u003c")
+  .replace(/\u2028/g, "\\u2028")
+  .replace(/\u2029/g, "\\u2029");
+
+// -----------------------------------------------------------------------------
+// Contact page
+// -----------------------------------------------------------------------------
 
 export default function ContactPage() {
   return (
@@ -170,7 +196,7 @@ export default function ContactPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(structuredData).replace(/</g, "\\u003c"),
+          __html: serializedStructuredData,
         }}
       />
 

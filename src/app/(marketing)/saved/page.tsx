@@ -1,83 +1,153 @@
-// src/app/[lang]/saved/page.tsx
+
+import type { Metadata } from "next";
+import Image from "next/image";
 import { Suspense } from "react";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import { Bookmark, Clock } from "lucide-react";
+import { Bookmark } from "lucide-react";
+
 import { getSavedArticles } from "@/actions/articles/get-saved-articles";
 import { SavedClient } from "@/components/site/pages/saved/saved-client";
 import { SavedArticlesSkeleton } from "@/components/site/pages/saved/saved-articles-skeleton";
 
-// Server Component that fetches the data
-async function SavedArticlesData() {
+// ============================================================
+// SEO: PRIVATE PAGE - NEVER INDEX
+// ============================================================
+
+export const metadata: Metadata = {
+  title: "My Saved Stories | ENEENA",
+  description: "Your personal collection of saved ENEENA stories.",
+
+  robots: {
+    index: false,
+    follow: false,
+    googleBot: {
+      index: false,
+      follow: false,
+      noimageindex: true,
+    },
+  },
+};
+
+// ============================================================
+// TYPES
+// ============================================================
+
+type SavedPageProps = {
+  params: Promise<{
+    lang: string;
+  }>;
+};
+
+// ============================================================
+// AUTHENTICATED SAVED ARTICLES
+// ============================================================
+
+async function SavedArticlesData({
+  lang,
+}: {
+  lang: string;
+}) {
   const { userId } = await auth();
-  
+
+  // No separate sign-in route exists in this application.
+  // Send unauthenticated visitors to their language homepage.
   if (!userId) {
-    redirect("/sign-in"); // Or handle guest state manually
+    redirect(`/${lang}`);
   }
 
   const result = await getSavedArticles();
 
   if (!result.success) {
     return (
-      <div className="py-20 text-center text-muted-foreground">
-        Failed to load saved articles. Please try again later.
+      <div
+        className="py-20 text-center text-muted-foreground"
+        role="alert"
+      >
+        Failed to load your saved articles. Please try again later.
       </div>
     );
   }
 
-  // 👇 FIXED: Added `|| []` to guarantee an array is passed even if blogs is somehow undefined
-  return <SavedClient initialBlogs={result.blogs || []} />;
+  return <SavedClient initialBlogs={result.blogs ?? []} />;
 }
 
-export default function SavedPage() {
+// ============================================================
+// LOADING STATE
+// ============================================================
+
+function SavedPageFallback() {
+  return <SavedArticlesSkeleton />;
+}
+
+// ============================================================
+// PAGE
+// ============================================================
+
+export default async function SavedPage({
+  params,
+}: SavedPageProps) {
+  const { lang } = await params;
+
+  const direction =
+    lang === "ar" || lang === "ur" ? "rtl" : "ltr";
+
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      {/* 1. HERO HEADER */}
-      <section className="relative w-full overflow-hidden bg-[#3b0d15] text-white">
-        <div className="absolute inset-0 opacity-20">
-          {/* Replace with your actual banner image path */}
-          <img 
-            src="/images/saved/banner-16x9-q80.webp" 
-            alt="Bookshelf" 
-            className="h-full w-full object-cover"
+    <div className="flex min-h-screen flex-col">
+      {/* ================================================== */}
+      {/* HERO HEADER */}
+      {/* ================================================== */}
+
+      <section className="relative isolate w-full overflow-hidden">
+        <div className="absolute inset-0 -z-20">
+          <Image
+            src="/images/saved/banner-16x9-q80.webp"
+            alt="A collection of stories saved for later reading"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
           />
         </div>
-        <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 md:py-24">
-          <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-[#fdfbf7] mb-4">
-            My Saved Stories
-          </h1>
-          <p className="max-w-2xl text-lg text-[#fdfbf7]/80">
-            Your personal collection of stories, ideas, and perspectives worth returning to.
-          </p>
+
+        <div className="absolute inset-0 -z-10 bg-black/65" />
+
+        <div className="relative mx-auto w-full max-w-7xl py-16 md:py-24">
+          <div className="max-w-3xl">
+            <div className="mb-5 flex items-center gap-3">
+              <Bookmark
+                className="size-6 text-white"
+                aria-hidden="true"
+              />
+
+              <span className="text-sm font-semibold uppercase tracking-[0.2em] text-white/80">
+                ENEENA COLLECTION
+              </span>
+            </div>
+
+            <h1 className="mb-5 font-serif text-4xl font-bold tracking-tight text-white md:text-5xl lg:text-6xl">
+              My Saved Stories
+            </h1>
+
+            <p className="max-w-2xl text-lg leading-relaxed text-white/85">
+              Your personal collection of stories, ideas, and
+              perspectives worth returning to.
+            </p>
+          </div>
         </div>
       </section>
 
-      {/* 2. STATS BAR */}
-      <div className="border-b border-border bg-[#fcf9f2]">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2 text-foreground font-semibold">
-              <Bookmark className="size-5 text-primary" />
-              <span className="text-primary text-base">12</span> Saved Articles
-            </div>
-            <div className="h-4 w-px bg-border hidden sm:block" />
-            <div className="flex items-center gap-2">
-              <Bookmark className="size-4" />
-              <span className="font-semibold text-foreground">12</span> Available to Read
-            </div>
-            <div className="h-4 w-px bg-border hidden sm:block" />
-            <div className="flex items-center gap-2">
-              <Clock className="size-4" />
-              Last Saved: 2 days ago
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* ================================================== */}
+      {/* SAVED ARTICLES */}
+      {/* ================================================== */}
 
-      {/* 3. MAIN CONTENT (SUSPENSE STREAMED) */}
-      <main className="flex-1 pb-20">
-        <Suspense fallback={<SavedArticlesSkeleton />}>
-          <SavedArticlesData />
+      <main
+        lang={lang}
+        dir={direction}
+        className="w-full min-w-0 flex-1 pb-20"
+      >
+        <Suspense fallback={<SavedPageFallback />}>
+          <SavedArticlesData lang={lang} />
         </Suspense>
       </main>
     </div>
