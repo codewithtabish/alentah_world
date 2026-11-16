@@ -462,7 +462,7 @@ export default function NotificationPrompt() {
                 onClick={hide}
                 className="inline-flex h-12 flex-1 items-center justify-center rounded-xl px-5 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-ring"
               >
-                Maybe later
+                Maybe later .
               </button>
             </div>
           )}
