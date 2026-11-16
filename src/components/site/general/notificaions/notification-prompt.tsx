@@ -455,7 +455,7 @@ export default function NotificationPrompt() {
                 onClick={handleRecheck}
                 className="inline-flex h-12 flex-1 items-center justify-center rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground transition hover:opacity-90 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-ring"
               >
-                I've enabled it ..
+                I've enabled it .. .
               </button>
               <button
                 type="button"
