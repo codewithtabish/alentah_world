@@ -19,9 +19,11 @@ export type ArticlePageData = {
   bannerImage: string;
   bannerImageAlt: string | null;
   publishedAt: Date | null;
+  updatedAt: Date | null; // 👈 ADDED THIS
   readingTime: number | null;
   writtenBy: string | null;
   writerImageUrl: string | null;
+  
   language: {
     code: string;
     name: string;

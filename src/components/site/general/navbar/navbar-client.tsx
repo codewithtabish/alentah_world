@@ -6,7 +6,6 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 
 import {
-  Bookmark,
   Check,
   ChevronDown,
   Globe,
@@ -20,8 +19,12 @@ import { SignInButton, useUser, useClerk, Show } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 import { ModeToggle } from "@/components/site/general/theme/mode-toggle";
 
+// 👇 Imported your custom icons here
+
+
 import type { LanguageListItem } from "@/actions/language/get-languages";
 import type { CategoryListItem } from "@/actions/categories/get-categories";
+import { BookmarkFillIcon, BookmarkOutlineIcon, ShieldIcon } from "../theme/social-icons";
 
 // ============================================================
 // STYLES
@@ -68,6 +71,8 @@ const FLAG_CODES = new Set([
   "es",
   "fr",
   "pt",
+  "pt-BR",
+  "br",
   "ja",
 ]);
 
@@ -95,9 +100,15 @@ function Flag({
     );
   }
 
+  // Map "br" and "pt-BR" to the existing "pt" image
+  let imageCode = code;
+  if (code === "br" || code === "pt-BR") {
+    imageCode = "pt";
+  }
+
   return (
     <Image
-      src={`${FLAG_BASE}/flag-${code}-64.webp`}
+      src={`${FLAG_BASE}/flag-${imageCode}-64.webp`}
       alt=""
       aria-hidden="true"
       width={size}
@@ -175,28 +186,6 @@ function Logo() {
         />
       </span>
     </Link>
-  );
-}
-
-// ============================================================
-// SHIELD ICON
-// ============================================================
-
-function ShieldIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <path d="M12 2 4 5v6c0 5.25 3.4 9.74 8 11 4.6-1.26 8-5.75 8-11V5l-8-3Z" />
-      <path d="M9 12l2 2 4-4" />
-    </svg>
   );
 }
 
@@ -421,7 +410,6 @@ function MobileLanguageSelector({
 // ============================================================
 
 interface NavbarClientProps {
-  // Kept optional so the parent component doesn't break (no longer used here).
   categories?: CategoryListItem[];
   languages: LanguageListItem[];
 }
@@ -492,7 +480,12 @@ export function NavbarClient({ languages }: NavbarClientProps) {
               aria-label="Saved articles"
               className={cn(ICON_BTN, isSavedRoute ? "bg-primary/10 text-primary" : "text-foreground/70")}
             >
-              <Bookmark className="size-4.5" strokeWidth={1.75} fill={isSavedRoute ? "currentColor" : "none"} />
+              {/* 👇 Used your custom icon here */}
+              {isSavedRoute ? (
+                <BookmarkFillIcon className="size-4.5" />
+              ) : (
+                <BookmarkOutlineIcon className="size-4.5" />
+              )}
             </Link>
           </Show>
 
@@ -561,7 +554,8 @@ export function NavbarClient({ languages }: NavbarClientProps) {
                     </li>
                     <li>
                       <Link href="/saved" onClick={() => setUserMenuOpen(false)} className={MENU_ITEM}>
-                        <Bookmark className="size-4" /> Saved
+                        {/* 👇 Used your custom icon here too */}
+                        <BookmarkOutlineIcon className="size-4" /> Saved
                       </Link>
                     </li>
                     {isAdmin && (
@@ -573,6 +567,7 @@ export function NavbarClient({ languages }: NavbarClientProps) {
                             onClick={() => setUserMenuOpen(false)}
                             className={cn(MENU_ITEM, "font-medium text-primary hover:bg-primary/10")}
                           >
+                            {/* 👇 Using your custom ShieldIcon */}
                             <ShieldIcon className="size-4" /> Admin
                           </Link>
                         </li>

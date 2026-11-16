@@ -7,6 +7,9 @@ import { Clock, ArrowRight, ArrowUpRight, CalendarDays, PenLine } from "lucide-r
 import { cn } from "@/lib/utils";
 import type { HomeBlogItem } from "@/actions/articles/get-home-blogs";
 
+// 👇 Imported the Newsletter form here
+import { NewsletterForm } from "@/components/site/pages/home/newsletter-form";
+
 interface HomeClientProps {
   blogs: HomeBlogItem[];
 }
@@ -21,9 +24,6 @@ const BLUR = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
 
 /* ------------------------------------------------------------------ */
 /* Editions (the 12 publishing languages — keep in sync with the seed) */
-/*                                                                     */
-/* display = headline font, text = body font.                          */
-/* The CSS variables come from the root layout (next/font).            */
 /* ------------------------------------------------------------------ */
 
 type Edition = {
@@ -31,7 +31,7 @@ type Edition = {
   name: string;
   native: string;
   dir: "ltr" | "rtl";
-  flag: string; // file code in /images/navbar/flag-{flag}-64.webp
+  flag: string;
   latin: boolean;
   display: string;
   text: string;
@@ -55,10 +55,8 @@ const EDITIONS: readonly Edition[] = [
 const EDITION_BY_CODE = new Map(EDITIONS.map((e) => [e.code, e]));
 
 const SIDE_COUNT = 4;
-const LATEST_COUNT = 10; // 1 lead + 9 grid cards (3 x 3)
+const LATEST_COUNT = 10;
 
-// false = "Top Stories" are simply the next newest stories (always fresh).
-// true  = prefer one story per language first, still newest-first within that.
 const PREFER_LANGUAGE_VARIETY = false;
 
 /* ------------------------------------------------------------------ */
@@ -420,7 +418,6 @@ function LanguageTile({ edition }: { edition: Edition }) {
         className="size-12 shadow-md shadow-foreground/10 ring-1 ring-border transition-all duration-500 group-hover:scale-110 group-hover:ring-primary-foreground/40"
       />
 
-      {/* Fixed min-height keeps every card aligned, even when a name wraps to 2 lines */}
       <span className="flex min-h-11 w-full flex-col items-center justify-center gap-0.5">
         <span
           lang={edition.code}
@@ -448,9 +445,6 @@ function LanguageTile({ edition }: { edition: Edition }) {
 
 /* ------------------------------------------------------------------ */
 /* Languages section                                                   */
-/*                                                                     */
-/* Hidden on small devices (below 640px). Visible from `sm` and up.    */
-/* To hide it on tablets too, change `sm:flex` to `md:flex`.           */
 /* ------------------------------------------------------------------ */
 
 function LanguagesSection() {
@@ -459,7 +453,6 @@ function LanguagesSection() {
       aria-labelledby="languages-heading"
       className="hidden flex-col gap-10 sm:flex sm:gap-12"
     >
-      {/* Header */}
       <header className="mx-auto flex max-w-3xl flex-col items-center gap-5 text-center">
         <div className="flex w-full items-center gap-4">
           <span aria-hidden="true" className="h-px flex-1 bg-linear-to-r from-transparent to-primary/40" />
@@ -488,7 +481,6 @@ function LanguagesSection() {
         </div>
       </header>
 
-      {/* Cards */}
       <ul className="grid grid-cols-3 gap-3 md:grid-cols-4 xl:grid-cols-6">
         {EDITIONS.map((edition) => (
           <li key={edition.code}>
@@ -516,18 +508,12 @@ export function HomeClient({ blogs }: HomeClientProps) {
     );
   }
 
-  /* ---------- Pick which story goes where (newest first, no duplicates) ---------- */
-
-  // Always sort here so the page never depends on the order the query returned.
   const sorted = [...blogs].sort((a, b) => publishedTime(b) - publishedTime(a));
 
   const used = new Set<string>();
-
-  // HERO = the newest story overall.
   const hero = sorted[0];
   used.add(hero.id);
 
-  // TOP STORIES = the next newest stories.
   const sideBlogs: HomeBlogItem[] = [];
   const take = (b: HomeBlogItem) => {
     used.add(b.id);
@@ -549,15 +535,14 @@ export function HomeClient({ blogs }: HomeClientProps) {
   }
   sideBlogs.sort((a, b) => publishedTime(b) - publishedTime(a));
 
-  // LATEST = everything else, newest first.
   const latestBlogs = sorted.filter((b) => !used.has(b.id)).slice(0, LATEST_COUNT);
   const leadBlog = latestBlogs[0];
   const restBlogs = latestBlogs.slice(1);
 
-  // Topic chips derived from the stories on the page (unique language + category).
+  // Only show top 8 topics
   const topics = Array.from(
     new Map(sorted.map((b) => [`${b.language.code}/${b.category.slug}`, b])).values(),
-  ).slice(0, 16);
+  ).slice(0, 8);
 
   const heroHref = articleHref(hero);
   const heroRtl = isRtlBlog(hero);
@@ -566,8 +551,6 @@ export function HomeClient({ blogs }: HomeClientProps) {
   const heroTextFont = getTextFont(hero);
 
   return (
-    // No horizontal padding on this top-level wrapper (the layout controls side spacing).
-    // max-w + mx-auto only stops the layout stretching on very wide monitors.
     <div className="mx-auto flex w-full min-w-0 max-w-[1600px] flex-col gap-16 overflow-x-clip pb-16 pt-5 sm:gap-24 sm:pb-24">
       <h1 className="sr-only">ENEENA — Independent Journalism, Global Perspectives</h1>
 
@@ -590,7 +573,6 @@ export function HomeClient({ blogs }: HomeClientProps) {
             className="object-cover transition-transform duration-1400 ease-out [@media(hover:hover)]:group-hover:scale-[1.035]"
           />
 
-          {/* Overlays use fixed black/white so they look the same in light AND dark mode */}
           <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/35 to-black/5" />
           <div className="absolute inset-x-0 bottom-0 h-3/5 bg-linear-to-t from-primary/30 to-transparent mix-blend-multiply" />
           <div className="absolute inset-x-0 top-0 h-28 bg-linear-to-b from-black/35 to-transparent" />
@@ -653,7 +635,7 @@ export function HomeClient({ blogs }: HomeClientProps) {
         )}
       </section>
 
-      {/* 2. READ IN YOUR LANGUAGE (hidden on small devices) */}
+      {/* 2. READ IN YOUR LANGUAGE */}
       <LanguagesSection />
 
       {/* 3. LATEST STORIES */}
@@ -684,7 +666,13 @@ export function HomeClient({ blogs }: HomeClientProps) {
       {/* 4. BROWSE BY TOPIC */}
       {topics.length > 0 && (
         <section aria-labelledby="topics-heading" className="flex flex-col gap-6">
-          <SectionHeader id="topics-heading" eyebrow="Explore" title="Browse by Topic" titleClassName="text-3xl sm:text-4xl" />
+          <div className="flex items-center justify-between">
+            <SectionHeader id="topics-heading" eyebrow="Explore" title="Browse by Topic" titleClassName="text-3xl sm:text-4xl" />
+            <Link href="/topics" className="hidden sm:inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
+              View All Topics <ArrowRight className="size-4" />
+            </Link>
+          </div>
+          
           <ul className="flex flex-wrap gap-2.5">
             {topics.map((b) => {
               const latin = isLatinBlog(b);
@@ -706,7 +694,35 @@ export function HomeClient({ blogs }: HomeClientProps) {
         </section>
       )}
 
-      {/* 5. SHARE YOUR STORY (closing call to action) */}
+      {/* 👇 5. NEWSLETTER SECTION (Newly Added) */}
+      <section className="bg-[#FAF8F5] dark:bg-muted/30 py-20 sm:py-28 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 border-y border-border/50 rounded-3xl">
+        <div className="mx-auto max-w-7xl">
+          <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:items-center">
+            
+            {/* Left Side: Text */}
+            <div className="flex flex-col gap-4">
+              <span className="inline-flex items-center gap-3 text-xs font-bold uppercase tracking-[0.2em] text-primary">
+                <span aria-hidden="true" className="h-px w-6 bg-primary" />
+                The ENEENA Briefing
+              </span>
+              <h2 className="font-serif text-4xl font-bold leading-[1.1] tracking-tight text-foreground sm:text-5xl">
+                Ideas worth thinking about.<br />Stories worth your time.
+              </h2>
+              <p className="max-w-md font-sans text-base leading-7 text-muted-foreground">
+                Thoughtful journalism, important perspectives, and noteworthy ideas — delivered directly to your inbox.
+              </p>
+            </div>
+
+            {/* Right Side: Form */}
+            <div className="lg:ps-10">
+              <NewsletterForm />
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* 6. SHARE YOUR STORY (closing call to action) */}
       <section
         dir="ltr"
         aria-labelledby="share-story-heading"

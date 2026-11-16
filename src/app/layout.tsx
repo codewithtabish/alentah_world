@@ -1,19 +1,6 @@
+
 import type { Metadata, Viewport } from "next";
 import type { CSSProperties, ReactNode } from "react";
-
-import {
-  Plus_Jakarta_Sans,
-  Fraunces,
-  Geist_Mono,
-  Gulzar,
-  Noto_Nastaliq_Urdu,
-  Amiri,
-  Noto_Naskh_Arabic,
-  Noto_Serif_Devanagari,
-  Noto_Sans_Devanagari,
-  Noto_Serif_SC,
-  Noto_Sans_SC,
-} from "next/font/google";
 
 import "./globals.css";
 
@@ -24,40 +11,40 @@ import { Toaster } from "sonner";
 
 // ======================================================
 // ENEENA — INTERNATIONAL EDITORIAL PUBLICATION
-// English | Urdu | Arabic | German | Hindi | Chinese
+// 12 language editions
 // ======================================================
 
 const SITE_URL = "https://www.eneena.com";
 const SITE_NAME = "ENEENA";
 
-// Keep under ~160 characters so search engines don't truncate it.
-const SITE_DESCRIPTION =
-  "ENEENA is an independent international publication covering world affairs, politics, technology, AI, science, business, culture and ideas in six languages.";
-
-// Longer description, used only in structured data.
-const SITE_LONG_DESCRIPTION =
-  "ENEENA is an independent international editorial publication exploring world affairs, geopolitics, politics, technology, artificial intelligence, science, business, finance, economics, religion, history, culture, society, education, travel, lifestyle and ideas through original journalism in English, Urdu, Arabic, German, Hindi and Chinese.";
-
-const DEFAULT_TITLE = "ENEENA — Independent Journalism, Global Perspectives";
-
-const OG_IMAGE = "/images/og-image.jpg";
-const OG_IMAGE_ALT = "ENEENA — Independent Journalism, Global Perspectives";
-const LOGO_URL = `${SITE_URL}/images/logos/apple-touch-icon-180x180.png`;
-const FOUNDER_IMAGE_URL = `${SITE_URL}/images/about/editor.webp`;
-
-// Add your real profiles here. They are used as `sameAs` in structured
-// data, which helps search engines and AI systems tie the brand together.
-const SOCIAL_PROFILES: string[] = [
-  // "https://x.com/eneena",
-  // "https://www.facebook.com/eneena",
-  // "https://www.linkedin.com/company/eneena",
-  // "https://www.youtube.com/@eneena",
-  // "https://www.instagram.com/eneena",
+const LANGUAGE_CODES = [
+  "en", "ur", "ar", "de", "hi", "zh",
+  "es", "fr", "pt-BR", "ja", "bn", "id",
 ];
 
-// Fill these in ONLY when the pages really exist. Empty strings are
-// skipped automatically. They strengthen trust signals (E-E-A-T) for a
-// news publisher. Example: `${SITE_URL}/editorial-standards`
+const SITE_DESCRIPTION =
+  "ENEENA is an independent international publication covering world affairs, politics, technology, science, culture and ideas in twelve languages.";
+
+const SITE_LONG_DESCRIPTION =
+  "ENEENA is an independent international editorial publication exploring world affairs, geopolitics, politics, technology, artificial intelligence, science, business, finance, economics, religion, history, culture, society, education, travel, lifestyle and ideas through original journalism in twelve languages: English, Urdu, Arabic, German, Hindi, Chinese, Spanish, French, Portuguese, Japanese, Bengali and Indonesian.";
+
+const DEFAULT_TITLE =
+  "ENEENA — Independent Journalism, Global Perspectives";
+
+const OG_IMAGE = "/images/og-image.jpg";
+const OG_IMAGE_ALT =
+  "ENEENA — Independent Journalism, Global Perspectives";
+
+const LOGO_URL =
+  `${SITE_URL}/images/logos/apple-touch-icon-180x180.png`;
+
+const FOUNDER_IMAGE_URL =
+  `${SITE_URL}/images/about/editor.webp`;
+
+const SOCIAL_PROFILES: string[] = [
+  // Add real social profile URLs here.
+];
+
 const EDITORIAL_POLICY_URLS = {
   publishingPrinciples: "",
   correctionsPolicy: "",
@@ -67,132 +54,36 @@ const EDITORIAL_POLICY_URLS = {
 };
 
 // ======================================================
-// 1. LATIN TYPOGRAPHY (English + German)
-// Plus Jakarta Sans and Fraunces are variable fonts. Leaving out the
-// `weight` list makes Next.js ship ONE variable file per style instead
-// of many static files, which means less data and a faster LCP.
+// GOOGLE FONTS
+//
+// IMPORTANT:
+// Do not import these fonts through next/font/google.
+// They are loaded through a normal stylesheet link instead.
+// This avoids the Turbopack internal font-module error.
 // ======================================================
 
-const fontSans = Plus_Jakarta_Sans({
-  variable: "--font-jakarta",
-  subsets: ["latin"],
-  display: "swap",
-  style: ["normal"],
-  preload: true,
-  fallback: ["system-ui", "sans-serif"],
-  adjustFontFallback: true,
-});
-
-const fontSerif = Fraunces({
-  variable: "--font-fraunces",
-  subsets: ["latin"],
-  display: "swap",
-  style: ["normal", "italic"],
-  preload: true,
-  fallback: ["Georgia", "serif"],
-  adjustFontFallback: true,
-});
-
-// Rarely above the fold, so it must not compete for early bandwidth.
-const fontMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-  display: "swap",
-  preload: false,
-  fallback: ["monospace"],
-  adjustFontFallback: true,
-});
+const GOOGLE_FONTS_URL =
+  "https://fonts.googleapis.com/css2" +
+  "?family=Plus+Jakarta+Sans:wght@400;500;600;700;800" +
+  "&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700" +
+  "&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700" +
+  "&family=Geist+Mono:wght@400;500;600" +
+  "&family=Gulzar" +
+  "&family=Noto+Nastaliq+Urdu" +
+  "&family=Amiri:wght@400;700" +
+  "&family=Noto+Naskh+Arabic:wght@400;500;600;700" +
+  "&family=Noto+Serif+Devanagari:wght@400;500;600;700" +
+  "&family=Noto+Sans+Devanagari:wght@400;500;600;700" +
+  "&family=Noto+Serif+Bengali:wght@400;500;600;700" +
+  "&family=Noto+Sans+Bengali:wght@400;500;600;700" +
+  "&family=Noto+Sans+SC:wght@400;500;700" +
+  "&family=Noto+Serif+SC:wght@400;500;700" +
+  "&family=Noto+Sans+JP:wght@400;500;700" +
+  "&family=Noto+Serif+JP:wght@400;500;700" +
+  "&display=swap";
 
 // ======================================================
-// 2. URDU TYPOGRAPHY — NASTALIQ
-// ======================================================
-
-const fontUrduDisplay = Gulzar({
-  variable: "--font-gulzar",
-  subsets: ["arabic"],
-  weight: "400",
-  display: "swap",
-  preload: false,
-  fallback: ["Jameel Noori Nastaleeq", "serif"],
-});
-
-const fontUrduText = Noto_Nastaliq_Urdu({
-  variable: "--font-nastaliq",
-  subsets: ["arabic"],
-  display: "swap",
-  preload: false,
-  fallback: ["Jameel Noori Nastaleeq", "serif"],
-});
-
-// ======================================================
-// 3. ARABIC TYPOGRAPHY — NASKH
-// ======================================================
-
-const fontArabicDisplay = Amiri({
-  variable: "--font-amiri",
-  subsets: ["arabic"],
-  weight: ["400", "700"],
-  display: "swap",
-  preload: false,
-  fallback: ["Traditional Arabic", "serif"],
-});
-
-const fontArabicText = Noto_Naskh_Arabic({
-  variable: "--font-naskh",
-  subsets: ["arabic"],
-  display: "swap",
-  preload: false,
-  fallback: ["Traditional Arabic", "serif"],
-});
-
-// ======================================================
-// 4. HINDI TYPOGRAPHY — DEVANAGARI
-// ======================================================
-
-const fontHindiDisplay = Noto_Serif_Devanagari({
-  variable: "--font-devanagari-serif",
-  subsets: ["devanagari", "latin"],
-  weight: ["400", "700"],
-  display: "swap",
-  preload: false,
-  fallback: ["Mangal", "serif"],
-});
-
-const fontHindiText = Noto_Sans_Devanagari({
-  variable: "--font-devanagari-sans",
-  subsets: ["devanagari", "latin"],
-  weight: ["400", "500", "700"],
-  display: "swap",
-  preload: false,
-  fallback: ["Mangal", "sans-serif"],
-});
-
-// ======================================================
-// 5. CHINESE TYPOGRAPHY — SIMPLIFIED
-// CJK fonts are delivered in unicode-range slices, so only
-// the characters actually used on a page are downloaded.
-// ======================================================
-
-const fontChineseDisplay = Noto_Serif_SC({
-  variable: "--font-sc-serif",
-  subsets: ["latin"],
-  weight: ["400", "700"],
-  display: "swap",
-  preload: false,
-  fallback: ["Songti SC", "SimSun", "serif"],
-});
-
-const fontChineseText = Noto_Sans_SC({
-  variable: "--font-sc-sans",
-  subsets: ["latin"],
-  weight: ["400", "500", "700"],
-  display: "swap",
-  preload: false,
-  fallback: ["PingFang SC", "Microsoft YaHei", "sans-serif"],
-});
-
-// ======================================================
-// 6. VIEWPORT
+// VIEWPORT
 // ======================================================
 
 export const viewport: Viewport = {
@@ -201,18 +92,21 @@ export const viewport: Viewport = {
   maximumScale: 5,
 
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#FAF8F5" },
-    { media: "(prefers-color-scheme: dark)", color: "#1A1714" },
+    {
+      media: "(prefers-color-scheme: light)",
+      color: "#FAF8F5",
+    },
+    {
+      media: "(prefers-color-scheme: dark)",
+      color: "#1A1714",
+    },
   ],
 
   colorScheme: "light dark",
 };
 
 // ======================================================
-// 7. GLOBAL SEO METADATA
-// NOTE: do NOT set `alternates.canonical` here. A canonical in the
-// root layout is inherited by every page and would point them all
-// at the same URL. Set canonical + hreflang per page instead.
+// GLOBAL SEO METADATA
 // ======================================================
 
 export const metadata: Metadata = {
@@ -227,7 +121,13 @@ export const metadata: Metadata = {
 
   description: SITE_DESCRIPTION,
 
-  authors: [{ name: "ENEENA Editorial Team", url: SITE_URL }],
+  authors: [
+    {
+      name: "ENEENA Editorial Team",
+      url: SITE_URL,
+    },
+  ],
+
   creator: SITE_NAME,
   publisher: SITE_NAME,
   category: "News and Editorial Journalism",
@@ -237,10 +137,23 @@ export const metadata: Metadata = {
 
   icons: {
     icon: [
-      { url: "/images/logos/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-      { url: "/images/logos/favicon-32x32.png", sizes: "32x32", type: "image/png" },
-      { url: "/images/logos/favicon-48x48.png", sizes: "48x48", type: "image/png" },
+      {
+        url: "/images/logos/favicon-16x16.png",
+        sizes: "16x16",
+        type: "image/png",
+      },
+      {
+        url: "/images/logos/favicon-32x32.png",
+        sizes: "32x32",
+        type: "image/png",
+      },
+      {
+        url: "/images/logos/favicon-48x48.png",
+        sizes: "48x48",
+        type: "image/png",
+      },
     ],
+
     apple: [
       {
         url: "/images/logos/apple-touch-icon-180x180.png",
@@ -248,6 +161,7 @@ export const metadata: Metadata = {
         type: "image/png",
       },
     ],
+
     shortcut: ["/images/logos/favicon-32x32.png"],
   },
 
@@ -260,6 +174,7 @@ export const metadata: Metadata = {
   robots: {
     index: true,
     follow: true,
+
     googleBot: {
       index: true,
       follow: true,
@@ -270,12 +185,14 @@ export const metadata: Metadata = {
     },
   },
 
-  // Search engine ownership verification (set these in your env).
   verification: {
     google: process.env.GOOGLE_SITE_VERIFICATION,
     yandex: process.env.YANDEX_SITE_VERIFICATION,
+
     other: process.env.BING_SITE_VERIFICATION
-      ? { "msvalidate.01": process.env.BING_SITE_VERIFICATION }
+      ? {
+          "msvalidate.01": process.env.BING_SITE_VERIFICATION,
+        }
       : undefined,
   },
 
@@ -286,7 +203,21 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
     url: SITE_URL,
     locale: "en_US",
-    alternateLocale: ["ur_PK", "ar_AR", "de_DE", "hi_IN", "zh_CN"],
+
+    alternateLocale: [
+      "ur_PK",
+      "ar_AR",
+      "de_DE",
+      "hi_IN",
+      "zh_CN",
+      "es_ES",
+      "fr_FR",
+      "pt_BR",
+      "ja_JP",
+      "bn_BD",
+      "id_ID",
+    ],
+
     images: [
       {
         url: OG_IMAGE,
@@ -302,7 +233,12 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: DEFAULT_TITLE,
     description: SITE_DESCRIPTION,
-    images: [{ url: OG_IMAGE, alt: OG_IMAGE_ALT }],
+    images: [
+      {
+        url: OG_IMAGE,
+        alt: OG_IMAGE_ALT,
+      },
+    ],
   },
 
   formatDetection: {
@@ -315,26 +251,32 @@ export const metadata: Metadata = {
 };
 
 // ======================================================
-// 8. SITE-WIDE STRUCTURED DATA
-// Organization, WebSite and founder are defined once here
-// and referenced by @id from individual pages.
+// STRUCTURED DATA
 // ======================================================
 
 const editorialPolicies = Object.fromEntries(
-  Object.entries(EDITORIAL_POLICY_URLS).filter(([, value]) => Boolean(value)),
+  Object.entries(EDITORIAL_POLICY_URLS).filter(
+    ([, value]) => Boolean(value),
+  ),
 );
 
 const siteStructuredData = {
   "@context": "https://schema.org",
+
   "@graph": [
     {
       "@type": "NewsMediaOrganization",
       "@id": `${SITE_URL}/#organization`,
       name: SITE_NAME,
-      alternateName: ["Eneena", "ENEENA Journal", "eneena.com"],
+      alternateName: [
+        "Eneena",
+        "ENEENA Journal",
+        "eneena.com",
+      ],
       url: SITE_URL,
       description: SITE_LONG_DESCRIPTION,
       slogan: "Independent Journalism, Global Perspectives",
+
       logo: {
         "@type": "ImageObject",
         "@id": `${SITE_URL}/#logo`,
@@ -343,9 +285,14 @@ const siteStructuredData = {
         width: 180,
         height: 180,
       },
+
       image: `${SITE_URL}${OG_IMAGE}`,
-      founder: { "@id": `${SITE_URL}/#founder` },
-      knowsLanguage: ["en", "ur", "ar", "de", "hi", "zh"],
+      founder: {
+        "@id": `${SITE_URL}/#founder`,
+      },
+
+      knowsLanguage: LANGUAGE_CODES,
+
       knowsAbout: [
         "World affairs",
         "Politics",
@@ -358,9 +305,14 @@ const siteStructuredData = {
         "History",
         "Culture",
       ],
+
       ...editorialPolicies,
-      ...(SOCIAL_PROFILES.length > 0 ? { sameAs: SOCIAL_PROFILES } : {}),
+
+      ...(SOCIAL_PROFILES.length > 0
+        ? { sameAs: SOCIAL_PROFILES }
+        : {}),
     },
+
     {
       "@type": "WebSite",
       "@id": `${SITE_URL}/#website`,
@@ -368,9 +320,12 @@ const siteStructuredData = {
       alternateName: "Eneena",
       url: SITE_URL,
       description: SITE_DESCRIPTION,
-      publisher: { "@id": `${SITE_URL}/#organization` },
-      inLanguage: ["en", "ur", "ar", "de", "hi", "zh"],
+      publisher: {
+        "@id": `${SITE_URL}/#organization`,
+      },
+      inLanguage: LANGUAGE_CODES,
     },
+
     {
       "@type": "Person",
       "@id": `${SITE_URL}/#founder`,
@@ -378,16 +333,15 @@ const siteStructuredData = {
       jobTitle: "Founder and Editor-in-Chief",
       image: FOUNDER_IMAGE_URL,
       url: `${SITE_URL}/about`,
-      worksFor: { "@id": `${SITE_URL}/#organization` },
+      worksFor: {
+        "@id": `${SITE_URL}/#organization`,
+      },
     },
   ],
 };
 
 // ======================================================
-// 9. LATIN TYPOGRAPHY RENDERING
-// Letter-spacing and OpenType features are NOT set here.
-// Negative tracking breaks the joined letters of Urdu / Arabic /
-// Devanagari, so they live in globals.css and are scoped by :lang().
+// TYPOGRAPHY RENDERING
 // ======================================================
 
 const premiumTypography: CSSProperties = {
@@ -399,7 +353,7 @@ const premiumTypography: CSSProperties = {
 };
 
 // ======================================================
-// 10. CLERK APPEARANCE
+// CLERK APPEARANCE
 // ======================================================
 
 const clerkAppearance = {
@@ -422,8 +376,11 @@ const clerkAppearance = {
 
     borderRadius: "0.75rem",
 
-    fontFamily: "var(--font-jakarta), ui-sans-serif, sans-serif",
-    fontFamilyButtons: "var(--font-jakarta), ui-sans-serif, sans-serif",
+    fontFamily:
+      '"Plus Jakarta Sans", ui-sans-serif, sans-serif',
+
+    fontFamilyButtons:
+      '"Plus Jakarta Sans", ui-sans-serif, sans-serif',
 
     fontSize: "0.875rem",
     spacingUnit: "1rem",
@@ -457,54 +414,54 @@ const clerkAppearance = {
 };
 
 // ======================================================
-// 11. ROOT LAYOUT
-// IMPORTANT: lang="en" is correct for English pages only. For /ur,
-// /ar, /de, /hi and /zh, the <html lang> and dir MUST change. The
-// clean way is a route segment: app/[lang]/layout.tsx that renders
-// <html lang={lang} dir={lang === "ur" || lang === "ar" ? "rtl" : "ltr"}>
-// and moves this shell into it.
+// ROOT LAYOUT
+//
+// This is the root English document shell.
+// Individual language content MUST carry its own lang/dir.
 // ======================================================
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
   return (
     <html
       lang="en"
       dir="ltr"
-      className={cn(
-        "h-full",
-        "antialiased",
-
-        fontSans.variable,
-        fontSerif.variable,
-        fontMono.variable,
-
-        fontUrduDisplay.variable,
-        fontUrduText.variable,
-
-        fontArabicDisplay.variable,
-        fontArabicText.variable,
-
-        fontHindiDisplay.variable,
-        fontHindiText.variable,
-
-        fontChineseDisplay.variable,
-        fontChineseText.variable,
-
-        "font-sans",
-      )}
+      className="h-full antialiased"
       suppressHydrationWarning
       style={premiumTypography}
     >
+      <head>
+        <link
+          rel="preconnect"
+          href="https://fonts.googleapis.com"
+        />
+
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+
+        <link
+          rel="stylesheet"
+          href={GOOGLE_FONTS_URL}
+        />
+      </head>
+
       <body className="min-h-full flex flex-col font-sans scrollbar-none overflow-x-hidden">
-        {/* Site-wide structured data */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(siteStructuredData).replace(/</g, "\\u003c"),
+            __html: JSON.stringify(siteStructuredData).replace(
+              /</g,
+              "\\u003c",
+            ),
           }}
         />
 
-        {/* Accessibility + keyboard navigation */}
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-100 focus:rounded-full focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-primary-foreground"
@@ -519,7 +476,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           disableTransitionOnChange
         >
           <ClerkProvider appearance={clerkAppearance}>
-            <main id="main-content" className="flex flex-1 flex-col">
+            <main
+              id="main-content"
+              className="flex flex-1 flex-col"
+            >
               {children}
             </main>
 

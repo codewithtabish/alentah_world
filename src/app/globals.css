@@ -67,24 +67,31 @@
   --shadow-xl: none;
   --shadow-2xl: none;
 
-  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, -apple-system,
-    BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-serif: var(--font-fraunces), ui-serif, Georgia, Cambria,
-    "Times New Roman", Times, serif;
-  --font-body: var(--font-fraunces), ui-serif, Georgia, Cambria,
-    "Times New Roman", Times, serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo,
-    Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  /* ---------- Font utilities (font-sans, font-serif, font-urdu-display, ...) ----------
+     Every value points to a stack defined once in :root below. */
+  --font-sans: var(--stack-sans);
+  --font-serif: var(--stack-heading);
+  --font-body: var(--stack-reading);
+  --font-article: var(--stack-reading);
+  --font-mono: var(--stack-mono);
 
-  --font-urdu-display: var(--font-gulzar), var(--font-nastaliq),
-    "Jameel Noori Nastaleeq", serif;
-  --font-urdu-text: var(--font-nastaliq), var(--font-gulzar),
-    "Jameel Noori Nastaleeq", serif;
+  --font-urdu-display: var(--stack-ur-display);
+  --font-urdu-text: var(--stack-ur-text);
 
-  --font-arabic-display: var(--font-amiri), var(--font-naskh),
-    "Traditional Arabic", serif;
-  --font-arabic-text: var(--font-naskh), var(--font-amiri),
-    "Traditional Arabic", serif;
+  --font-arabic-display: var(--stack-ar-display);
+  --font-arabic-text: var(--stack-ar-text);
+
+  --font-hindi-display: var(--stack-hi-display);
+  --font-hindi-text: var(--stack-hi-text);
+
+  --font-chinese-display: var(--stack-zh-display);
+  --font-chinese-text: var(--stack-zh-text);
+
+  --font-japanese-display: var(--stack-ja-display);
+  --font-japanese-text: var(--stack-ja-text);
+
+  --font-bengali-display: var(--stack-bn-display);
+  --font-bengali-text: var(--stack-bn-text);
 
   --breakpoint-xs: 30rem;
   --breakpoint-3xl: 112rem;
@@ -142,18 +149,15 @@
 .dark {
   color-scheme: dark;
 
-  /* Changed from pure black to a premium warm dark gray */
   --background: oklch(0.1800 0.0050 20);
   --foreground: oklch(0.9400 0.0080 80);
 
-  /* Slightly lighter surfaces for cards */
   --card: oklch(0.2100 0.0060 20);
   --card-foreground: oklch(0.9400 0.0080 80);
 
   --popover: oklch(0.2200 0.0060 20);
   --popover-foreground: oklch(0.9400 0.0080 80);
 
-  /* Lighter, more elegant burgundy for dark mode */
   --primary: oklch(0.5500 0.1200 10);
   --primary-foreground: oklch(0.9800 0.0050 85);
 
@@ -183,6 +187,109 @@
   --sidebar-ring: oklch(0.5500 0.1200 10);
 }
 
+/* =========================================================
+   FONT FAMILY NAMES + STACKS (single source of truth)
+
+   Latin fonts (--font-jakarta, --font-fraunces, --font-source-serif,
+   --font-geist-mono) come from next/font in app/layout.tsx.
+
+   Every other family is defined HERE by its real name:
+   - Urdu / Arabic / Hindi: self-hosted via @fontsource imports in layout.tsx
+   - Bengali / Chinese / Japanese: Google Fonts <link> in layout.tsx
+   ========================================================= */
+:root {
+  /* Urdu (Fontsource) */
+  --font-nastaliq: "Noto Nastaliq Urdu";
+  --font-gulzar: "Gulzar";
+
+  /* Arabic (Fontsource) */
+  --font-naskh: "Noto Naskh Arabic";
+  --font-amiri: "Amiri";
+
+  /* Hindi (Fontsource) */
+  --font-devanagari-sans: "Noto Sans Devanagari";
+  --font-devanagari-serif: "Noto Serif Devanagari";
+
+  /* Bengali / Chinese / Japanese (Google Fonts link) */
+  --font-bengali-sans: "Noto Sans Bengali";
+  --font-bengali-serif: "Noto Serif Bengali";
+  --font-sc-sans: "Noto Sans SC";
+  --font-sc-serif: "Noto Serif SC";
+  --font-jp-sans: "Noto Sans JP";
+  --font-jp-serif: "Noto Serif JP";
+}
+
+:root {
+  /* Per-script fallbacks, used when text has no lang attribute. */
+  --scripts-sans:
+    var(--font-devanagari-sans), var(--font-bengali-sans), var(--font-sc-sans),
+    var(--font-jp-sans), var(--font-naskh);
+
+  --scripts-serif:
+    var(--font-devanagari-serif), var(--font-bengali-serif), var(--font-sc-serif),
+    var(--font-jp-serif), var(--font-amiri);
+
+  /* Latin (English, German, Spanish, French, Portuguese, Indonesian) */
+  --stack-sans:
+    var(--font-jakarta), var(--scripts-sans), ui-sans-serif, system-ui,
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+
+  /* Headlines */
+  --stack-heading:
+    var(--font-fraunces), var(--scripts-serif), ui-serif, Georgia, Cambria,
+    "Times New Roman", Times, serif;
+
+  /* Long-form reading. Source Serif 4 is built for it. */
+  --stack-reading:
+    var(--font-source-serif, var(--font-fraunces)), var(--scripts-sans),
+    ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+
+  --stack-mono:
+    var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco,
+    Consolas, "Liberation Mono", "Courier New", monospace;
+
+  /* Urdu: Nastaliq.
+     If Noto Nastaliq Urdu stalls on a real Android phone, swap the first two
+     names in --stack-ur-text so Gulzar leads (see the Android note). */
+  --stack-ur-text:
+    var(--font-nastaliq), var(--font-gulzar), "Jameel Noori Nastaleeq", serif;
+  --stack-ur-display:
+    var(--font-gulzar), var(--font-nastaliq), "Jameel Noori Nastaleeq", serif;
+
+  /* Arabic: Naskh */
+  --stack-ar-text:
+    var(--font-naskh), var(--font-amiri), "Traditional Arabic", "Geeza Pro",
+    serif;
+  --stack-ar-display:
+    var(--font-amiri), var(--font-naskh), "Traditional Arabic", serif;
+
+  /* Hindi: Devanagari */
+  --stack-hi-text:
+    var(--font-devanagari-sans), "Mangal", "Nirmala UI", sans-serif;
+  --stack-hi-display:
+    var(--font-devanagari-serif), "Mangal", "Nirmala UI", serif;
+
+  /* Chinese: Simplified */
+  --stack-zh-text:
+    var(--font-sc-sans), "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC",
+    sans-serif;
+  --stack-zh-display:
+    var(--font-sc-serif), "Songti SC", "SimSun", "Noto Serif CJK SC", serif;
+
+  /* Japanese */
+  --stack-ja-text:
+    var(--font-jp-sans), "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif;
+  --stack-ja-display:
+    var(--font-jp-serif), "Hiragino Mincho ProN", "Yu Mincho", serif;
+
+  /* Bengali */
+  --stack-bn-text:
+    var(--font-bengali-sans), "Nirmala UI", "Vrinda", sans-serif;
+  --stack-bn-display:
+    var(--font-bengali-serif), "Nirmala UI", "Vrinda", serif;
+}
+
 @layer base {
   *,
   *::before,
@@ -208,53 +315,252 @@
     color: var(--foreground);
   }
 
+  /* -------------------------------------------------------
+     HEADINGS + PARAGRAPHS
+     They read their font and size from per-language variables
+     (--heading-font, --prose-font, --read-size, ...) set by the
+     language blocks below. Tailwind utilities (font-*, text-*,
+     leading-*) still win because they live in a later layer.
+     ------------------------------------------------------- */
   h1,
   h2,
   h3,
   h4,
   h5,
   h6 {
-    @apply font-serif;
+    font-family: var(--heading-font, var(--stack-heading));
     text-wrap: balance;
   }
 
   p {
-    font-family: var(--font-fraunces), ui-serif, Georgia, Cambria,
-      "Times New Roman", Times, serif;
-    font-size: 1.0625rem;
-    line-height: 1.75;
+    font-family: var(--prose-font, var(--stack-reading));
+    font-size: var(--read-size, clamp(1.0625rem, 1.02rem + 0.22vw, 1.1875rem));
+    line-height: var(--read-leading, 1.78);
     color: color-mix(in oklab, var(--foreground) 92%, transparent);
     margin-block-end: 1.5rem;
     text-wrap: pretty;
     overflow-wrap: break-word;
     word-break: normal;
-    text-align: left;
-    text-align-last: left;
-    hyphens: auto;
+    /* start = left in LTR, right in RTL. No justify = no ugly gaps. */
+    text-align: start;
+    hyphens: var(--read-hyphens, auto);
   }
 
-  li > p,
   figcaption,
   blockquote > footer {
-    text-align: left;
-    text-align-last: left;
+    text-align: start;
     hyphens: none;
   }
-}
 
-@media (min-width: 40rem) {
-  p {
-    font-size: 1.125rem;
-    line-height: 1.8;
+  code,
+  pre,
+  kbd,
+  samp {
+    font-family: var(--stack-mono);
   }
+
+  /* -------------------------------------------------------
+     LANGUAGE TYPOGRAPHY
+     [lang|="xx"] matches ONLY the element that carries the
+     attribute (and regional variants like ur-PK). Children
+     inherit, so utility classes on children still work.
+     ------------------------------------------------------- */
+
+  /* Latin languages: reset, so a Latin quote inside an Urdu article
+     goes back to the default fonts. */
+  :is(
+      [lang|="en"],
+      [lang|="de"],
+      [lang|="es"],
+      [lang|="fr"],
+      [lang|="pt"],
+      [lang|="id"]
+    ) {
+    --prose-font: initial;
+    --heading-font: initial;
+    --read-size: initial;
+    --read-leading: initial;
+    --read-hyphens: initial;
+  }
+
+  /* URDU (Nastaliq needs very generous line height) */
+  [lang|="ur"] {
+    --prose-font: var(--stack-ur-text);
+    --heading-font: var(--stack-ur-display);
+    --read-size: clamp(1.3rem, 1.2rem + 0.45vw, 1.5rem);
+    --read-leading: 2.55;
+    --read-hyphens: none;
+    font-family: var(--prose-font);
+    letter-spacing: 0;
+    word-spacing: 0.06em;
+  }
+
+  /* ARABIC (Naskh body, Amiri headlines) */
+  [lang|="ar"] {
+    --prose-font: var(--stack-ar-text);
+    --heading-font: var(--stack-ar-display);
+    --read-size: clamp(1.2rem, 1.12rem + 0.4vw, 1.375rem);
+    --read-leading: 2.1;
+    --read-hyphens: none;
+    font-family: var(--prose-font);
+    letter-spacing: 0;
+    word-spacing: 0.04em;
+  }
+
+  /* HINDI */
+  [lang|="hi"] {
+    --prose-font: var(--stack-hi-text);
+    --heading-font: var(--stack-hi-display);
+    --read-size: clamp(1.125rem, 1.08rem + 0.3vw, 1.3rem);
+    --read-leading: 1.95;
+    --read-hyphens: none;
+    font-family: var(--prose-font);
+    letter-spacing: 0;
+  }
+
+  /* BENGALI */
+  [lang|="bn"] {
+    --prose-font: var(--stack-bn-text);
+    --heading-font: var(--stack-bn-display);
+    --read-size: clamp(1.15rem, 1.1rem + 0.3vw, 1.3rem);
+    --read-leading: 2;
+    --read-hyphens: none;
+    font-family: var(--prose-font);
+    letter-spacing: 0;
+  }
+
+  /* CHINESE (Simplified) */
+  [lang|="zh"] {
+    --prose-font: var(--stack-zh-text);
+    --heading-font: var(--stack-zh-display);
+    --read-size: clamp(1.0625rem, 1.03rem + 0.25vw, 1.25rem);
+    --read-leading: 1.95;
+    --read-hyphens: none;
+    font-family: var(--prose-font);
+    line-break: strict;
+    text-autospace: normal;
+  }
+
+  /* JAPANESE */
+  [lang|="ja"] {
+    --prose-font: var(--stack-ja-text);
+    --heading-font: var(--stack-ja-display);
+    --read-size: clamp(1.0625rem, 1.03rem + 0.25vw, 1.25rem);
+    --read-leading: 2;
+    --read-hyphens: none;
+    font-family: var(--prose-font);
+    line-break: strict;
+    word-break: auto-phrase;
+    text-autospace: normal;
+  }
+
+  /* Headings: line height per script. */
+  :is(h1, h2, h3, h4, h5, h6):lang(ur) {
+    font-weight: 400;
+    font-synthesis-weight: none; /* Gulzar has one weight: no fake bold */
+    line-height: 1.95;
+  }
+  :is(h1, h2, h3, h4, h5, h6):lang(ar) { line-height: 1.7; }
+  :is(h1, h2, h3, h4, h5, h6):lang(hi) { line-height: 1.6; }
+  :is(h1, h2, h3, h4, h5, h6):lang(bn) { line-height: 1.65; }
+  :is(h1, h2, h3, h4, h5, h6):lang(zh) { line-height: 1.5; }
+  :is(h1, h2, h3, h4, h5, h6):lang(ja) { line-height: 1.55; }
+
+  /* Buttons with joined scripts need a little more room. */
+  button[lang|="ur"],
+  button[lang|="ur"] * { line-height: 1.8; }
+  button[lang|="ar"],
+  button[lang|="ar"] * { line-height: 1.7; }
 }
 
-@media (min-width: 64rem) {
-  p {
-    text-align: justify;
-    text-justify: inter-word;
-    text-align-last: left;
-    hyphens: auto;
+/* Gulzar has a single weight: never synthesize bold when a heading
+   uses the Urdu display font together with font-bold. */
+.font-urdu-display {
+  font-synthesis-weight: none;
+}
+
+/* =========================================================
+   ARTICLE BODY
+   Put class="article-body" (plus lang + dir) on the element that
+   renders the article content:
+
+     <div lang={article.language.code}
+          dir={article.language.direction === "RTL" ? "rtl" : "ltr"}
+          className="article-body">...</div>
+
+   It also removes fonts, sizes and colors pasted from Word / Google
+   Docs (inline style="font-family: Times New Roman" etc.), which no
+   normal CSS can override. That is why !important is used here.
+   ========================================================= */
+@layer base {
+  .article-body {
+    font-family: var(--prose-font, var(--stack-reading));
+    font-size: var(--read-size, clamp(1.0625rem, 1.02rem + 0.22vw, 1.1875rem));
+    line-height: var(--read-leading, 1.78);
+    overflow-wrap: break-word;
+  }
+
+  .article-body :is(h2, h3, h4) {
+    font-weight: 700;
+    margin-block: 2.2em 0.7em;
+  }
+  .article-body h2 { font-size: 1.5em; }
+  .article-body h3 { font-size: 1.25em; }
+  .article-body h4 { font-size: 1.1em; }
+
+  .article-body a {
+    color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .article-body :is(ul, ol) {
+    padding-inline-start: 1.5em;
+    margin-block-end: 1.5rem;
+  }
+  .article-body ul { list-style: disc; }
+  .article-body ol { list-style: decimal; }
+  .article-body li { margin-block-end: 0.5em; }
+
+  .article-body blockquote {
+    border-inline-start: 3px solid var(--primary);
+    padding-inline-start: 1.25em;
+    margin-block: 1.75rem;
+    color: var(--muted-foreground);
+  }
+
+  .article-body img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius);
+  }
+
+  /* ---- Neutralize inline styles pasted from Word / Google Docs ---- */
+  .article-body [style*="font-family" i],
+  .article-body font {
+    font-family: inherit !important;
+  }
+  .article-body :is(code, pre, kbd, samp) {
+    font-family: var(--stack-mono) !important;
+  }
+  .article-body font {
+    font-size: inherit !important;
+  }
+  .article-body [style*="font-size" i]:not(:is(h1, h2, h3, h4, h5, h6)) {
+    font-size: inherit !important;
+  }
+  .article-body [style*="line-height" i] {
+    line-height: inherit !important;
+  }
+  .article-body [style*="letter-spacing" i] {
+    letter-spacing: normal !important;
+  }
+  /* Word pastes black text on a white background: unreadable in dark mode. */
+  .article-body [style*="color" i] {
+    color: inherit !important;
+  }
+  .article-body [style*="background" i] {
+    background: transparent !important;
   }
 }
 
@@ -316,89 +622,4 @@ img {
 
 :focus:not(:focus-visible) {
   outline: none;
-}
-
-/* URDU FONT AND TYPOGRAPHY */
-[lang="ur"],
-[lang="ur"] * {
-  font-family: var(--font-nastaliq), var(--font-gulzar),
-    "Jameel Noori Nastaleeq", serif;
-  letter-spacing: 0;
-  word-spacing: 0.08em;
-  font-feature-settings: normal;
-  font-kerning: none;
-}
-
-[lang="ur"] :is(h1, h2, h3, h4, h5, h6) {
-  font-family: var(--font-gulzar), var(--font-nastaliq),
-    "Jameel Noori Nastaleeq", serif;
-  font-weight: 400;
-  line-height: 2;
-}
-
-[lang="ur"] p {
-  font-size: 1.25rem;
-  line-height: 2.4;
-  text-align: start;
-  text-align-last: start;
-  text-justify: auto;
-  hyphens: none;
-  word-break: normal;
-}
-
-@media (min-width: 40rem) {
-  [lang="ur"] p {
-    font-size: 1.375rem;
-    line-height: 2.5;
-  }
-}
-
-button[lang="ur"],
-button[lang="ur"] * {
-  line-height: 1.8;
-}
-
-/* ARABIC FONT AND TYPOGRAPHY */
-[lang="ar"],
-[lang="ar"] * {
-  font-family: var(--font-naskh), var(--font-amiri),
-    "Traditional Arabic", serif;
-  letter-spacing: 0;
-  word-spacing: 0.04em;
-  font-feature-settings: normal;
-  font-kerning: normal;
-}
-
-[lang="ar"] :is(h1, h2, h3, h4, h5, h6) {
-  font-family: var(--font-amiri), var(--font-naskh),
-    "Traditional Arabic", serif;
-  font-weight: 700;
-  line-height: 1.7;
-}
-
-[lang="ar"] p {
-  font-size: 1.1875rem;
-  line-height: 2.1;
-  text-align: start;
-  text-align-last: start;
-  text-justify: auto;
-  hyphens: none;
-  word-break: normal;
-}
-
-@media (min-width: 40rem) {
-  [lang="ar"] p {
-    font-size: 1.3125rem;
-    line-height: 2.2;
-  }
-}
-
-button[lang="ar"],
-button[lang="ar"] * {
-  line-height: 1.7;
-}
-
-:is([lang="ur"], [lang="ar"]) :is(li > p, figcaption, blockquote > footer) {
-  text-align: start;
-  text-align-last: start;
 }
