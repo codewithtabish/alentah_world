@@ -1,5 +1,5 @@
-
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import { Suspense } from "react";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -23,6 +23,15 @@ import {
 
 import { SaveButton } from "@/components/site/pages/category/save-button";
 import { ArticleActions } from "@/components/site/pages/category/article-actions";
+
+// Ads (client components; safe to use inside this server component)
+import {
+  AdSenseUnit,
+  AdsterraNativeBanner,
+  AdsterraBanner300x250,
+  AdsterraSocialBar,
+  AdsterraPopunder,
+} from "@/components/ads/ads";
 
 // ============================================================
 // TYPES
@@ -51,6 +60,10 @@ const WEBSITE_ID = `${SITE_URL}/#website`;
 
 const ORGANIZATION_LOGO =
   `${SITE_URL}/images/logos/icon-maroon-1024.png`;
+
+// Paste your AdSense ad unit slot ID here (AdSense > Ads > By ad unit).
+// While this is "", no AdSense unit renders.
+const ADSENSE_SLOT = "";
 
 // ============================================================
 // LOCALIZED INTERFACE LABELS
@@ -195,6 +208,37 @@ function getAuthorName(
     writtenBy?.trim() ||
     `${firstName ?? ""} ${lastName ?? ""}`.trim() ||
     SITE_NAME
+  );
+}
+
+// ============================================================
+// AD SLOT WRAPPER
+//
+// Hides itself completely (label included) while ads are switched off,
+// because the ad components render nothing in that case: it only shows once
+// it actually contains a <div> or <a> from an ad.
+// ============================================================
+
+function AdSlot({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <aside
+      aria-label="Advertisement"
+      className={cn(
+        "hidden min-w-0 flex-col items-center gap-2 has-[div,a]:flex",
+        className
+      )}
+    >
+      <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+        Advertisement
+      </span>
+      {children}
+    </aside>
   );
 }
 
@@ -778,6 +822,13 @@ export default async function ArticlePage({
           )}
       </figure>
 
+      {/* ADS #1: 300x250 between the banner image and the article text.
+          Seen by every reader before they start reading. Hidden until an
+          ad actually renders. */}
+      <AdSlot className="mx-auto w-full max-w-3xl">
+        <AdsterraBanner300x250 className="flex w-full justify-center" />
+      </AdSlot>
+
       {/* ARTICLE CONTENT */}
 
       <div className="mx-auto mt-4 w-full max-w-3xl">
@@ -790,6 +841,24 @@ export default async function ArticlePage({
             article.tableOfContents || []
           }
         />
+      </div>
+
+      {/* ADS #2: native 4-tile banner (left) + 300x250 banner (right),
+          right after the article ends. dir="ltr" keeps the same layout for
+          RTL languages. On small screens they stack and the 300x250 is
+          centered. The whole row stays hidden until an ad renders.
+          The native banner is used only once on this page (its container
+          id must not repeat); the 300x250 lives in its own iframe. */}
+      <div
+        dir="ltr"
+        className="mx-auto hidden w-full min-w-0 max-w-6xl flex-col items-stretch gap-8 has-[div,a]:flex lg:flex-row lg:items-start lg:justify-between lg:gap-10"
+      >
+        <AdSlot className="w-full min-w-0 lg:flex-1">
+          <AdsterraNativeBanner className="w-full" />
+        </AdSlot>
+        <AdSlot className="w-full lg:w-75 lg:shrink-0">
+          <AdsterraBanner300x250 className="flex w-full justify-center" />
+        </AdSlot>
       </div>
 
       {/* AUTHOR BIO */}
@@ -843,6 +912,15 @@ export default async function ArticlePage({
         </footer>
       )}
 
+      {/* ADS #3: AdSense display unit, after the author bio. Only renders
+          once ADSENSE_SLOT is filled in. Kept apart from the Adsterra ads
+          by the article content and the author bio. */}
+      {ADSENSE_SLOT && (
+        <AdSlot className="mx-auto w-full max-w-3xl">
+          <AdSenseUnit slot={ADSENSE_SLOT} className="w-full" />
+        </AdSlot>
+      )}
+
       {/* COMMENTS */}
 
       <div className="mx-auto mt-8 w-full max-w-3xl">
@@ -856,6 +934,12 @@ export default async function ArticlePage({
         </Suspense>
       </div>
 
+      {/* ADS #4: 300x250 after the comments, before "Continue Exploring".
+          A last chance for readers who keep scrolling. */}
+      <AdSlot className="mx-auto w-full max-w-3xl">
+        <AdsterraBanner300x250 className="flex w-full justify-center" />
+      </AdSlot>
+
       {/* CONTINUE EXPLORING */}
 
       <Suspense
@@ -868,6 +952,14 @@ export default async function ArticlePage({
           subcategorySlug={subcategory}
         />
       </Suspense>
+
+      {/* ADS #5: site-wide scripts. They render nothing visible and stay
+          off until switched on in components/ads/ads.tsx
+          (adsterraSocialBar / adsterraPopunder).
+          Keep them in only one place (this page or app/layout.tsx) so
+          they do not load twice. */}
+      <AdsterraSocialBar />
+      <AdsterraPopunder />
     </article>
   );
 }

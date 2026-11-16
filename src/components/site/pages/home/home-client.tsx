@@ -3,12 +3,15 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import type { ReactNode } from "react";
 import { Clock, ArrowRight, ArrowUpRight, CalendarDays, PenLine } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { HomeBlogItem } from "@/actions/articles/get-home-blogs";
 
-// 👇 Imported the Newsletter form here
 import { NewsletterForm } from "@/components/site/pages/home/newsletter-form";
+
+// Ads (client components; safe to use inside this server component)
+import { AdsterraNativeBanner, AdsterraBanner300x250 } from "@/components/ads/ads";
 
 interface HomeClientProps {
   blogs: HomeBlogItem[];
@@ -56,6 +59,10 @@ const EDITION_BY_CODE = new Map(EDITIONS.map((e) => [e.code, e]));
 
 const SIDE_COUNT = 4;
 const LATEST_COUNT = 10;
+
+// Number of story cards shown before the in-grid ad row (6 = full rows for
+// both the 2-column and 3-column layouts).
+const GRID_AD_AFTER = 6;
 
 const PREFER_LANGUAGE_VARIETY = false;
 
@@ -153,6 +160,27 @@ const pad = (n: number) => String(n).padStart(2, "0");
 
 const UNDERLINE =
   "bg-[linear-gradient(currentColor,currentColor)] bg-[length:0%_1.5px] bg-left-bottom bg-no-repeat box-decoration-clone transition-[background-size] duration-500 ease-out [@media(hover:hover)]:group-hover:bg-[length:100%_1.5px]";
+
+/* ------------------------------------------------------------------ */
+/* Ad slot wrapper                                                     */
+/* ------------------------------------------------------------------ */
+
+// Hides itself completely (label included) while ads are switched off,
+// because the ad components render nothing in that case: it only shows once
+// it actually contains a <div> or <a> from an ad.
+function AdSlot({ children, className }: { children: ReactNode; className?: string }) {
+  return (
+    <aside
+      aria-label="Advertisement"
+      className={cn("hidden min-w-0 flex-col items-center gap-2 has-[div,a]:flex", className)}
+    >
+      <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+        Advertisement
+      </span>
+      {children}
+    </aside>
+  );
+}
 
 /* ------------------------------------------------------------------ */
 /* Small building blocks                                               */
@@ -539,6 +567,13 @@ export function HomeClient({ blogs }: HomeClientProps) {
   const leadBlog = latestBlogs[0];
   const restBlogs = latestBlogs.slice(1);
 
+  // Split the grid so the ad row sits in the middle of it.
+  // With fewer than GRID_AD_AFTER cards, everything is in the first grid
+  // and the ad row simply follows it.
+  const splitAt = restBlogs.length >= GRID_AD_AFTER ? GRID_AD_AFTER : restBlogs.length;
+  const gridTop = restBlogs.slice(0, splitAt);
+  const gridBottom = restBlogs.slice(splitAt);
+
   // Only show top 8 topics
   const topics = Array.from(
     new Map(sorted.map((b) => [`${b.language.code}/${b.category.slug}`, b])).values(),
@@ -549,6 +584,8 @@ export function HomeClient({ blogs }: HomeClientProps) {
   const heroLatin = isLatinBlog(hero);
   const heroTitleFont = getTitleFont(hero);
   const heroTextFont = getTextFont(hero);
+
+  const gridClass = "grid grid-cols-1 gap-x-10 gap-y-14 sm:grid-cols-2 lg:grid-cols-3";
 
   return (
     <div className="mx-auto flex w-full min-w-0 max-w-[1600px] flex-col gap-16 overflow-x-clip pb-16 pt-5 sm:gap-24 sm:pb-24">
@@ -638,7 +675,7 @@ export function HomeClient({ blogs }: HomeClientProps) {
       {/* 2. READ IN YOUR LANGUAGE */}
       <LanguagesSection />
 
-      {/* 3. LATEST STORIES */}
+      {/* 3. LATEST STORIES (ad row sits in the middle of the grid) */}
       {latestBlogs.length > 0 && (
         <section aria-labelledby="latest-stories-heading" className="flex flex-col gap-10 sm:gap-14">
           <SectionHeader
@@ -650,15 +687,36 @@ export function HomeClient({ blogs }: HomeClientProps) {
             live
           />
           {leadBlog && <StoryCard blog={leadBlog} variant="wide" />}
-          {restBlogs.length > 0 && (
+
+          {gridTop.length > 0 && (
             <>
               <div aria-hidden="true" className="flex items-center gap-4 text-foreground/30">
                 <span className="h-px flex-1 bg-border" /><span className="size-1.5 rotate-45 bg-primary" /><span className="h-px flex-1 bg-border" />
               </div>
-              <div className="grid grid-cols-1 gap-x-10 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
-                {restBlogs.map((blog) => <StoryCard key={blog.id} blog={blog} variant="grid" />)}
+
+              <div className={gridClass}>
+                {gridTop.map((blog) => <StoryCard key={blog.id} blog={blog} variant="grid" />)}
               </div>
             </>
+          )}
+
+          {/* ADS #1: native 4-tile banner (left) + 300x250 banner (right),
+              in the middle of the story grid. On small screens they stack
+              and the 300x250 is centered. The row stays hidden until an ad
+              actually renders. */}
+          <div className="hidden w-full min-w-0 flex-col items-stretch gap-8 has-[div,a]:flex lg:flex-row lg:items-start lg:justify-between lg:gap-10">
+            <AdSlot className="w-full min-w-0 lg:flex-1">
+              <AdsterraNativeBanner className="w-full" />
+            </AdSlot>
+            <AdSlot className="w-full lg:w-75 lg:shrink-0">
+              <AdsterraBanner300x250 className="flex w-full justify-center" />
+            </AdSlot>
+          </div>
+
+          {gridBottom.length > 0 && (
+            <div className={gridClass}>
+              {gridBottom.map((blog) => <StoryCard key={blog.id} blog={blog} variant="grid" />)}
+            </div>
           )}
         </section>
       )}
@@ -668,11 +726,11 @@ export function HomeClient({ blogs }: HomeClientProps) {
         <section aria-labelledby="topics-heading" className="flex flex-col gap-6">
           <div className="flex items-center justify-between">
             <SectionHeader id="topics-heading" eyebrow="Explore" title="Browse by Topic" titleClassName="text-3xl sm:text-4xl" />
-            <Link href="/topics" className="hidden sm:inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
+            <Link href="/topics" className="hidden items-center gap-1 text-sm font-semibold text-primary hover:underline sm:inline-flex">
               View All Topics <ArrowRight className="size-4" />
             </Link>
           </div>
-          
+
           <ul className="flex flex-wrap gap-2.5">
             {topics.map((b) => {
               const latin = isLatinBlog(b);
@@ -694,30 +752,39 @@ export function HomeClient({ blogs }: HomeClientProps) {
         </section>
       )}
 
-      {/* 👇 5. NEWSLETTER SECTION (Newly Added) */}
-      <section className="bg-[#FAF8F5] dark:bg-muted/30 py-20 sm:py-28 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 border-y border-border/50 rounded-3xl">
-        <div className="mx-auto max-w-7xl">
-          <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:items-center">
-            
-            {/* Left Side: Text */}
-            <div className="flex flex-col gap-4">
-              <span className="inline-flex items-center gap-3 text-xs font-bold uppercase tracking-[0.2em] text-primary">
-                <span aria-hidden="true" className="h-px w-6 bg-primary" />
-                The ENEENA Briefing
-              </span>
-              <h2 className="font-serif text-4xl font-bold leading-[1.1] tracking-tight text-foreground sm:text-5xl">
-                Ideas worth thinking about.<br />Stories worth your time.
-              </h2>
-              <p className="max-w-md font-sans text-base leading-7 text-muted-foreground">
-                Thoughtful journalism, important perspectives, and noteworthy ideas — delivered directly to your inbox.
-              </p>
-            </div>
+      {/* ADS #2: below "Browse by Topic". Only the 300x250 is used here:
+          it lives in its own iframe, so it can safely appear twice on the
+          page. The native banner cannot (its container id would repeat).
+          Hidden until an ad actually renders. */}
+      <AdSlot className="w-full">
+        <AdsterraBanner300x250 className="flex w-full justify-center" />
+      </AdSlot>
 
-            {/* Right Side: Form */}
-            <div className="lg:ps-10">
-              <NewsletterForm />
-            </div>
+      {/* 5. NEWSLETTER
+          No background and no horizontal padding or negative margins here:
+          the shared Container already provides both. */}
+      <section
+        aria-labelledby="newsletter-heading"
+        className="border-y border-border/50 py-16 sm:py-24"
+      >
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:items-center">
+          {/* Left: text */}
+          <div className="flex flex-col gap-4">
+            <span className="inline-flex items-center gap-3 text-xs font-bold uppercase tracking-[0.2em] text-primary">
+              <span aria-hidden="true" className="h-px w-6 bg-primary" />
+              The ENEENA Briefing
+            </span>
+            <h2 id="newsletter-heading" className="font-serif text-4xl font-bold leading-[1.1] tracking-tight text-foreground sm:text-5xl">
+              Ideas worth thinking about.<br />Stories worth your time.
+            </h2>
+            <p className="max-w-md font-sans text-base leading-7 text-muted-foreground">
+              Thoughtful journalism, important perspectives, and noteworthy ideas — delivered directly to your inbox.
+            </p>
+          </div>
 
+          {/* Right: form */}
+          <div className="lg:ps-10">
+            <NewsletterForm />
           </div>
         </div>
       </section>
