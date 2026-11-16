@@ -1,137 +1,90 @@
-"use client";
 
-/**
- * ======================================================
- * ENEENA — ALL ADS IN ONE FILE
- * Place at: components/ads/ads.tsx
- *
- * Import what you need:
- *   import { AdsterraNativeBanner } from "@/components/ads/ads";
- *
- * Contents
- *   1. ADS_CONFIG ............ master switches
- *   2. AdSenseUnit ........... Google display ad (needs slot ID)
- *   3. AdsterraNativeBanner .. 4-tile native ads (in content)
- *   4. AdsterraBanner300x250 . fixed banner (sidebar / content)
- *   5. AdsterraSmartlink ..... "Sponsored" link
- *   6. AdsterraSocialBar ..... site-wide, put in layout
- *   7. AdsterraPopunder ...... site-wide, OFF by default
- *
- * Every component renders nothing when its switch is off,
- * so you can leave them placed and just flip the config.
- * ======================================================
- */
+"use client";
 
 import { useEffect, useRef, type ReactNode } from "react";
 
 // ======================================================
-// 1. MASTER CONFIG
+// 1. ENEENA AD CONFIGURATION
 // ======================================================
 
 export const ADS_CONFIG = {
-  // Master switch. In .env.local / your host's env set:
-  //   NEXT_PUBLIC_ADS_ENABLED=true
-  // Inlined at BUILD time: rebuild/redeploy after changing it.
+  // Set NEXT_PUBLIC_ADS_ENABLED=true to enable advertising.
   enabled: process.env.NEXT_PUBLIC_ADS_ENABLED === "true",
 
-  // Per-network switches
-  adsense: true,
+  // Keep only the verified native placement enabled initially.
+  adsense: false,
   adsterraNative: true,
-  adsterraBanner: true,
-  adsterraSmartlink: true,
-  adsterraSocialBar: false, // intrusive: enable only after AdSense approval
-  adsterraPopunder: false, // violates AdSense policy: keep OFF
+  adsterraBanner: false,
+  adsterraSmartlink: false,
+  adsterraSocialBar: false,
+  adsterraPopunder: false,
 
-  // ---- AdSense ----
+  // Google AdSense
   adsenseClient: "ca-pub-7966396390181709",
 
-  // ---- Adsterra ----
+  // Adsterra Native Banner
   nativeBannerKey: "75c056adbb2b8b4afd19d556347037c7",
-  nativeBannerSrc: "https://bauval.org/21/75c056adbb2b8b4afd19d556347037c7",
+  nativeBannerSrc:
+    "https://bauval.org/21/75c056adbb2b8b4afd19d556347037c7",
 
+  // Adsterra Banner 300x250
   banner300x250Key: "75e3902782cea0e1982bc5e43d3e7cfb",
-  // OPTIONAL. Leave "" to use Adsterra's default banner address:
-  //   https://www.highperformanceformat.com/<key>/invoke.js
-  // If the banner stays blank, paste the exact link from
-  // Adsterra > Banner 300x250 > code box (last line, the invoke.js one).
-  // Either form works:
-  //   "https://SOMEDOMAIN/75e3902782cea0e1982bc5e43d3e7cfb/invoke.js"
-  //   '<script src="https://SOMEDOMAIN/75e3.../invoke.js"></script>'
-  banner300x250Src: "" as string,
 
-  smartlinkUrl: "https://araplhn.org/4/ac919a2f8bfdd8ea13c35d7f61d50d3c",
+  // Keep empty until you copy the exact invoke.js URL
+  // from the Adsterra 300x250 ad-unit code.
+  banner300x250Src: "",
 
-  socialBarSrc: "https://bauval.org/14/54394b71616ccf7df4a9086760b9e271",
+  // Other formats remain disabled.
+  smartlinkUrl:
+    "https://araplhn.org/4/ac919a2f8bfdd8ea13c35d7f61d50d3c",
 
-  popunderSrc: "https://abscloud.org/1/f617c206a30a49a3a5a685a3735a06a2",
+  socialBarSrc:
+    "https://bauval.org/14/54394b71616ccf7df4a9086760b9e271",
+
+  popunderSrc:
+    "https://abscloud.org/1/f617c206a30a49a3a5a685a3735a06a2",
 };
 
 // ======================================================
-// SHARED HELPERS
+// 2. HELPERS
 // ======================================================
 
-function useAdScript(
-  build: (host: HTMLElement) => void,
-  parent: "self" | "body",
-  deps: unknown[] = [],
-) {
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const host = parent === "self" ? ref.current : document.body;
-    if (!host) return;
-
-    const before = new Set<ChildNode>(Array.from(host.childNodes));
-    build(host);
-
-    return () => {
-      if (parent === "self") {
-        host.replaceChildren();
-      } else {
-        // Only remove nodes this component added to <body>
-        Array.from(host.childNodes).forEach((node) => {
-          if (!before.has(node)) host.removeChild(node);
-        });
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, deps);
-
-  return ref;
-}
-
-function makeScript(src: string, async = true): HTMLScriptElement {
-  const s = document.createElement("script");
-  s.src = src;
-  s.async = async;
-  s.setAttribute("data-cfasync", "false");
-  return s;
-}
-
-/**
- * Accepts a plain URL, a protocol-relative URL, or a whole
- * <script src="..."> line, and returns a clean https URL (or "").
- */
 function normalizeScriptSrc(raw: string): string {
   const value = raw.trim();
+
   if (!value) return "";
 
+  // Accept either a plain URL or an actual script element.
   const match = value.match(/src\s*=\s*["']([^"']+)["']/i);
   let url = (match ? match[1] : value).trim();
 
-  if (url.startsWith("//")) url = `https:${url}`;
-  if (!/^https:\/\/[^\s"'<>]+$/i.test(url)) return "";
-  return url;
+  if (url.startsWith("//")) {
+    url = `https:${url}`;
+  }
+
+  try {
+    const parsed = new URL(url);
+
+    if (parsed.protocol !== "https:") return "";
+
+    return parsed.href;
+  } catch {
+    return "";
+  }
+}
+
+function makeScript(src: string, async = true) {
+  const script = document.createElement("script");
+
+  script.src = src;
+  script.async = async;
+  script.setAttribute("data-cfasync", "false");
+
+  return script;
 }
 
 // ======================================================
-// 2. GOOGLE ADSENSE DISPLAY UNIT
-//
-// The main AdSense <script> is already in app/layout.tsx.
-// This renders an actual ad slot. You get the slot ID in
-// AdSense > Ads > By ad unit, AFTER your site is approved.
-//
-//   <AdSenseUnit slot="1234567890" />
+// 3. GOOGLE ADSENSE
 // ======================================================
 
 declare global {
@@ -150,15 +103,21 @@ export function AdSenseUnit({
   className?: string;
 }) {
   const pushed = useRef(false);
-  const active = ADS_CONFIG.enabled && ADS_CONFIG.adsense;
+
+  const active =
+    ADS_CONFIG.enabled &&
+    ADS_CONFIG.adsense &&
+    Boolean(slot.trim());
 
   useEffect(() => {
     if (!active || pushed.current) return;
+
     pushed.current = true;
+
     try {
       (window.adsbygoogle = window.adsbygoogle || []).push({});
     } catch (error) {
-      console.error("AdSense error:", error);
+      console.error("ENEENA AdSense error:", error);
     }
   }, [active]);
 
@@ -179,51 +138,85 @@ export function AdSenseUnit({
 }
 
 // ======================================================
-// 3. ADSTERRA NATIVE BANNER (the 4-tile one)
+// 4. ADSTERRA NATIVE BANNER
 //
-//   <AdsterraNativeBanner />
+// Keep only ONE native banner instance per page.
+// The container ID must match Adsterra's supplied code.
 // ======================================================
 
-export function AdsterraNativeBanner({ className }: { className?: string }) {
-  const active = ADS_CONFIG.enabled && ADS_CONFIG.adsterraNative;
+export function AdsterraNativeBanner({
+  className,
+}: {
+  className?: string;
+}) {
+  const hostRef = useRef<HTMLDivElement>(null);
 
-  const ref = useAdScript(
-    (host) => {
-      if (!active) return;
-      // Container first, then the script, so the script always finds it.
-      const container = document.createElement("div");
-      container.id = `container-${ADS_CONFIG.nativeBannerKey}`;
-      host.append(container, makeScript(ADS_CONFIG.nativeBannerSrc));
-    },
-    "self",
-    [active],
-  );
+  const active =
+    ADS_CONFIG.enabled &&
+    ADS_CONFIG.adsterraNative;
+
+  useEffect(() => {
+    if (!active) return;
+
+    const host = hostRef.current;
+
+    if (!host) return;
+
+    const scriptUrl = normalizeScriptSrc(
+      ADS_CONFIG.nativeBannerSrc
+    );
+
+    if (!scriptUrl) {
+      console.error("ENEENA: Invalid native ad script URL.");
+      return;
+    }
+
+    const container = document.createElement("div");
+
+    container.id = `container-${ADS_CONFIG.nativeBannerKey}`;
+
+    const script = makeScript(scriptUrl);
+
+    // Adsterra expects the container before its script.
+    host.appendChild(container);
+    host.appendChild(script);
+
+    return () => {
+      script.remove();
+      container.remove();
+    };
+  }, [active]);
 
   if (!active) return null;
-  return <div ref={ref} className={className ?? "my-8"} />;
+
+  return (
+    <div
+      ref={hostRef}
+      className={className ?? "my-8 w-full"}
+    />
+  );
 }
 
 // ======================================================
-// 4. ADSTERRA BANNER 300x250
+// 5. ADSTERRA BANNER 300x250
 //
-// Rendered inside its own <iframe srcDoc>. Adsterra's invoke.js
-// writes its markup with document.write(), which only works while
-// a document is being parsed, so it gets its own tiny document.
-//
-// If banner300x250Src is empty, Adsterra's default banner address
-// is built from the key, so the ad shows without extra setup.
-//
-//   <AdsterraBanner300x250 />
+// Disabled until the exact Adsterra script URL is supplied.
 // ======================================================
 
-export function AdsterraBanner300x250({ className }: { className?: string }) {
-  const src =
-    normalizeScriptSrc(ADS_CONFIG.banner300x250Src) ||
-    `https://www.highperformanceformat.com/${ADS_CONFIG.banner300x250Key}/invoke.js`;
+export function AdsterraBanner300x250({
+  className,
+}: {
+  className?: string;
+}) {
+  const active =
+    ADS_CONFIG.enabled &&
+    ADS_CONFIG.adsterraBanner;
 
-  const active = ADS_CONFIG.enabled && ADS_CONFIG.adsterraBanner;
+  const scriptUrl = normalizeScriptSrc(
+    ADS_CONFIG.banner300x250Src
+  );
 
-  if (!active) return null;
+  if (!active || !scriptUrl) return null;
 
   const options = JSON.stringify({
     key: ADS_CONFIG.banner300x250Key,
@@ -233,13 +226,33 @@ export function AdsterraBanner300x250({ className }: { className?: string }) {
     params: {},
   });
 
-  const srcDoc =
-    `<!doctype html><html><head><meta charset="utf-8">` +
-    `<style>html,body{margin:0;padding:0;width:300px;height:250px;overflow:hidden;background:transparent}</style>` +
-    `</head><body>` +
-    `<script>var atOptions = ${options};</script>` +
-    `<script data-cfasync="false" src="${src}"></script>` +
-    `</body></html>`;
+  const srcDoc = `
+    <!doctype html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          html, body {
+            margin: 0;
+            padding: 0;
+            width: 300px;
+            height: 250px;
+            overflow: hidden;
+            background: transparent;
+          }
+        </style>
+      </head>
+      <body>
+        <script>
+          var atOptions = ${options};
+        </script>
+        <script
+          data-cfasync="false"
+          src="${scriptUrl}">
+        </script>
+      </body>
+    </html>
+  `;
 
   return (
     <div className={className ?? "flex w-full justify-center"}>
@@ -262,9 +275,7 @@ export function AdsterraBanner300x250({ className }: { className?: string }) {
 }
 
 // ======================================================
-// 5. ADSTERRA SMARTLINK
-//
-//   <AdsterraSmartlink>Sponsored</AdsterraSmartlink>
+// 6. ADSTERRA SMARTLINK
 // ======================================================
 
 export function AdsterraSmartlink({
@@ -274,7 +285,12 @@ export function AdsterraSmartlink({
   children?: ReactNode;
   className?: string;
 }) {
-  if (!(ADS_CONFIG.enabled && ADS_CONFIG.adsterraSmartlink)) return null;
+  if (
+    !ADS_CONFIG.enabled ||
+    !ADS_CONFIG.adsterraSmartlink
+  ) {
+    return null;
+  }
 
   return (
     <a
@@ -289,72 +305,58 @@ export function AdsterraSmartlink({
 }
 
 // ======================================================
-// 6. ADSTERRA SOCIAL BAR
+// 7. SITE-WIDE SCRIPT HELPER
+// ======================================================
+
+function useBodyAdScript(active: boolean, rawSrc: string) {
+  useEffect(() => {
+    if (!active) return;
+
+    const src = normalizeScriptSrc(rawSrc);
+
+    if (!src) {
+      console.error("ENEENA: Invalid site-wide ad script URL.");
+      return;
+    }
+
+    const script = makeScript(src, false);
+
+    document.body.appendChild(script);
+
+    return () => {
+      script.remove();
+    };
+  }, [active, rawSrc]);
+}
+
+// ======================================================
+// 8. ADSTERRA SOCIAL BAR
 //
-// Site-wide. Render ONCE in app/layout.tsx, inside <body>:
-//   <AdsterraSocialBar />
+// Keep disabled. If enabled later, mount ONCE in root layout.
 // ======================================================
 
 export function AdsterraSocialBar() {
-  const active = ADS_CONFIG.enabled && ADS_CONFIG.adsterraSocialBar;
+  const active =
+    ADS_CONFIG.enabled &&
+    ADS_CONFIG.adsterraSocialBar;
 
-  useAdScript(
-    (body) => {
-      if (!active) return;
-      body.appendChild(makeScript(ADS_CONFIG.socialBarSrc, false));
-    },
-    "body",
-    [active],
-  );
+  useBodyAdScript(active, ADS_CONFIG.socialBarSrc);
 
   return null;
 }
 
 // ======================================================
-// 7. ADSTERRA POPUNDER
+// 9. ADSTERRA POPUNDER
 //
-// Site-wide. Render ONCE in app/layout.tsx.
-// OFF by default: popunders break AdSense policy.
-//   <AdsterraPopunder />
+// Keep disabled. If enabled later, mount ONCE in root layout.
 // ======================================================
 
 export function AdsterraPopunder() {
-  const active = ADS_CONFIG.enabled && ADS_CONFIG.adsterraPopunder;
+  const active =
+    ADS_CONFIG.enabled &&
+    ADS_CONFIG.adsterraPopunder;
 
-  useAdScript(
-    (body) => {
-      if (!active) return;
-      body.appendChild(makeScript(ADS_CONFIG.popunderSrc, false));
-    },
-    "body",
-    [active],
-  );
+  useBodyAdScript(active, ADS_CONFIG.popunderSrc);
 
   return null;
 }
-
-/**
- * ======================================================
- * WHERE TO PLACE WHAT (suggested)
- *
- * HOME PAGE
- *   - <AdsterraNativeBanner />     once, well below the fold
- *
- * ARTICLE PAGE
- *   - <AdSenseUnit slot="..." />   after ~2nd paragraph
- *   - <AdsterraNativeBanner />     after the article ends
- *
- * SIDEBAR / DESKTOP RAIL
- *   - <AdsterraBanner300x250 />
- *
- * FOOTER
- *   - <AdsterraSmartlink>Sponsored</AdsterraSmartlink>
- *
- * app/layout.tsx (inside <body>, once)
- *   - <AdsterraSocialBar />        only after AdSense approval
- *
- * NEVER place ads on: home page hero, About, Contact,
- * Privacy, Terms, sign-in / sign-up (Clerk) pages.
- * Never put AdSense and Adsterra directly next to each other.
- * ======================================================
- */
