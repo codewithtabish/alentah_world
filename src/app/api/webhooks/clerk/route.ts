@@ -1,13 +1,8 @@
-// src/app/api/webhooks/clerk/route.ts
-// ============================================================
-// Clerk Webhook Handler — ALENTAH WORLD
-// Handles: user.created, user.updated, session.created, user.deleted
-// ============================================================
 
 import { ADMIN_EMAILS } from "@/lib/admin-emails";
 import { CACHE_TAGS } from "@/lib/cache-keys";
 import prisma from "@/lib/clients/prisma-client";
-import { WebhookEvent, clerkClient } from "@clerk/nextjs/server";
+import { clerkClient, type WebhookEvent } from "@clerk/nextjs/server";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { headers } from "next/headers";
 import { Webhook } from "svix";
@@ -17,12 +12,14 @@ export async function POST(req: Request) {
 
   if (!WEBHOOK_SECRET) {
     console.error("[Clerk Webhook] Missing CLERK_WEBHOOK_SIGNING_SECRET");
+
     return new Response("Missing CLERK_WEBHOOK_SIGNING_SECRET", {
       status: 500,
     });
   }
 
   const headerPayload = await headers();
+
   const svixId = headerPayload.get("svix-id");
   const svixTimestamp = headerPayload.get("svix-timestamp");
   const svixSignature = headerPayload.get("svix-signature");
@@ -31,33 +28,40 @@ export async function POST(req: Request) {
     return new Response("Missing Svix headers", { status: 400 });
   }
 
-  // IMPORTANT: Use req.text() — NOT req.json(). Parsing JSON
-  // before verification would change the body and break the signature.
+  // Read the raw body before signature verification.
   const payload = await req.text();
+
   const wh = new Webhook(WEBHOOK_SECRET);
 
-  // ─────────────────────────────────────────────
-  // 1. Verify the signature
-  // ─────────────────────────────────────────────
+  // ============================================================
+  // 1. VERIFY CLERK WEBHOOK SIGNATURE
+  // ============================================================
+
   try {
     wh.verify(payload, {
       "svix-id": svixId,
       "svix-timestamp": svixTimestamp,
       "svix-signature": svixSignature,
     });
-  } catch (err) {
-    console.error("[Clerk Webhook] Verification failed:", err);
-    return new Response("Invalid webhook", { status: 400 });
+  } catch (error) {
+    console.error("[Clerk Webhook] Verification failed:", error);
+
+    return new Response("Invalid webhook signature", {
+      status: 400,
+    });
   }
 
-  // ─────────────────────────────────────────────
-  // 2. Parse the payload AFTER verification passes
-  // ─────────────────────────────────────────────
+  // ============================================================
+  // 2. PARSE VERIFIED PAYLOAD
+  // ============================================================
+
   let evt: WebhookEvent;
+
   try {
     evt = JSON.parse(payload) as WebhookEvent;
-  } catch (err) {
-    console.error("[Clerk Webhook] JSON parse failed:", err);
+  } catch (error) {
+    console.error("[Clerk Webhook] JSON parsing failed:", error);
+
     return new Response("Invalid JSON", { status: 400 });
   }
 
@@ -65,36 +69,42 @@ export async function POST(req: Request) {
 
   try {
     switch (eventType) {
-      // ─────────────────────────────────────────────
+      // ========================================================
       // USER CREATED
-      // ─────────────────────────────────────────────
+      // ========================================================
+
       case "user.created": {
         const data = evt.data;
 
         const email =
           data.email_addresses?.find(
-            (e) => e.id === data.primary_email_address_id,
+            (item) => item.id === data.primary_email_address_id,
           )?.email_address ??
           data.email_addresses?.[0]?.email_address ??
           null;
 
         if (!email) {
           console.warn(
-            "[Clerk Webhook] user.created without email, skipping:",
+            "[Clerk Webhook] User created without an email:",
             data.id,
           );
+
           break;
         }
 
+        const normalizedEmail = email.toLowerCase();
+
         const role: "USER" | "ADMIN" = ADMIN_EMAILS.includes(
-          email.toLowerCase(),
+          normalizedEmail,
         )
           ? "ADMIN"
           : "USER";
 
-        // 1. Create or sync the User
+        // 1. Create or synchronize the database user.
         const user = await prisma.user.upsert({
-          where: { clerkId: data.id },
+          where: {
+            clerkId: data.id,
+          },
           update: {
             firstName: data.first_name ?? null,
             lastName: data.last_name ?? null,
@@ -112,13 +122,16 @@ export async function POST(req: Request) {
           },
         });
 
-        // 2. If admin → auto-create linked Editor record
+        // 2. Automatically create or synchronize an Editor profile.
         if (role === "ADMIN") {
           const fullName =
-            `${data.first_name ?? ""} ${data.last_name ?? ""}`.trim() || email;
+            `${data.first_name ?? ""} ${data.last_name ?? ""}`.trim() ||
+            email;
 
           await prisma.editor.upsert({
-            where: { email },
+            where: {
+              email,
+            },
             update: {
               userId: user.id,
               name: fullName,
@@ -133,45 +146,59 @@ export async function POST(req: Request) {
               isActive: true,
             },
           });
+
+          revalidateTag(CACHE_TAGS.editors, "max");
         }
 
-        // 3. Invalidate caches
+        // 3. Invalidate user-related caches.
         revalidateTag(CACHE_TAGS.users, "max");
         revalidateTag(CACHE_TAGS.home, "max");
 
-        // 4. Mirror role into Clerk publicMetadata
+        // 4. Synchronize role into Clerk public metadata.
         try {
           const client = await clerkClient();
+
           await client.users.updateUserMetadata(data.id, {
-            publicMetadata: { role },
+            publicMetadata: {
+              role,
+            },
           });
-        } catch (metaErr) {
+        } catch (metaError) {
           console.error(
-            "[Clerk Webhook] Failed to sync metadata for",
+            "[Clerk Webhook] Failed to synchronize Clerk metadata:",
             data.id,
-            metaErr,
+            metaError,
           );
         }
 
-        console.log("[Clerk Webhook] User created:", data.id, "role:", role);
+        console.log(
+          "[Clerk Webhook] User created:",
+          data.id,
+          "Role:",
+          role,
+        );
+
         break;
       }
 
-      // ─────────────────────────────────────────────
+      // ========================================================
       // USER UPDATED
-      // ─────────────────────────────────────────────
+      // ========================================================
+
       case "user.updated": {
         const data = evt.data;
 
         const email =
           data.email_addresses?.find(
-            (e) => e.id === data.primary_email_address_id,
+            (item) => item.id === data.primary_email_address_id,
           )?.email_address ??
           data.email_addresses?.[0]?.email_address ??
           null;
 
         await prisma.user.updateMany({
-          where: { clerkId: data.id },
+          where: {
+            clerkId: data.id,
+          },
           data: {
             firstName: data.first_name ?? null,
             lastName: data.last_name ?? null,
@@ -180,14 +207,18 @@ export async function POST(req: Request) {
           },
         });
 
-        // Keep Editor record in sync
+        // Keep the linked Editor profile synchronized.
         if (email) {
+          const fullName =
+            `${data.first_name ?? ""} ${data.last_name ?? ""}`.trim() ||
+            email;
+
           const updatedEditor = await prisma.editor.updateMany({
-            where: { email },
+            where: {
+              email,
+            },
             data: {
-              name:
-                `${data.first_name ?? ""} ${data.last_name ?? ""}`.trim() ||
-                email,
+              name: fullName,
               imageUrl: data.image_url ?? null,
             },
           });
@@ -201,79 +232,145 @@ export async function POST(req: Request) {
         revalidatePath("/dashboard/users");
 
         console.log("[Clerk Webhook] User updated:", data.id);
+
         break;
       }
 
-      // ─────────────────────────────────────────────
-      // SESSION CREATED (login)
-      // ─────────────────────────────────────────────
+      // ========================================================
+      // SESSION CREATED — LOGIN TRACKING
+      // ========================================================
+
       case "session.created": {
-        const data = evt.data as { user_id: string };
+        const data = evt.data;
 
         if (data.user_id) {
+          const now = new Date();
+
           await prisma.user.updateMany({
-            where: { clerkId: data.user_id },
+            where: {
+              clerkId: data.user_id,
+            },
             data: {
-              lastLoginAt: new Date(),
-              lastSeenAt: new Date(),
+              lastLoginAt: now,
+              lastSeenAt: now,
             },
           });
+
           revalidateTag(CACHE_TAGS.users, "max");
           revalidatePath("/dashboard/users");
 
-          console.log("[Clerk Webhook] Login tracked:", data.user_id);
+          console.log(
+            "[Clerk Webhook] Login tracked:",
+            data.user_id,
+          );
         }
+
         break;
       }
 
-      // ─────────────────────────────────────────────
-      // USER DELETED
-      // ─────────────────────────────────────────────
+      // ========================================================
+      // USER DELETED — DELETE FROM DATABASE
+      // ========================================================
+
       case "user.deleted": {
         const data = evt.data;
 
-        if (data.id) {
-          // Find the user first to safely unlink the editor
-          const existingUser = await prisma.user.findUnique({
-            where: { clerkId: data.id },
-            select: { id: true, email: true },
+        if (!data.id) {
+          console.warn(
+            "[Clerk Webhook] User deleted event has no user ID.",
+          );
+
+          break;
+        }
+
+        // Find the corresponding database user.
+        const existingUser = await prisma.user.findUnique({
+          where: {
+            clerkId: data.id,
+          },
+          select: {
+            id: true,
+            clerkId: true,
+            email: true,
+          },
+        });
+
+        // The webhook may be delivered more than once.
+        // If the user is already deleted, treat it as successful.
+        if (!existingUser) {
+          console.log(
+            "[Clerk Webhook] User already absent from database:",
+            data.id,
+          );
+
+          break;
+        }
+
+        // Perform both database operations atomically.
+        await prisma.$transaction(async (tx) => {
+          // 1. Unlink and deactivate the Editor profile.
+          // This preserves the Editor record and its articles.
+          await tx.editor.updateMany({
+            where: {
+              userId: existingUser.id,
+            },
+            data: {
+              userId: null,
+              isActive: false,
+            },
           });
 
-          if (existingUser) {
-            // 1. Unlink the Editor BEFORE deleting the User.
-            // This prevents the onDelete: Cascade from destroying the Editor profile
-            // and their published articles.
-            await prisma.editor.updateMany({
-              where: { userId: existingUser.id },
-              data: { 
-                userId: null, 
-                isActive: false 
-              },
-            });
+          // 2. PERMANENTLY DELETE THE USER FROM THE DATABASE.
+          await tx.user.delete({
+            where: {
+              id: existingUser.id,
+            },
+          });
+        });
 
-            // 2. Delete the User row
-            await prisma.user.delete({
-              where: { id: existingUser.id },
-            });
+        // 3. Invalidate all relevant caches.
+        revalidateTag(CACHE_TAGS.users, "max");
+        revalidateTag(CACHE_TAGS.editors, "max");
+        revalidateTag(CACHE_TAGS.home, "max");
 
-            console.log("[Clerk Webhook] User deleted:", data.id);
-            revalidateTag(CACHE_TAGS.users, "max");
-            revalidateTag(CACHE_TAGS.editors, "max");
-            revalidatePath("/dashboard/users");
-          }
-        }
+        revalidatePath("/dashboard/users");
+        revalidatePath("/dashboard/editors");
+
+        console.log(
+          "[Clerk Webhook] User permanently deleted from database:",
+          data.id,
+          existingUser.email,
+        );
+
         break;
       }
 
-      default:
-        // Ignore other events (organization.*, etc.)
+      // ========================================================
+      // IGNORE UNSUPPORTED EVENTS
+      // ========================================================
+
+      default: {
+        console.log(
+          "[Clerk Webhook] Ignored event:",
+          eventType,
+        );
+
         break;
+      }
     }
 
-    return Response.json({ success: true });
+    return Response.json({
+      success: true,
+      event: eventType,
+    });
   } catch (error) {
-    console.error("[Clerk Webhook] Error:", error);
-    return new Response("Webhook Error: " + (error as Error).message, {
+    console.error(
+      "[Clerk Webhook] Processing failed:",
+      eventType,
+      error,
+    );
+
+    return new Response("Webhook processing failed", {
       status: 500,
     });
   }
