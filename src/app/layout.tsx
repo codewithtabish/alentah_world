@@ -1,12 +1,16 @@
+
 import type { Metadata, Viewport } from "next";
+
 import type { CSSProperties, ReactNode } from "react";
 
 import "./globals.css";
 
 import { cn } from "@/lib/utils";
+
 import { ThemeProvider } from "@/components/site/general/theme/theme-provider";
 
 import { ClerkProvider } from "@clerk/nextjs";
+
 import { Toaster } from "sonner";
 
 // ======================================================
@@ -103,39 +107,22 @@ const SOCIAL_PROFILES: string[] = [];
 
 const GOOGLE_FONTS_URL = [
   "https://fonts.googleapis.com/css2",
-
   "?family=Plus+Jakarta+Sans:wght@400;500;600;700;800",
-
   "&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700",
-
   "&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700",
-
   "&family=Geist+Mono:wght@400;500;600",
-
   "&family=Gulzar",
-
   "&family=Noto+Nastaliq+Urdu",
-
   "&family=Amiri:wght@400;700",
-
   "&family=Noto+Naskh+Arabic:wght@400;500;600;700",
-
   "&family=Noto+Serif+Devanagari:wght@400;500;600;700",
-
   "&family=Noto+Sans+Devanagari:wght@400;500;600;700",
-
   "&family=Noto+Serif+Bengali:wght@400;500;600;700",
-
   "&family=Noto+Sans+Bengali:wght@400;500;600;700",
-
   "&family=Noto+Sans+SC:wght@400;500;700",
-
   "&family=Noto+Serif+SC:wght@400;500;700",
-
   "&family=Noto+Sans+JP:wght@400;500;700",
-
   "&family=Noto+Serif+JP:wght@400;500;700",
-
   "&display=swap",
 ].join("");
 
@@ -200,37 +187,7 @@ export const metadata: Metadata = {
 
   manifest: "/manifest.webmanifest",
 
-  icons: {
-    icon: [
-      {
-        url: "/images/logos/favicon-16x16.png",
-        sizes: "16x16",
-        type: "image/png",
-      },
-      {
-        url: "/images/logos/favicon-32x32.png",
-        sizes: "32x32",
-        type: "image/png",
-      },
-      {
-        url: "/images/logos/favicon-48x48.png",
-        sizes: "48x48",
-        type: "image/png",
-      },
-    ],
-
-    apple: [
-      {
-        url: "/images/logos/apple-touch-icon-180x180.png",
-        sizes: "180x180",
-        type: "image/png",
-      },
-    ],
-
-    shortcut: [
-      "/images/logos/favicon-32x32.png",
-    ],
-  },
+  // Favicon is handled automatically by src/app/icon.png.
 
   appleWebApp: {
     capable: true,
