@@ -12,6 +12,7 @@ import { ThemeProvider } from "@/components/site/general/theme/theme-provider";
 import { ClerkProvider } from "@clerk/nextjs";
 
 import { Toaster } from "sonner";
+import MonetagAds from "@/components/ads/monetag-ads";
 
 // ======================================================
 // ENEENA — INTERNATIONAL EDITORIAL PUBLICATION
@@ -516,6 +517,8 @@ export default function RootLayout({
       style={premiumTypography}
     >
       <head>
+                <MonetagAds />
+
         {/* Google Fonts connection optimization */}
 
         <link
@@ -553,6 +556,7 @@ export default function RootLayout({
       </head>
 
       <body className="min-h-full flex flex-col font-sans scrollbar-none overflow-x-hidden">
+
         {/* ENEENA publisher and website identity */}
 
         <script
