@@ -215,7 +215,7 @@ function SectionHeader({
   id,
   eyebrow,
   title,
-  titleClassName = "text-3xl sm:text-5xl",
+  titleClassName = "text-2xl sm:text-4xl",
   count,
   live = false,
 }: {
@@ -227,7 +227,7 @@ function SectionHeader({
   live?: boolean;
 }) {
   return (
-    <header className="flex flex-col gap-3">
+    <header className="flex flex-col gap-2.5">
       <span className="inline-flex items-center gap-2.5 text-xs font-bold uppercase tracking-[0.22em] text-primary">
         {live ? (
           <span aria-hidden="true" className="relative flex size-2">
@@ -239,7 +239,7 @@ function SectionHeader({
         )}
         {eyebrow}
       </span>
-      <h2 id={id} className={cn("font-serif font-bold leading-[1.05] tracking-tight text-foreground", titleClassName)}>
+      <h2 id={id} className={cn("font-serif font-bold leading-[1.1] tracking-tight text-foreground", titleClassName)}>
         {title}
         {typeof count === "number" && (
           <sup className="ms-2 align-super font-sans text-xs font-bold tracking-widest text-foreground/35">{pad(count)}</sup>
@@ -258,14 +258,14 @@ function StoryMeta({ blog, tone = "plain" }: { blog: HomeBlogItem; tone?: "plain
   const textFont = getTextFont(blog);
 
   const avatar = (
-    <span className={cn("relative block shrink-0 overflow-hidden rounded-full bg-muted", tone === "overlay" ? "size-9 ring-2 ring-white/40" : "size-7 ring-1 ring-border")}>
+    <span className={cn("relative block shrink-0 overflow-hidden rounded-full bg-muted", tone === "overlay" ? "size-8 ring-2 ring-white/40 sm:size-9" : "size-7 ring-1 ring-border")}>
       <Image src={getAuthorImage(blog)} alt="" fill sizes="36px" quality={60} className="object-cover" />
     </span>
   );
 
   if (tone === "overlay") {
     return (
-      <div className={cn("flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-white/90", textFont, !latin && "leading-[1.9]")}>
+      <div className={cn("flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-white/90 sm:gap-x-5 sm:text-sm", textFont, !latin && "leading-[1.9]")}>
         <span className="flex min-w-0 items-center gap-2.5">
           {avatar}
           <span className="truncate py-1 font-semibold leading-[1.9]">{name}</span>
@@ -306,14 +306,14 @@ function RankedItem({ blog, rank }: { blog: HomeBlogItem; rank: number }) {
     >
       <span
         aria-hidden="true"
-        className="w-9 shrink-0 text-center font-serif text-3xl font-bold italic leading-none text-foreground/20 transition-colors duration-300 group-hover:text-primary"
+        className="w-8 shrink-0 text-center font-serif text-2xl font-bold italic leading-none text-foreground/20 transition-colors duration-300 group-hover:text-primary sm:w-9 sm:text-3xl"
       >
         {pad(rank)}
       </span>
 
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
         <CategoryLabel blog={blog} className="min-w-0" />
-        <h3 className={cn(getTitleFont(blog), "line-clamp-3 text-balance text-base font-bold text-foreground transition-colors duration-300 group-hover:text-primary sm:text-lg", latin ? "leading-snug" : "leading-loose")}>
+        <h3 className={cn(getTitleFont(blog), "line-clamp-3 text-balance text-sm font-bold text-foreground transition-colors duration-300 group-hover:text-primary sm:text-base", latin ? "leading-snug" : "leading-loose")}>
           <Link href={articleHref(blog)} className="after:absolute after:inset-0">
             <span className={cn(latin && UNDERLINE)}>{blog.title}</span>
           </Link>
@@ -361,11 +361,11 @@ function StoryCard({ blog, variant = "grid" }: { blog: HomeBlogItem; variant?: "
     "text-balance font-bold text-foreground transition-colors duration-300 group-hover:text-primary",
     isWide
       ? !latin
-        ? "text-2xl leading-loose sm:text-3xl sm:leading-loose lg:text-4xl lg:leading-loose"
-        : "text-2xl leading-[1.12] tracking-tight sm:text-3xl lg:text-[2.5rem]"
+        ? "line-clamp-4 text-xl leading-loose sm:text-2xl sm:leading-loose lg:text-3xl lg:leading-loose"
+        : "line-clamp-4 text-xl leading-[1.2] tracking-tight sm:text-2xl lg:text-3xl"
       : !latin
-        ? "text-xl leading-loose sm:text-2xl sm:leading-loose"
-        : "text-xl leading-[1.2] sm:text-[1.45rem]",
+        ? "line-clamp-3 text-lg leading-loose sm:text-xl sm:leading-loose"
+        : "line-clamp-3 text-lg leading-[1.25] sm:text-xl",
   );
 
   return (
@@ -390,7 +390,7 @@ function StoryCard({ blog, variant = "grid" }: { blog: HomeBlogItem; variant?: "
         <ArrowChip />
       </div>
 
-      <div className={cn("flex flex-1 flex-col", isWide ? "gap-4 lg:col-span-5" : "gap-2.5 pt-5")}>
+      <div className={cn("flex flex-1 flex-col", isWide ? "gap-3 lg:col-span-5 lg:gap-4" : "gap-2.5 pt-5")}>
         <CategoryLabel blog={blog} />
 
         <h3 className={titleClass}>
@@ -400,7 +400,7 @@ function StoryCard({ blog, variant = "grid" }: { blog: HomeBlogItem; variant?: "
         </h3>
 
         {blog.shortDescription && (
-          <div className={cn("text-start text-muted-foreground", getTextFont(blog), isWide ? "line-clamp-3 text-base sm:text-lg" : "line-clamp-2 text-sm sm:text-base", !latin ? (isWide ? "leading-[2.3]" : "leading-[2.2]") : (isWide ? "leading-7" : "leading-6"))}>
+          <div className={cn("text-start text-muted-foreground", getTextFont(blog), isWide ? "line-clamp-3 text-sm sm:text-base" : "line-clamp-2 text-sm", !latin ? (isWide ? "leading-[2.2]" : "leading-[2.1]") : (isWide ? "leading-7" : "leading-6"))}>
             {blog.shortDescription}
           </div>
         )}
@@ -463,7 +463,7 @@ function LanguagesSection() {
       aria-labelledby="languages-heading"
       className="hidden flex-col gap-10 sm:flex sm:gap-12"
     >
-      <header className="mx-auto flex max-w-3xl flex-col items-center gap-5 text-center">
+      <header className="mx-auto flex max-w-3xl flex-col items-center gap-4 text-center">
         <div className="flex w-full items-center gap-4">
           <span aria-hidden="true" className="h-px flex-1 bg-linear-to-r from-transparent to-primary/40" />
           <span className="inline-flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.28em] text-primary sm:text-xs">
@@ -475,12 +475,12 @@ function LanguagesSection() {
 
         <h2
           id="languages-heading"
-          className="text-balance font-serif text-3xl font-bold leading-[1.1] tracking-tight text-foreground sm:text-5xl"
+          className="text-balance font-serif text-2xl font-bold leading-[1.15] tracking-tight text-foreground sm:text-4xl"
         >
           Read ENEENA in Your Language
         </h2>
 
-        <p className="max-w-2xl text-balance font-serif text-sm leading-7 text-muted-foreground sm:text-lg sm:leading-8">
+        <p className="max-w-2xl text-balance font-serif text-sm leading-7 text-muted-foreground sm:text-base sm:leading-8">
           Explore stories, perspectives, and ideas through {EDITIONS.length} independent language editions, each created for its own readers and culture.
         </p>
 
@@ -512,7 +512,7 @@ export function HomeClient({ blogs }: HomeClientProps) {
       <div className="mx-auto max-w-md py-28 text-center">
         <h1 className="sr-only">ENEENA — Independent Journalism, Global Perspectives</h1>
         <span className="mb-4 block text-xs font-bold uppercase tracking-[0.2em] text-primary">ENEENA</span>
-        <h2 className="mb-3 font-serif text-3xl font-bold text-foreground sm:text-4xl">Stories are on the way.</h2>
+        <h2 className="mb-3 font-serif text-2xl font-bold text-foreground sm:text-3xl">Stories are on the way.</h2>
         <p className="text-sm text-muted-foreground">No stories published yet. Check back soon.</p>
       </div>
     );
@@ -592,13 +592,14 @@ export function HomeClient({ blogs }: HomeClientProps) {
             className="object-cover transition-transform duration-1400 ease-out [@media(hover:hover)]:group-hover:scale-[1.035]"
           />
 
-          <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/35 to-black/5" />
+          <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/40 to-black/5" />
           <div className="absolute inset-x-0 bottom-0 h-3/5 bg-linear-to-t from-primary/30 to-transparent mix-blend-multiply" />
           <div className="absolute inset-x-0 top-0 h-28 bg-linear-to-b from-black/35 to-transparent" />
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-lg ring-1 ring-inset ring-white/10" />
 
-          <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center justify-between p-5 text-white sm:p-8 lg:p-10">
-            <div className="flex items-center gap-3">
+          {/* Top badges */}
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center justify-between p-4 text-white sm:p-6 lg:p-8">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
               <LanguageBadge blog={hero} />
               <span className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-black/30 px-3 py-1.5 text-xs font-bold uppercase leading-none tracking-[0.18em] text-white backdrop-blur-md">
                 <span aria-hidden="true" className="size-1.5 rounded-full bg-current" /> Featured
@@ -606,31 +607,35 @@ export function HomeClient({ blogs }: HomeClientProps) {
             </div>
           </div>
 
-          <div className="pointer-events-none absolute inset-0 z-10 flex flex-col justify-end p-5 text-white sm:p-8 lg:p-10">
-            <div className="mb-4 flex items-center gap-4 sm:mb-5">
-              <span aria-hidden="true" className="h-px w-10 bg-current opacity-70" />
-              <span className={cn("text-xs font-bold opacity-90", heroLatin ? "uppercase tracking-[0.22em]" : cn("py-1 leading-[1.9]", heroTextFont))}>{hero.category.name}</span>
+          {/* Bottom content. The generous top padding reserves room for the
+              badges above, so a long headline can never run into them. */}
+          <div className="pointer-events-none absolute inset-0 z-10 flex flex-col justify-end px-4 pb-4 pt-16 text-white sm:px-6 sm:pb-6 sm:pt-20 lg:px-8 lg:pb-8 lg:pt-24">
+            <div className="mb-3 flex items-center gap-3 sm:mb-4 sm:gap-4">
+              <span aria-hidden="true" className="h-px w-8 shrink-0 bg-current opacity-70 sm:w-10" />
+              <span className={cn("min-w-0 truncate text-xs font-bold opacity-90", heroLatin ? "uppercase tracking-[0.2em]" : cn("py-1 leading-[1.9]", heroTextFont))}>{hero.category.name}</span>
             </div>
 
             <h2
               className={cn(
                 heroTitleFont,
-                "mb-4 max-w-3xl text-balance text-4xl font-bold text-white [text-shadow:0_2px_24px_rgb(0_0_0/0.6)] sm:text-5xl xl:text-6xl",
-                heroLatin ? "leading-[1.08] tracking-tight" : "py-1 leading-[1.9] tracking-normal sm:leading-[1.9]",
+                "mb-3 line-clamp-3 max-w-3xl text-balance text-2xl font-bold text-white [text-shadow:0_2px_20px_rgb(0_0_0/0.6)] sm:mb-4 sm:line-clamp-4 sm:text-3xl lg:text-4xl xl:text-[2.6rem]",
+                heroLatin ? "leading-[1.15] tracking-tight" : "py-1 leading-[1.7] tracking-normal sm:leading-[1.7]",
               )}
             >
               <Link href={heroHref} className="pointer-events-auto after:absolute after:inset-0 after:z-20">{hero.title}</Link>
             </h2>
 
             {hero.shortDescription && (
-              <div className={cn("mb-6 line-clamp-2 max-w-2xl text-start text-base text-white/85 sm:text-lg", heroTextFont, heroLatin ? "leading-6 sm:leading-7" : "leading-[2.2] sm:leading-[2.3]")}>
-                {hero.shortDescription}
+              <div className="mb-5 hidden sm:block">
+                <div className={cn("line-clamp-2 max-w-2xl text-start text-sm text-white/85 sm:text-base", heroTextFont, heroLatin ? "leading-6" : "leading-[2.1]")}>
+                  {hero.shortDescription}
+                </div>
               </div>
             )}
 
-            <div className="flex items-end justify-between gap-4 border-t border-white/20 pt-5">
+            <div className="flex items-end justify-between gap-4 border-t border-white/20 pt-3 sm:pt-4">
               <StoryMeta blog={hero} tone="overlay" />
-              <span aria-hidden="true" className="hidden shrink-0 items-center gap-2 rounded-full bg-card px-5 py-3 text-sm font-bold text-primary shadow-lg shadow-black/30 transition-transform duration-500 group-hover:translate-x-0.5 sm:inline-flex">
+              <span aria-hidden="true" className="hidden shrink-0 items-center gap-2 rounded-full bg-card px-4 py-2.5 text-sm font-bold text-primary shadow-lg shadow-black/30 transition-transform duration-500 group-hover:translate-x-0.5 sm:inline-flex">
                 Read story <ArrowRight className="size-4 rtl:rotate-180" />
               </span>
             </div>
@@ -669,7 +674,7 @@ export function HomeClient({ blogs }: HomeClientProps) {
             id="latest-stories-heading"
             eyebrow="Fresh from the newsroom"
             title="Latest Stories"
-            titleClassName="text-4xl leading-none sm:text-6xl"
+            titleClassName="text-3xl leading-none sm:text-5xl"
             count={latestBlogs.length}
             live
           />
@@ -713,7 +718,7 @@ export function HomeClient({ blogs }: HomeClientProps) {
       {topics.length > 0 && (
         <section aria-labelledby="topics-heading" className="flex flex-col gap-6">
           <div className="flex items-center justify-between">
-            <SectionHeader id="topics-heading" eyebrow="Explore" title="Browse by Topic" titleClassName="text-3xl sm:text-4xl" />
+            <SectionHeader id="topics-heading" eyebrow="Explore" title="Browse by Topic" titleClassName="text-2xl sm:text-3xl" />
             <Link href="/topics" className="hidden items-center gap-1 text-sm font-semibold text-primary hover:underline sm:inline-flex">
               View All Topics <ArrowRight className="size-4" />
             </Link>
@@ -749,19 +754,19 @@ export function HomeClient({ blogs }: HomeClientProps) {
           the shared Container already provides both. */}
       <section
         aria-labelledby="newsletter-heading"
-        className="border-y border-border/50 py-16 sm:py-24"
+        className="border-y border-border/50 py-14 sm:py-20"
       >
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:items-center">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:items-center lg:gap-12">
           {/* Left: text */}
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3.5">
             <span className="inline-flex items-center gap-3 text-xs font-bold uppercase tracking-[0.2em] text-primary">
               <span aria-hidden="true" className="h-px w-6 bg-primary" />
               The ENEENA Briefing
             </span>
-            <h2 id="newsletter-heading" className="font-serif text-4xl font-bold leading-[1.1] tracking-tight text-foreground sm:text-5xl">
+            <h2 id="newsletter-heading" className="font-serif text-3xl font-bold leading-[1.15] tracking-tight text-foreground sm:text-4xl">
               Ideas worth thinking about.<br />Stories worth your time.
             </h2>
-            <p className="max-w-md font-sans text-base leading-7 text-muted-foreground">
+            <p className="max-w-md font-sans text-sm leading-7 text-muted-foreground sm:text-base">
               Thoughtful journalism, important perspectives, and noteworthy ideas — delivered directly to your inbox.
             </p>
           </div>
@@ -781,37 +786,37 @@ export function HomeClient({ blogs }: HomeClientProps) {
       <section
         dir="ltr"
         aria-labelledby="share-story-heading"
-        className="relative isolate overflow-hidden rounded-lg bg-primary px-6 py-14 text-primary-foreground shadow-2xl shadow-primary/20 ring-1 ring-inset ring-primary-foreground/15 sm:px-14 sm:py-20"
+        className="relative isolate overflow-hidden rounded-lg bg-primary px-6 py-12 text-primary-foreground shadow-2xl shadow-primary/20 ring-1 ring-inset ring-primary-foreground/15 sm:px-12 sm:py-16"
       >
         <div aria-hidden="true" className="absolute -inset-e-24 -top-28 -z-10 size-104 rounded-full bg-primary-foreground/15 blur-3xl" />
         <div aria-hidden="true" className="absolute -bottom-32 -inset-s-16 -z-10 size-96 rounded-full bg-primary-foreground/10 blur-3xl" />
-        <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-14">
+        <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-12 lg:gap-14">
           <div className="lg:col-span-7">
-            <span className="mb-5 inline-flex items-center gap-2.5 text-xs font-bold uppercase tracking-[0.22em] opacity-80">
+            <span className="mb-4 inline-flex items-center gap-2.5 text-xs font-bold uppercase tracking-[0.22em] opacity-80">
               <PenLine className="size-4" aria-hidden="true" /> Your voice, your language
             </span>
-            <h2 id="share-story-heading" className="font-serif text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
+            <h2 id="share-story-heading" className="font-serif text-3xl font-bold leading-[1.1] tracking-tight sm:text-4xl lg:text-5xl">
               Have a Story Worth Telling?
             </h2>
           </div>
-          <div className="flex flex-col gap-8 lg:col-span-5 lg:items-end">
-            <p className="max-w-md text-start font-sans text-base leading-7 opacity-90 [hyphens:none] sm:text-lg sm:leading-8">
+          <div className="flex flex-col gap-6 lg:col-span-5 lg:items-end lg:gap-8">
+            <p className="max-w-md text-start font-sans text-sm leading-7 opacity-90 [hyphens:none] sm:text-base sm:leading-8">
               Share your story with ENEENA in any of our {EDITIONS.length} languages. Real voices and real experiences, in the language you think in.
             </p>
             <div className="flex flex-wrap items-center gap-3">
               <Link
                 href={SHARE_STORY_HREF}
-                className="group/cta inline-flex items-center gap-3 rounded-full bg-card py-2 pe-2 ps-8 text-sm font-bold text-primary shadow-xl shadow-black/20 transition-all duration-300 hover:shadow-2xl"
+                className="group/cta inline-flex items-center gap-3 rounded-full bg-card py-2 pe-2 ps-7 text-sm font-bold text-primary shadow-xl shadow-black/20 transition-all duration-300 hover:shadow-2xl"
               >
                 Share Your Story
-                <span className="flex size-10 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform duration-300 group-hover/cta:translate-x-0.5">
+                <span className="flex size-9 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform duration-300 group-hover/cta:translate-x-0.5 sm:size-10">
                   <ArrowRight className="size-4" aria-hidden="true" />
                 </span>
               </Link>
               <Link
                 href="/en"
                 hrefLang="en"
-                className="inline-flex items-center gap-2 rounded-full border border-primary-foreground/40 px-6 py-3 text-sm font-bold transition-colors duration-300 hover:border-primary-foreground hover:bg-primary-foreground/10"
+                className="inline-flex items-center gap-2 rounded-full border border-primary-foreground/40 px-5 py-2.5 text-sm font-bold transition-colors duration-300 hover:border-primary-foreground hover:bg-primary-foreground/10 sm:px-6 sm:py-3"
               >
                 Explore Our Stories
               </Link>
