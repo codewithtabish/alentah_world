@@ -3,7 +3,6 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import type { ReactNode } from "react";
 import { Clock, ArrowRight, ArrowUpRight, CalendarDays, PenLine } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { HomeBlogItem } from "@/actions/articles/get-home-blogs";
@@ -11,7 +10,11 @@ import type { HomeBlogItem } from "@/actions/articles/get-home-blogs";
 import { NewsletterForm } from "@/components/site/pages/home/newsletter-form";
 
 // Ads (client components; safe to use inside this server component)
-import { AdsterraNativeBanner, AdsterraBanner300x250 } from "@/components/ads/ads";
+import {
+  AdsterraNativeBanner,
+  AdsterraBanner300x250,
+  AdsterraBannerAuto,
+} from "@/components/ads/ads";
 
 interface HomeClientProps {
   blogs: HomeBlogItem[];
@@ -160,27 +163,6 @@ const pad = (n: number) => String(n).padStart(2, "0");
 
 const UNDERLINE =
   "bg-[linear-gradient(currentColor,currentColor)] bg-[length:0%_1.5px] bg-left-bottom bg-no-repeat box-decoration-clone transition-[background-size] duration-500 ease-out [@media(hover:hover)]:group-hover:bg-[length:100%_1.5px]";
-
-/* ------------------------------------------------------------------ */
-/* Ad slot wrapper                                                     */
-/* ------------------------------------------------------------------ */
-
-// Hides itself completely (label included) while ads are switched off,
-// because the ad components render nothing in that case: it only shows once
-// it actually contains a <div> or <a> from an ad.
-function AdSlot({ children, className }: { children: ReactNode; className?: string }) {
-  return (
-    <aside
-      aria-label="Advertisement"
-      className={cn("hidden min-w-0 flex-col items-center gap-2 has-[div,a]:flex", className)}
-    >
-      <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-        Advertisement
-      </span>
-      {children}
-    </aside>
-  );
-}
 
 /* ------------------------------------------------------------------ */
 /* Small building blocks                                               */
@@ -672,10 +654,15 @@ export function HomeClient({ blogs }: HomeClientProps) {
         )}
       </section>
 
+      {/* AD A: full-width banner right below the hero section.
+          728x90 on tablet and desktop, 300x250 on phones (never both).
+          Renders nothing while ads are off or when no ad is available. */}
+      <AdsterraBannerAuto className="w-full" />
+
       {/* 2. READ IN YOUR LANGUAGE */}
       <LanguagesSection />
 
-      {/* 3. LATEST STORIES (ad row sits in the middle of the grid) */}
+      {/* 3. LATEST STORIES (ads sit in the middle and at the end of the grid) */}
       {latestBlogs.length > 0 && (
         <section aria-labelledby="latest-stories-heading" className="flex flex-col gap-10 sm:gap-14">
           <SectionHeader
@@ -700,17 +687,14 @@ export function HomeClient({ blogs }: HomeClientProps) {
             </>
           )}
 
-          {/* ADS #1: native 4-tile banner (left) + 300x250 banner (right),
-              in the middle of the story grid. On small screens they stack
-              and the 300x250 is centered. The row stays hidden until an ad
-              actually renders. */}
-          <div className="hidden w-full min-w-0 flex-col items-stretch gap-8 has-[div,a]:flex lg:flex-row lg:items-start lg:justify-between lg:gap-10">
-            <AdSlot className="w-full min-w-0 lg:flex-1">
-              <AdsterraNativeBanner className="w-full" />
-            </AdSlot>
-            <AdSlot className="w-full lg:w-75 lg:shrink-0">
-              <AdsterraBanner300x250 className="flex w-full justify-center" />
-            </AdSlot>
+          {/* AD B: native 4-tile banner (left) + 300x250 banner (right) in
+              the middle of the story grid. The 300x250 only appears from
+              1024px up, so phones and tablets get the native banner alone
+              and never see two 300x250 ads back to back. The row stays
+              hidden until at least one ad renders (each ad is an <aside>). */}
+          <div className="hidden w-full min-w-0 flex-col items-stretch gap-8 has-[aside]:flex lg:flex-row lg:items-start lg:justify-between lg:gap-10">
+            <AdsterraNativeBanner className="w-full min-w-0 lg:flex-1" />
+            <AdsterraBanner300x250 minWidth={1024} className="w-full lg:w-75 lg:shrink-0" />
           </div>
 
           {gridBottom.length > 0 && (
@@ -718,6 +702,10 @@ export function HomeClient({ blogs }: HomeClientProps) {
               {gridBottom.map((blog) => <StoryCard key={blog.id} blog={blog} variant="grid" />)}
             </div>
           )}
+
+          {/* AD D: native banner at the end of the Latest Stories grid.
+              Native ads run in their own iframe, so it is safe to repeat. */}
+          <AdsterraNativeBanner className="w-full" />
         </section>
       )}
 
@@ -752,13 +740,9 @@ export function HomeClient({ blogs }: HomeClientProps) {
         </section>
       )}
 
-      {/* ADS #2: below "Browse by Topic". Only the 300x250 is used here:
-          it lives in its own iframe, so it can safely appear twice on the
-          page. The native banner cannot (its container id would repeat).
-          Hidden until an ad actually renders. */}
-      <AdSlot className="w-full">
-        <AdsterraBanner300x250 className="flex w-full justify-center" />
-      </AdSlot>
+      {/* AD C: full-width banner below "Browse by Topic" and above the
+          newsletter. Same responsive rule as AD A. */}
+      <AdsterraBannerAuto className="w-full" />
 
       {/* 5. NEWSLETTER
           No background and no horizontal padding or negative margins here:
@@ -788,6 +772,10 @@ export function HomeClient({ blogs }: HomeClientProps) {
           </div>
         </div>
       </section>
+
+      {/* AD E: full-width banner between the newsletter and the closing
+          "Share your story" call to action. Same responsive rule as AD A. */}
+      <AdsterraBannerAuto className="w-full" />
 
       {/* 6. SHARE YOUR STORY (closing call to action) */}
       <section

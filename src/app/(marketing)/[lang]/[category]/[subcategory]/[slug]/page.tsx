@@ -1,5 +1,6 @@
+// src/app/[lang]/[category]/[subcategory]/[slug]/page.tsx
+
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
 import { Suspense } from "react";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -24,11 +25,15 @@ import {
 import { SaveButton } from "@/components/site/pages/category/save-button";
 import { ArticleActions } from "@/components/site/pages/category/article-actions";
 
-// Ads (client components; safe to use inside this server component)
+// Ads (client components; safe to use inside this server component).
+// Each ad renders its own "Advertisement" label and renders nothing when
+// ads are off or no ad is available.
 import {
   AdSenseUnit,
   AdsterraNativeBanner,
   AdsterraBanner300x250,
+  AdsterraBanner160x600,
+  AdsterraBannerAuto,
   AdsterraSocialBar,
   AdsterraPopunder,
 } from "@/components/ads/ads";
@@ -64,6 +69,10 @@ const ORGANIZATION_LOGO =
 // Paste your AdSense ad unit slot ID here (AdSense > Ads > By ad unit).
 // While this is "", no AdSense unit renders.
 const ADSENSE_SLOT = "";
+
+// The 160x600 side banner sits on the right of the article text. It
+// needs the screen to be at least this wide (px) to leave room for the text.
+const SIDE_RAIL_MIN_WIDTH = 1280;
 
 // ============================================================
 // LOCALIZED INTERFACE LABELS
@@ -208,37 +217,6 @@ function getAuthorName(
     writtenBy?.trim() ||
     `${firstName ?? ""} ${lastName ?? ""}`.trim() ||
     SITE_NAME
-  );
-}
-
-// ============================================================
-// AD SLOT WRAPPER
-//
-// Hides itself completely (label included) while ads are switched off,
-// because the ad components render nothing in that case: it only shows once
-// it actually contains a <div> or <a> from an ad.
-// ============================================================
-
-function AdSlot({
-  children,
-  className,
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
-  return (
-    <aside
-      aria-label="Advertisement"
-      className={cn(
-        "hidden min-w-0 flex-col items-center gap-2 has-[div,a]:flex",
-        className
-      )}
-    >
-      <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-        Advertisement
-      </span>
-      {children}
-    </aside>
   );
 }
 
@@ -523,7 +501,7 @@ export default async function ArticlePage({
 
   const lhXL = isRTL
     ? "leading-[2]"
-    : "leading-[1.15]";
+    : "leading-[1.25]";
 
   const lhBody = isRTL
     ? "leading-[2.3]"
@@ -689,7 +667,7 @@ export default async function ArticlePage({
 
       {/* ARTICLE HEADER */}
 
-      <header className="mx-auto flex w-full max-w-4xl flex-col gap-6">
+      <header className="flex w-full flex-col gap-6">
         <div className="flex items-center gap-2">
           <span
             className={cn(
@@ -705,7 +683,7 @@ export default async function ArticlePage({
 
         <h1
           className={cn(
-            "wrap-break-word text-3xl font-bold text-foreground sm:text-5xl lg:text-6xl",
+            "w-full wrap-break-word text-2xl font-bold text-foreground sm:text-3xl lg:text-4xl",
             pad,
             lhXL,
             titleFont
@@ -716,8 +694,9 @@ export default async function ArticlePage({
 
         {article.shortDescription && (
           <p
+            style={{ hyphens: "none", WebkitHyphens: "none" }}
             className={cn(
-              "py-1 text-lg text-muted-foreground sm:text-xl",
+              "w-full py-1 text-base text-muted-foreground sm:text-lg",
               lhBody,
               fontClass
             )}
@@ -799,7 +778,7 @@ export default async function ArticlePage({
 
       {/* ARTICLE BANNER */}
 
-      <figure className="mx-auto w-full max-w-6xl">
+      <figure className="w-full">
         <BannerImage
           src={article.bannerImage}
           alt={
@@ -822,49 +801,60 @@ export default async function ArticlePage({
           )}
       </figure>
 
-      {/* ADS #1: 300x250 between the banner image and the article text.
-          Seen by every reader before they start reading. Hidden until an
-          ad actually renders. */}
-      <AdSlot className="mx-auto w-full max-w-3xl">
-        <AdsterraBanner300x250 className="flex w-full justify-center" />
-      </AdSlot>
+      {/* ADS #1: full-width banner between the banner image and the
+          article text. Seen by every reader before they start reading.
+          728x90 on tablet and desktop, 300x250 on phones (never both). */}
+      <AdsterraBannerAuto className="w-full" />
 
-      {/* ARTICLE CONTENT */}
+      {/* ARTICLE CONTENT
+          Full width. From 1280px up, a 160x600 side banner (ADS #2) sits
+          on the right of the text. Its column is always reserved at that
+          size, so the text never shifts when the ad loads. The ad sticks
+          to the top of the screen while the reader scrolls. dir="ltr"
+          keeps the banner on the right for RTL languages too; the text
+          column itself still follows the article language. */}
+      <div dir="ltr" className="mt-4 flex w-full min-w-0 gap-8">
+        <div dir={isRTL ? "rtl" : "ltr"} className="min-w-0 flex-1">
+          {/* showAds turns on the in-article ads (between paragraphs). */}
+          <ArticlePreviewer
+            content={article.content}
+            language={
+              article.language.code as "en" | "ur" | "ar"
+            }
+            tableOfContents={
+              article.tableOfContents || []
+            }
+            showAds
+          />
+        </div>
 
-      <div className="mx-auto mt-4 w-full max-w-3xl">
-        <ArticlePreviewer
-          content={article.content}
-          language={
-            article.language.code as "en" | "ur" | "ar"
-          }
-          tableOfContents={
-            article.tableOfContents || []
-          }
-        />
+        <div className="hidden w-46 shrink-0 xl:block">
+          <div className="sticky top-24">
+            <AdsterraBanner160x600 minWidth={SIDE_RAIL_MIN_WIDTH} />
+          </div>
+        </div>
       </div>
 
-      {/* ADS #2: native 4-tile banner (left) + 300x250 banner (right),
+      {/* ADS #3: native 4-tile banner (left) + 300x250 banner (right),
           right after the article ends. dir="ltr" keeps the same layout for
-          RTL languages. On small screens they stack and the 300x250 is
-          centered. The whole row stays hidden until an ad renders.
-          The native banner is used only once on this page (its container
-          id must not repeat); the 300x250 lives in its own iframe. */}
+          RTL languages. The 300x250 only appears from 1024px up, so phones
+          and tablets get the native banner alone. The row stays hidden
+          until at least one ad renders (each ad is an <aside>). */}
       <div
         dir="ltr"
-        className="mx-auto hidden w-full min-w-0 max-w-6xl flex-col items-stretch gap-8 has-[div,a]:flex lg:flex-row lg:items-start lg:justify-between lg:gap-10"
+        className="hidden w-full min-w-0 flex-col items-stretch gap-8 has-[aside]:flex lg:flex-row lg:items-start lg:justify-between lg:gap-10"
       >
-        <AdSlot className="w-full min-w-0 lg:flex-1">
-          <AdsterraNativeBanner className="w-full" />
-        </AdSlot>
-        <AdSlot className="w-full lg:w-75 lg:shrink-0">
-          <AdsterraBanner300x250 className="flex w-full justify-center" />
-        </AdSlot>
+        <AdsterraNativeBanner className="w-full min-w-0 lg:flex-1" />
+        <AdsterraBanner300x250
+          minWidth={1024}
+          className="w-full lg:w-75 lg:shrink-0"
+        />
       </div>
 
       {/* AUTHOR BIO */}
 
       {article.author.bio && (
-        <footer className="mx-auto mt-12 flex w-full max-w-3xl flex-col items-start gap-5 rounded-2xl border border-border bg-muted/30 p-6 sm:flex-row sm:p-8">
+        <footer className="mt-12 flex w-full flex-col items-start gap-5 rounded-2xl border border-border bg-muted/30 p-6 sm:flex-row sm:p-8">
           <Avatar
             src={authorImage}
             name={authorName}
@@ -912,18 +902,21 @@ export default async function ArticlePage({
         </footer>
       )}
 
-      {/* ADS #3: AdSense display unit, after the author bio. Only renders
-          once ADSENSE_SLOT is filled in. Kept apart from the Adsterra ads
-          by the article content and the author bio. */}
+      {/* ADS #4: AdSense display unit, after the author bio. Only renders
+          once ADSENSE_SLOT is filled in and AdSense is switched on in
+          components/ads/ads.tsx. */}
       {ADSENSE_SLOT && (
-        <AdSlot className="mx-auto w-full max-w-3xl">
+        <div className="hidden w-full flex-col items-center gap-2 has-[ins]:flex">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            Advertisement
+          </span>
           <AdSenseUnit slot={ADSENSE_SLOT} className="w-full" />
-        </AdSlot>
+        </div>
       )}
 
       {/* COMMENTS */}
 
-      <div className="mx-auto mt-8 w-full max-w-3xl">
+      <div className="mt-8 w-full">
         <Suspense
           fallback={<ArticleCommentsSkeleton />}
         >
@@ -934,11 +927,9 @@ export default async function ArticlePage({
         </Suspense>
       </div>
 
-      {/* ADS #4: 300x250 after the comments, before "Continue Exploring".
-          A last chance for readers who keep scrolling. */}
-      <AdSlot className="mx-auto w-full max-w-3xl">
-        <AdsterraBanner300x250 className="flex w-full justify-center" />
-      </AdSlot>
+      {/* ADS #5: full-width banner after the comments, before "Continue
+          Exploring". A last chance for readers who keep scrolling. */}
+      <AdsterraBannerAuto className="w-full" />
 
       {/* CONTINUE EXPLORING */}
 
@@ -953,7 +944,7 @@ export default async function ArticlePage({
         />
       </Suspense>
 
-      {/* ADS #5: site-wide scripts. They render nothing visible and stay
+      {/* ADS #6: site-wide scripts. They render nothing visible and stay
           off until switched on in components/ads/ads.tsx
           (adsterraSocialBar / adsterraPopunder).
           Keep them in only one place (this page or app/layout.tsx) so

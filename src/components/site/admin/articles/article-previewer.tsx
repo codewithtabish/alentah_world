@@ -1,4 +1,4 @@
-// src/components/site/admin/article/article-previewer.tsx
+// src/components/site/admin/articles/article-previewer.tsx
 "use client";
 
 import Image from "next/image";
@@ -7,6 +7,14 @@ import { cn } from "@/lib/utils";
 import CodeBlockSwitcher from "./code-article-switcher";
 import { z } from "zod";
 import { tableOfContentsSchema } from "@/schemas/artcile";
+
+// Ads: each one renders its own "Advertisement" label and renders nothing
+// when ads are off or no ad is available.
+import {
+  AdsterraBanner300x250,
+  AdsterraBannerAuto,
+  AdsterraNativeBanner,
+} from "@/components/ads/ads";
 
 type TableOfContentsItem = z.infer<typeof tableOfContentsSchema>;
 
@@ -18,6 +26,11 @@ type PreviewerProps = {
   stickyOffset?: number;
   /** Kept for backward compatibility. Table of contents is no longer rendered. */
   showToc?: boolean;
+  /**
+   * Shows ads between paragraphs. On by default, so the article preview
+   * shows them too. Pass showAds={false} to hide them.
+   */
+  showAds?: boolean;
 };
 
 type SidebarProps = {
@@ -34,6 +47,54 @@ const TOC_TYPES = new Set([
   "table-of-contents",
   "table_of_contents",
 ]);
+
+// ------------------------------------------------------------
+// In-article ads
+//
+// Calm rhythm, like large news sites: an ad after the 3rd, 7th, 11th and
+// 15th paragraph, never in the last two paragraphs of the article (the
+// ads after the article cover that). Short articles get fewer ads, very
+// short ones get none. The kinds alternate:
+//   1st:  responsive banner (728x90 on tablet/desktop, 300x250 on phones)
+//   2nd:  native 4-tile banner
+//   3rd:  responsive banner
+//   4th:  native 4-tile banner
+// ------------------------------------------------------------
+
+type InArticleAdKind = "banner" | "native" | "combo" | "rectangle";
+
+const IN_ARTICLE_AD_AFTER_PARAGRAPH = [3, 7, 11, 15] as const;
+const IN_ARTICLE_AD_KINDS: InArticleAdKind[] = [
+  "banner",
+  "native",
+  "banner",
+  "native",
+];
+const MIN_PARAGRAPHS_AFTER_LAST_AD = 2;
+
+function InArticleAd({ kind }: { kind: InArticleAdKind }) {
+  return (
+    // Hidden (no extra spacing) until an ad has actually rendered.
+    // dir="ltr" keeps the ads laid out the same way for RTL languages.
+    <div dir="ltr" className="not-prose my-12 hidden has-[aside]:block">
+      {kind === "banner" ? (
+        <AdsterraBannerAuto className="w-full" />
+      ) : kind === "native" ? (
+        <AdsterraNativeBanner className="w-full" />
+      ) : kind === "rectangle" ? (
+        <AdsterraBanner300x250 className="w-full" />
+      ) : (
+        <div className="flex flex-col items-stretch gap-8 lg:flex-row lg:items-start lg:justify-between lg:gap-10">
+          <AdsterraNativeBanner className="w-full min-w-0 lg:flex-1" />
+          <AdsterraBanner300x250
+            minWidth={1024}
+            className="w-full lg:w-75 lg:shrink-0"
+          />
+        </div>
+      )}
+    </div>
+  );
+}
 
 const renderHTML = (html: string | undefined | null) => {
   if (!html || html.trim() === "") return undefined;
@@ -157,6 +218,38 @@ function getHeadingIds(blocks: any[]): Record<number, string> {
   });
 
   return result;
+}
+
+// Maps a block index to the kind of ad that follows that block.
+function getInArticleAdSlots(blocks: any[]): Map<number, InArticleAdKind> {
+  const slots = new Map<number, InArticleAdKind>();
+
+  const isParagraph = (block: any) => {
+    const type = block?.type?.toLowerCase();
+    return (
+      (type === "paragraph" || type === "aitext") &&
+      typeof block?.data?.text === "string" &&
+      block.data.text.trim() !== ""
+    );
+  };
+
+  const totalParagraphs = blocks.filter(isParagraph).length;
+
+  let seen = 0;
+  blocks.forEach((block, index) => {
+    if (!isParagraph(block)) return;
+    seen += 1;
+
+    const slotIndex = IN_ARTICLE_AD_AFTER_PARAGRAPH.indexOf(
+      seen as (typeof IN_ARTICLE_AD_AFTER_PARAGRAPH)[number],
+    );
+    if (slotIndex === -1) return;
+    if (seen > totalParagraphs - MIN_PARAGRAPHS_AFTER_LAST_AD) return;
+
+    slots.set(index, IN_ARTICLE_AD_KINDS[slotIndex]);
+  });
+
+  return slots;
 }
 
 function getReadingMinutes(blocks: any[]) {
@@ -294,6 +387,7 @@ export const ArticlePreviewer: React.FC<PreviewerProps> = ({
   content,
   language = "en",
   stickyOffset = 88,
+  showAds = true,
 }) => {
   const [openToggles, setOpenToggles] = useState<Record<string, boolean>>({});
   const isRTL = language === "ur" || language === "ar";
@@ -306,6 +400,10 @@ export const ArticlePreviewer: React.FC<PreviewerProps> = ({
     [content],
   );
   const headingIds = useMemo(() => getHeadingIds(blocks), [blocks]);
+  const adSlots = useMemo(
+    () => (showAds ? getInArticleAdSlots(blocks) : new Map<number, InArticleAdKind>()),
+    [blocks, showAds],
+  );
   const progress = useArticleProgress();
 
   useEffect(() => {
@@ -669,7 +767,14 @@ export const ArticlePreviewer: React.FC<PreviewerProps> = ({
         lang={isRTL ? language : "en"}
       >
         {content.blocks.map((block: any, index: number) => (
-          <React.Fragment key={index}>{renderBlock(block, index)}</React.Fragment>
+          <React.Fragment key={index}>
+            {renderBlock(block, index)}
+
+            {/* In-article ad after selected paragraphs (public page only). */}
+            {adSlots.has(index) && (
+              <InArticleAd kind={adSlots.get(index)!} />
+            )}
+          </React.Fragment>
         ))}
       </article>
     </div>

@@ -1,19 +1,22 @@
+// src/app/[lang]/[category]/page.tsx
+
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
 
 import prisma from "@/lib/clients/prisma-client";
-import { cn } from "@/lib/utils";
 
 import { getCategoryBlogs } from "@/actions/articles/get-category-blogs";
 
 import { CategoryClient } from "@/components/site/pages/category/category-client";
 
-// Ads (client components; safe to use inside this server component)
+// Ads (client components; safe to use inside this server component).
+// Each ad renders its own "Advertisement" label and renders nothing when
+// ads are off or no ad is available.
 import {
   AdSenseUnit,
   AdsterraNativeBanner,
   AdsterraBanner300x250,
+  AdsterraBannerAuto,
   AdsterraSocialBar,
   AdsterraPopunder,
 } from "@/components/ads/ads";
@@ -72,37 +75,6 @@ type PageProps = {
 };
 
 // -----------------------------------------------------------------------------
-// Ad slot wrapper
-//
-// Hides itself completely (label included) while ads are switched off,
-// because the ad components render nothing in that case: it only shows once
-// it actually contains a <div> or <a> from an ad.
-// -----------------------------------------------------------------------------
-
-function AdSlot({
-  children,
-  className,
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
-  return (
-    <aside
-      aria-label="Advertisement"
-      className={cn(
-        "hidden min-w-0 flex-col items-center gap-2 has-[div,a]:flex",
-        className,
-      )}
-    >
-      <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-        Advertisement
-      </span>
-      {children}
-    </aside>
-  );
-}
-
-// -----------------------------------------------------------------------------
 // URL helpers
 // -----------------------------------------------------------------------------
 
@@ -126,9 +98,7 @@ function getAbsoluteUrl(value: string): string | undefined {
 
 // The category's own cover image is the primary social image.
 function getCategorySocialImage(coverImage: string | null) {
-  const imageUrl = coverImage
-    ? getAbsoluteUrl(coverImage)
-    : undefined;
+  const imageUrl = coverImage ? getAbsoluteUrl(coverImage) : undefined;
 
   return {
     url: imageUrl ?? DEFAULT_OG_IMAGE,
@@ -149,6 +119,14 @@ function serializeStructuredData(data: unknown): string {
     .replace(/&/g, "\\u0026")
     .replace(/\u2028/g, "\\u2028")
     .replace(/\u2029/g, "\\u2029");
+}
+
+// -----------------------------------------------------------------------------
+// Structured-data title helper
+// -----------------------------------------------------------------------------
+
+function titleForStructuredData(categoryName: string): string {
+  return `${categoryName} | ${SITE_NAME}`;
 }
 
 // -----------------------------------------------------------------------------
@@ -216,9 +194,7 @@ export async function generateMetadata({
   );
 
   // Use this category's own cover image for social sharing.
-  const socialImage = getCategorySocialImage(
-    categoryData.coverImage,
-  );
+  const socialImage = getCategorySocialImage(categoryData.coverImage);
 
   // Avoid indexing empty category archives with no published articles.
   const shouldIndex = result.totalCount > 0;
@@ -253,8 +229,7 @@ export async function generateMetadata({
       title,
       ...(description ? { description } : {}),
       url: canonicalUrl,
-      locale:
-        CATEGORY_LOCALES[categoryData.language.code] ?? "en_US",
+      locale: CATEGORY_LOCALES[categoryData.language.code] ?? "en_US",
 
       images: [
         {
@@ -283,9 +258,7 @@ export async function generateMetadata({
 // Category page
 // -----------------------------------------------------------------------------
 
-export default async function CategoryPage({
-  params,
-}: PageProps) {
+export default async function CategoryPage({ params }: PageProps) {
   const { lang, category } = await params;
 
   const result = await getCategoryBlogs(lang, category, 1);
@@ -304,9 +277,7 @@ export default async function CategoryPage({
     categoryData.slug,
   );
 
-  const socialImage = getCategorySocialImage(
-    categoryData.coverImage,
-  );
+  const socialImage = getCategorySocialImage(categoryData.coverImage);
 
   const homeLabel = HOME_LABELS[lang] ?? "Home";
 
@@ -339,9 +310,7 @@ export default async function CategoryPage({
           ? { description: blog.shortDescription.trim() }
           : {}),
 
-        ...(articleImage
-          ? { image: articleImage }
-          : {}),
+        ...(articleImage ? { image: articleImage } : {}),
 
         ...(blog.publishedAt
           ? {
@@ -407,8 +376,7 @@ export default async function CategoryPage({
 
                 numberOfItems: result.blogs.length,
 
-                itemListOrder:
-                  "https://schema.org/ItemListOrderDescending",
+                itemListOrder: "https://schema.org/ItemListOrderDescending",
 
                 itemListElement: articleItems,
               },
@@ -440,8 +408,7 @@ export default async function CategoryPage({
     ],
   };
 
-  const serializedStructuredData =
-    serializeStructuredData(structuredData);
+  const serializedStructuredData = serializeStructuredData(structuredData);
 
   // ---------------------------------------------------------------------------
   // Render category page
@@ -458,13 +425,12 @@ export default async function CategoryPage({
 
       <main
         lang={categoryData.language.code}
-        dir={
-          categoryData.language.direction === "rtl"
-            ? "rtl"
-            : "ltr"
-        }
+        dir={categoryData.language.direction === "rtl" ? "rtl" : "ltr"}
         className="w-full min-w-0"
       >
+        {/* The page content itself also contains ads (a responsive banner
+            after the featured story and a native banner in the middle of
+            the story grid): see category-client.tsx. */}
         <CategoryClient
           langCode={lang}
           category={categoryData}
@@ -476,53 +442,43 @@ export default async function CategoryPage({
 
         {/* ADS #1: native 4-tile banner (left) + 300x250 banner (right),
             below the category content. dir="ltr" keeps the same layout for
-            RTL languages. On small screens they stack and the 300x250 is
-            centered. The whole row stays hidden until an ad renders.
-            The native banner is used only once on this page (its container
-            id must not repeat); the 300x250 lives in its own iframe. */}
+            RTL languages. The 300x250 only appears from 1024px up, so
+            phones and tablets get the native banner alone. The row stays
+            hidden until at least one ad renders (each ad is an <aside>). */}
         <div
           dir="ltr"
-          className="mx-auto mt-16 hidden w-full min-w-0 max-w-[1600px] flex-col items-stretch gap-8 has-[div,a]:flex sm:mt-24 lg:flex-row lg:items-start lg:justify-between lg:gap-10"
+          className="mx-auto mt-16 hidden w-full min-w-0 max-w-[1600px] flex-col items-stretch gap-8 has-[aside]:flex sm:mt-24 lg:flex-row lg:items-start lg:justify-between lg:gap-10"
         >
-          <AdSlot className="w-full min-w-0 lg:flex-1">
-            <AdsterraNativeBanner className="w-full" />
-          </AdSlot>
-          <AdSlot className="w-full lg:w-75 lg:shrink-0">
-            <AdsterraBanner300x250 className="flex w-full justify-center" />
-          </AdSlot>
+          <AdsterraNativeBanner className="w-full min-w-0 lg:flex-1" />
+          <AdsterraBanner300x250
+            minWidth={1024}
+            className="w-full lg:w-75 lg:shrink-0"
+          />
         </div>
 
-        {/* ADS #2: second 300x250, centered. Safe to repeat because it
-            lives in its own iframe. */}
-        <AdSlot className="mx-auto mt-16 w-full max-w-[1600px]">
-          <AdsterraBanner300x250 className="flex w-full justify-center" />
-        </AdSlot>
+        {/* ADS #2: full-width banner. 728x90 on tablet and desktop, 300x250
+            on phones (never both). */}
+        <AdsterraBannerAuto className="mx-auto mt-16 w-full max-w-[1600px] sm:mt-20" />
 
         {/* ADS #3: AdSense display unit. Only renders once ADSENSE_SLOT is
-            filled in. */}
+            filled in and AdSense is switched on in components/ads/ads.tsx. */}
         {ADSENSE_SLOT && (
-          <AdSlot className="mx-auto mt-20 w-full max-w-[1600px]">
+          <div className="mx-auto mt-16 hidden w-full max-w-[1600px] flex-col items-center gap-2 has-[ins]:flex sm:mt-20">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+              Advertisement
+            </span>
             <AdSenseUnit slot={ADSENSE_SLOT} className="w-full" />
-          </AdSlot>
+          </div>
         )}
 
         {/* ADS #4: site-wide scripts. They render nothing visible and stay
             off until switched on in components/ads/ads.tsx
             (adsterraSocialBar / adsterraPopunder).
-            If you also render them in app/layout.tsx or another page that
-            is on screen at the same time, keep them in only one place so
-            they do not load twice. */}
+            If you also render them in app/layout.tsx, remove them from one
+            of the two places so they do not load twice. */}
         <AdsterraSocialBar />
         <AdsterraPopunder />
       </main>
     </>
   );
-}
-
-// -----------------------------------------------------------------------------
-// Structured-data title helper
-// -----------------------------------------------------------------------------
-
-function titleForStructuredData(categoryName: string): string {
-  return `${categoryName} | ${SITE_NAME}`;
 }

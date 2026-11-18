@@ -1,4 +1,4 @@
-
+// src/components/site/pages/subcategory/subcategory-client.tsx
 "use client";
 
 import * as React from "react";
@@ -12,6 +12,13 @@ import type {
 } from "@/actions/articles/get-subcategory-blogs";
 import { Breadcrumbs } from "../shared/breadcrumbs";
 
+// Ads: each one renders its own "Advertisement" label and renders nothing
+// when ads are off or no ad is available.
+import {
+  AdsterraNativeBanner,
+  AdsterraBannerAuto,
+} from "@/components/ads/ads";
+
 interface SubcategoryClientProps {
   langCode: string;
   subcategory: SubcategoryPageData;
@@ -19,6 +26,10 @@ interface SubcategoryClientProps {
   totalPages: number;
   currentPage: number;
 }
+
+// How many story cards come before the in-grid native banner. A multiple
+// of 6 so the first grid ends on a full row with 1, 2 or 3 columns.
+const GRID_AD_AFTER = 12;
 
 // Small UI label dictionary (en / ur / ar)
 const LABELS = {
@@ -91,6 +102,18 @@ export function SubcategoryClient({
   const heroBlog = isFirstPage ? blogs[0] : null;
   const gridBlogs = isFirstPage ? blogs.slice(1) : blogs;
 
+  // The story grid is split in two only when there are enough stories to
+  // put an ad between them. Short lists stay as one grid with no
+  // in-grid ad.
+  const hasGridAd = gridBlogs.length > GRID_AD_AFTER + 3;
+  const firstGridBlogs = hasGridAd
+    ? gridBlogs.slice(0, GRID_AD_AFTER)
+    : gridBlogs;
+  const secondGridBlogs = hasGridAd ? gridBlogs.slice(GRID_AD_AFTER) : [];
+
+  const gridClass =
+    "grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3";
+
   // Breadcrumb trail: Home > Category > Subcategory
   const breadcrumbItems = [
     { label: t.home, href: `/${langCode}` },
@@ -100,6 +123,88 @@ export function SubcategoryClient({
     },
     { label: subcategory.name },
   ];
+
+  // One story card (used by both halves of the grid).
+  const renderCard = (blog: SubcategoryPageBlog) => (
+    <article key={blog.id} className="group flex flex-col gap-4">
+      <Link
+        href={href(blog)}
+        className="relative aspect-16/10 overflow-hidden rounded-xl border border-border bg-muted"
+      >
+        <Image
+          src={blog.bannerImage}
+          alt={blog.title}
+          fill
+          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
+        />
+
+        <div className="absolute top-3 inset-s-3">
+          <span
+            className={cn(
+              "rounded-sm bg-black/60 px-2.5 py-0.5 text-[11px] font-bold text-white backdrop-blur-sm",
+              labelCase,
+              lhMeta,
+              fontClass,
+            )}
+          >
+            {subcategory.name}
+          </span>
+        </div>
+      </Link>
+
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <Link href={href(blog)}>
+          <h3
+            className={cn(
+              "wrap-break-word text-xl font-bold text-foreground transition-colors hover:text-primary",
+              pad,
+              clamp2,
+              lhTitle,
+              titleFont,
+            )}
+          >
+            {blog.title}
+          </h3>
+        </Link>
+
+        {blog.shortDescription && (
+          <p
+            className={cn(
+              "text-sm text-muted-foreground",
+              pad,
+              clamp2,
+              lhBody,
+              fontClass,
+            )}
+          >
+            {blog.shortDescription}
+          </p>
+        )}
+
+        <div
+          className={cn(
+            "mt-auto flex flex-wrap items-center gap-x-2 pt-3 text-xs text-muted-foreground",
+            lhMeta,
+            fontClass,
+          )}
+        >
+          <span className="font-semibold text-foreground">
+            {authorName(blog)}
+          </span>
+
+          {blog.readingTime ? (
+            <>
+              <span aria-hidden className="h-3 w-px bg-border" />
+              <span className="flex items-center gap-1">
+                <Clock className="size-3" /> {blog.readingTime} {t.minRead}
+              </span>
+            </>
+          ) : null}
+        </div>
+      </div>
+    </article>
+  );
 
   return (
     <div
@@ -246,6 +351,13 @@ export function SubcategoryClient({
           </section>
         )}
 
+        {/* AD: full-width banner between the featured story and the story
+            grid. 728x90 on tablet and desktop, 300x250 on phones (never
+            both). */}
+        {blogs.length > 0 && (
+          <AdsterraBannerAuto className="mb-12 w-full" />
+        )}
+
         {/* 3. MAIN GRID */}
         {gridBlogs.length > 0 && (
           <section>
@@ -261,95 +373,19 @@ export function SubcategoryClient({
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
-              {gridBlogs.map((blog) => (
-                <article
-                  key={blog.id}
-                  className="group flex flex-col gap-4"
-                >
-                  <Link
-                    href={href(blog)}
-                    className="relative aspect-16/10 overflow-hidden rounded-xl border border-border bg-muted"
-                  >
-                    <Image
-                      src={blog.bannerImage}
-                      alt={blog.title}
-                      fill
-                      sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
+            <div className={gridClass}>{firstGridBlogs.map(renderCard)}</div>
 
-                    <div className="absolute top-3 inset-s-3">
-                      <span
-                        className={cn(
-                          "rounded-sm bg-black/60 px-2.5 py-0.5 text-[11px] font-bold text-white backdrop-blur-sm",
-                          labelCase,
-                          lhMeta,
-                          fontClass,
-                        )}
-                      >
-                        {subcategory.name}
-                      </span>
-                    </div>
-                  </Link>
-
-                  <div className="flex min-w-0 flex-1 flex-col gap-1">
-                    <Link href={href(blog)}>
-                      <h3
-                        className={cn(
-                          "wrap-break-word text-xl font-bold text-foreground transition-colors hover:text-primary",
-                          pad,
-                          clamp2,
-                          lhTitle,
-                          titleFont,
-                        )}
-                      >
-                        {blog.title}
-                      </h3>
-                    </Link>
-
-                    {blog.shortDescription && (
-                      <p
-                        className={cn(
-                          "text-sm text-muted-foreground",
-                          pad,
-                          clamp2,
-                          lhBody,
-                          fontClass,
-                        )}
-                      >
-                        {blog.shortDescription}
-                      </p>
-                    )}
-
-                    <div
-                      className={cn(
-                        "mt-auto flex flex-wrap items-center gap-x-2 pt-3 text-xs text-muted-foreground",
-                        lhMeta,
-                        fontClass,
-                      )}
-                    >
-                      <span className="font-semibold text-foreground">
-                        {authorName(blog)}
-                      </span>
-
-                      {blog.readingTime ? (
-                        <>
-                          <span
-                            aria-hidden
-                            className="h-3 w-px bg-border"
-                          />
-                          <span className="flex items-center gap-1">
-                            <Clock className="size-3" /> {blog.readingTime}{" "}
-                            {t.minRead}
-                          </span>
-                        </>
-                      ) : null}
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
+            {/* AD: native 4-tile banner in the middle of the story grid.
+                Only shown when the page has enough stories to put an ad
+                between two full grids. */}
+            {hasGridAd && (
+              <>
+                <AdsterraNativeBanner className="my-10 w-full" />
+                <div className={gridClass}>
+                  {secondGridBlogs.map(renderCard)}
+                </div>
+              </>
+            )}
           </section>
         )}
 
@@ -386,8 +422,7 @@ export function SubcategoryClient({
                   fontClass,
                 )}
               >
-                {t.next}{" "}
-                <ChevronRight className="size-4 rtl:rotate-180" />
+                {t.next} <ChevronRight className="size-4 rtl:rotate-180" />
               </Link>
             )}
           </div>

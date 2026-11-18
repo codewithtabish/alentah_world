@@ -1,4 +1,4 @@
-
+// src/components/site/pages/category/category-client.tsx
 "use client";
 
 import * as React from "react";
@@ -19,6 +19,13 @@ import type {
   CategoryPageData,
 } from "@/actions/articles/get-category-blogs";
 import { Breadcrumbs } from "../shared/breadcrumbs";
+
+// Ads: each one renders its own "Advertisement" label and renders nothing
+// when ads are off or no ad is available.
+import {
+  AdsterraNativeBanner,
+  AdsterraBannerAuto,
+} from "@/components/ads/ads";
 
 export type CategoryEditor = {
   name: string;
@@ -42,6 +49,11 @@ interface CategoryClientProps {
   currentPage: number;
   totalCount?: number;
 }
+
+// How many story cards come before the in-grid native banner. Pick a
+// multiple of 12 (3 and 4 columns both divide it) so the first grid ends
+// on a full row on every screen size.
+const GRID_AD_AFTER = 12;
 
 const LABELS = {
   en: {
@@ -111,13 +123,7 @@ const InstagramIcon = (p: React.SVGProps<SVGSVGElement>) => (
   >
     <rect x="3" y="3" width="18" height="18" rx="5" />
     <circle cx="12" cy="12" r="4" />
-    <circle
-      cx="17.5"
-      cy="6.5"
-      r="1"
-      fill="currentColor"
-      stroke="none"
-    />
+    <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
   </svg>
 );
 
@@ -156,21 +162,12 @@ function Avatar({
   );
 }
 
-function getPageNumbers(
-  current: number,
-  total: number,
-): (number | "…")[] {
+function getPageNumbers(current: number, total: number): (number | "…")[] {
   if (total <= 7) {
     return Array.from({ length: total }, (_, i) => i + 1);
   }
 
-  const set = new Set([
-    1,
-    total,
-    current - 1,
-    current,
-    current + 1,
-  ]);
+  const set = new Set([1, total, current - 1, current, current + 1]);
 
   const sorted = [...set]
     .filter((p) => p >= 1 && p <= total)
@@ -220,11 +217,7 @@ export function CategoryClient({
   const total = totalCount ?? blogs.length;
 
   const locale =
-    langCode === "ur"
-      ? "ur-PK"
-      : langCode === "ar"
-        ? "ar-SA"
-        : "en-US";
+    langCode === "ur" ? "ur-PK" : langCode === "ar" ? "ar-SA" : "en-US";
 
   const dateFmt = new Intl.DateTimeFormat(locale, {
     day: "numeric",
@@ -248,12 +241,23 @@ export function CategoryClient({
 
   const base = `/${langCode}/${category.slug}`;
 
-  const pageHref = (n: number) =>
-    n === 1 ? base : `${base}?page=${n}`;
+  const pageHref = (n: number) => (n === 1 ? base : `${base}?page=${n}`);
 
   const isFirstPage = currentPage === 1;
   const heroBlog = isFirstPage ? blogs[0] : null;
   const gridBlogs = isFirstPage ? blogs.slice(1) : blogs;
+
+  // The story grid is split in two only when there are enough stories to
+  // put an ad between them. Short lists stay as one grid with no
+  // in-grid ad.
+  const hasGridAd = gridBlogs.length > GRID_AD_AFTER + 4;
+  const firstGridBlogs = hasGridAd
+    ? gridBlogs.slice(0, GRID_AD_AFTER)
+    : gridBlogs;
+  const secondGridBlogs = hasGridAd ? gridBlogs.slice(GRID_AD_AFTER) : [];
+
+  const gridClass =
+    "grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
 
   const breadcrumbItems = [
     { label: t.home, href: `/${langCode}` },
@@ -316,6 +320,89 @@ export function CategoryClient({
         </div>
       </details>
     ) : null;
+
+  // One story card (used by both halves of the grid).
+  const renderCard = (blog: CategoryPageBlog) => (
+    <article
+      key={blog.id}
+      className="group flex flex-col overflow-hidden rounded-md border border-border bg-card"
+    >
+      <div className="relative">
+        <Link
+          href={href(blog)}
+          className="relative block aspect-16/10 overflow-hidden bg-muted"
+        >
+          <Image
+            src={blog.bannerImage}
+            alt={blog.title}
+            fill
+            sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        </Link>
+
+        <span
+          className={cn(
+            "absolute -bottom-3.5 inset-e-3 rounded-sm border border-border bg-muted px-2.5 py-0.5 text-[11px] font-semibold text-foreground",
+            lhMeta,
+            fontClass,
+          )}
+        >
+          {blog.subcategory.name}
+        </span>
+      </div>
+
+      <div className="flex min-w-0 flex-1 flex-col gap-2 p-4 pt-6">
+        <Link href={href(blog)}>
+          <h3
+            className={cn(
+              "wrap-break-word text-lg font-bold text-foreground transition-colors hover:text-primary",
+              pad,
+              clamp2,
+              lhTitle,
+              titleFont,
+            )}
+          >
+            {blog.title}
+          </h3>
+        </Link>
+
+        {blog.shortDescription && (
+          <p
+            className={cn(
+              "text-sm text-muted-foreground",
+              pad,
+              clamp2,
+              lhBody,
+              fontClass,
+            )}
+          >
+            {blog.shortDescription}
+          </p>
+        )}
+
+        <div
+          className={cn(
+            "mt-auto flex items-center gap-2.5 pt-3 text-xs text-muted-foreground",
+            fontClass,
+          )}
+        >
+          <Avatar
+            src={authorImg(blog)}
+            name={authorName(blog) || "A"}
+            className="size-8"
+            sizes="32px"
+          />
+          <div className={cn("flex min-w-0 flex-col", lhMeta)}>
+            <span className="font-semibold text-foreground">
+              {authorName(blog)}
+            </span>
+            {fmtDate(blog) && <span>{fmtDate(blog)}</span>}
+          </div>
+        </div>
+      </div>
+    </article>
+  );
 
   return (
     <div
@@ -452,10 +539,7 @@ export function CategoryClient({
                 )}
 
                 {editor.location && editor.experienceYears ? (
-                  <span
-                    aria-hidden
-                    className="h-3 w-px bg-border"
-                  />
+                  <span aria-hidden className="h-3 w-px bg-border" />
                 ) : null}
 
                 {editor.experienceYears ? (
@@ -489,9 +573,7 @@ export function CategoryClient({
         </section>
       ) : (
         subMenu && (
-          <section className="mx-auto mt-10 w-full max-w-xl">
-            {subMenu}
-          </section>
+          <section className="mx-auto mt-10 w-full max-w-xl">{subMenu}</section>
         )
       )}
 
@@ -569,10 +651,7 @@ export function CategoryClient({
 
                       {fmtDate(heroBlog) && (
                         <>
-                          <span
-                            aria-hidden
-                            className="h-4 w-px bg-border"
-                          />
+                          <span aria-hidden className="h-4 w-px bg-border" />
                           <span>{fmtDate(heroBlog)}</span>
                         </>
                       )}
@@ -603,6 +682,11 @@ export function CategoryClient({
               </article>
             )}
 
+            {/* AD: full-width banner between the featured story and the
+                story grid. 728x90 on tablet and desktop, 300x250 on phones
+                (never both). */}
+            <AdsterraBannerAuto className="w-full" />
+
             {gridBlogs.length > 0 && (
               <section className="flex flex-col gap-6">
                 <div className="flex items-center gap-4">
@@ -615,102 +699,24 @@ export function CategoryClient({
                   >
                     {t.latest}
                   </h2>
-                  <span
-                    aria-hidden
-                    className="h-px flex-1 bg-border"
-                  />
+                  <span aria-hidden className="h-px flex-1 bg-border" />
                 </div>
 
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {gridBlogs.map((blog) => (
-                    <article
-                      key={blog.id}
-                      className="group flex flex-col overflow-hidden rounded-md border border-border bg-card"
-                    >
-                      <div className="relative">
-                        <Link
-                          href={href(blog)}
-                          className="relative block aspect-16/10 overflow-hidden bg-muted"
-                        >
-                          <Image
-                            src={blog.bannerImage}
-                            alt={blog.title}
-                            fill
-                            sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                            className="object-cover transition-transform duration-500 group-hover:scale-105"
-                          />
-                        </Link>
-
-                        <span
-                          className={cn(
-                            "absolute -bottom-3.5 inset-e-3 rounded-sm border border-border bg-muted px-2.5 py-0.5 text-[11px] font-semibold text-foreground",
-                            lhMeta,
-                            fontClass,
-                          )}
-                        >
-                          {blog.subcategory.name}
-                        </span>
-                      </div>
-
-                      <div className="flex min-w-0 flex-1 flex-col gap-2 p-4 pt-6">
-                        <Link href={href(blog)}>
-                          <h3
-                            className={cn(
-                              "wrap-break-word text-lg font-bold text-foreground transition-colors hover:text-primary",
-                              pad,
-                              clamp2,
-                              lhTitle,
-                              titleFont,
-                            )}
-                          >
-                            {blog.title}
-                          </h3>
-                        </Link>
-
-                        {blog.shortDescription && (
-                          <p
-                            className={cn(
-                              "text-sm text-muted-foreground",
-                              pad,
-                              clamp2,
-                              lhBody,
-                              fontClass,
-                            )}
-                          >
-                            {blog.shortDescription}
-                          </p>
-                        )}
-
-                        <div
-                          className={cn(
-                            "mt-auto flex items-center gap-2.5 pt-3 text-xs text-muted-foreground",
-                            fontClass,
-                          )}
-                        >
-                          <Avatar
-                            src={authorImg(blog)}
-                            name={authorName(blog) || "A"}
-                            className="size-8"
-                            sizes="32px"
-                          />
-                          <div
-                            className={cn(
-                              "flex min-w-0 flex-col",
-                              lhMeta,
-                            )}
-                          >
-                            <span className="font-semibold text-foreground">
-                              {authorName(blog)}
-                            </span>
-                            {fmtDate(blog) && (
-                              <span>{fmtDate(blog)}</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </article>
-                  ))}
+                <div className={gridClass}>
+                  {firstGridBlogs.map(renderCard)}
                 </div>
+
+                {/* AD: native 4-tile banner in the middle of the story grid.
+                    Only shown when the page has enough stories to put an ad
+                    between two full grids. */}
+                {hasGridAd && (
+                  <>
+                    <AdsterraNativeBanner className="w-full" />
+                    <div className={gridClass}>
+                      {secondGridBlogs.map(renderCard)}
+                    </div>
+                  </>
+                )}
               </section>
             )}
           </>

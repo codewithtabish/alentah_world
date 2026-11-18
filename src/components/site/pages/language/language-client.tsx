@@ -8,6 +8,14 @@ import { ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { LanguagePageBlog, LanguagePageCategory } from "@/actions/articles/get-language-blogs";
 
+// Ads: each one renders its own "Advertisement" label and renders nothing
+// when ads are off or no ad is available.
+import {
+  AdsterraNativeBanner,
+  AdsterraBanner300x250,
+  AdsterraBannerAuto,
+} from "@/components/ads/ads";
+
 interface LanguageClientProps {
   langCode: string;
   blogs: LanguagePageBlog[];
@@ -191,6 +199,11 @@ export function LanguageClient({ langCode, blogs, categories }: LanguageClientPr
                 </article>
               ))}
             </div>
+
+            {/* AD: 300x250 under the sidebar list. Desktop only (1024px and
+                up): on phones and tablets the sidebar sits below the main
+                content and this slot is skipped. */}
+            <AdsterraBanner300x250 minWidth={1024} className="mt-6 w-full" />
           </aside>
         )}
 
@@ -300,8 +313,16 @@ export function LanguageClient({ langCode, blogs, categories }: LanguageClientPr
               ))}
             </div>
           )}
+
+          {/* AD: native 4-tile banner at the end of the main column. It
+              fills the width of the column and resizes to the ad it gets. */}
+          <AdsterraNativeBanner className="w-full" />
         </div>
       </section>
+
+      {/* AD: full-width banner between the magazine area and "More Stories".
+          728x90 on tablet and desktop, 300x250 on phones (never both). */}
+      <AdsterraBannerAuto className="w-full" />
 
       {/* BOTTOM GRID SECTION (Full Width, only when there are stories) */}
       {bottomGridBlogs.length > 0 && (
