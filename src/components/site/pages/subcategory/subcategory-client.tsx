@@ -12,8 +12,9 @@ import type {
 } from "@/actions/articles/get-subcategory-blogs";
 import { Breadcrumbs } from "../shared/breadcrumbs";
 
-// Ads: each one renders its own "Advertisement" label and renders nothing
-// when ads are off or no ad is available.
+// Ads: each one renders its own "Advertisement" label, takes NO space (and
+// none of its margins) until a real ad has loaded, and renders nothing at
+// all when ads are off or no ad is available.
 import {
   AdsterraNativeBanner,
   AdsterraBannerAuto,
@@ -353,7 +354,9 @@ export function SubcategoryClient({
 
         {/* AD: full-width banner between the featured story and the story
             grid. 728x90 on tablet and desktop, 300x250 on phones (never
-            both). */}
+            both). Its space and its bottom margin only count once the ad
+            has really loaded; until then (or if no ad arrives) nothing
+            is reserved. */}
         {blogs.length > 0 && (
           <AdsterraBannerAuto className="mb-12 w-full" />
         )}
@@ -377,7 +380,8 @@ export function SubcategoryClient({
 
             {/* AD: native 4-tile banner in the middle of the story grid.
                 Only shown when the page has enough stories to put an ad
-                between two full grids. */}
+                between two full grids. Its space and its vertical margins
+                only count once the ad has really loaded. */}
             {hasGridAd && (
               <>
                 <AdsterraNativeBanner className="my-10 w-full" />

@@ -26,9 +26,10 @@ import { SaveButton } from "@/components/site/pages/category/save-button";
 import { ArticleActions } from "@/components/site/pages/category/article-actions";
 
 // Ads (client components; safe to use inside this server component).
-// Each ad renders its own "Advertisement" label and renders nothing when
-// ads are off or no ad is available.
+// Each ad renders its own "Advertisement" label and takes NO space until a
+// real ad has loaded. If no ad arrives, it renders nothing at all.
 import {
+  AdRow,
   AdSenseUnit,
   AdsterraNativeBanner,
   AdsterraBanner300x250,
@@ -72,6 +73,7 @@ const ADSENSE_SLOT = "";
 
 // The 160x600 side banner sits on the right of the article text. It
 // needs the screen to be at least this wide (px) to leave room for the text.
+// (1280px = Tailwind's "xl" breakpoint, used by the side column below.)
 const SIDE_RAIL_MIN_WIDTH = 1280;
 
 // ============================================================
@@ -803,17 +805,20 @@ export default async function ArticlePage({
 
       {/* ADS #1: full-width banner between the banner image and the
           article text. Seen by every reader before they start reading.
-          728x90 on tablet and desktop, 300x250 on phones (never both). */}
+          728x90 on tablet and desktop, 300x250 on phones (never both).
+          Takes no space (and adds no gap) until the ad has really loaded. */}
       <AdsterraBannerAuto className="w-full" />
 
       {/* ARTICLE CONTENT
           Full width. From 1280px up, a 160x600 side banner (ADS #2) sits
-          on the right of the text. Its column is always reserved at that
-          size, so the text never shifts when the ad loads. The ad sticks
-          to the top of the screen while the reader scrolls. dir="ltr"
-          keeps the banner on the right for RTL languages too; the text
-          column itself still follows the article language. */}
-      <div dir="ltr" className="mt-4 flex w-full min-w-0 gap-8">
+          on the right of the text. Its column takes NO width (and no gap)
+          until that ad has really loaded; if no ad arrives, the text keeps
+          the full width. When the ad arrives, the column opens and the text
+          narrows by the width of the ad. The ad sticks to the top of the
+          screen while the reader scrolls. dir="ltr" keeps the banner on
+          the right for RTL languages too; the text column itself still
+          follows the article language. */}
+      <div dir="ltr" className="mt-4 flex w-full min-w-0">
         <div dir={isRTL ? "rtl" : "ltr"} className="min-w-0 flex-1">
           {/* showAds turns on the in-article ads (between paragraphs). */}
           <ArticlePreviewer
@@ -828,7 +833,7 @@ export default async function ArticlePage({
           />
         </div>
 
-        <div className="hidden w-46 shrink-0 xl:block">
+        <div className="w-0 shrink-0 xl:has-[aside[data-ad-ready]]:ms-8 xl:has-[aside[data-ad-ready]]:w-40">
           <div className="sticky top-24">
             <AdsterraBanner160x600 minWidth={SIDE_RAIL_MIN_WIDTH} />
           </div>
@@ -838,18 +843,19 @@ export default async function ArticlePage({
       {/* ADS #3: native 4-tile banner (left) + 300x250 banner (right),
           right after the article ends. dir="ltr" keeps the same layout for
           RTL languages. The 300x250 only appears from 1024px up, so phones
-          and tablets get the native banner alone. The row stays hidden
-          until at least one ad renders (each ad is an <aside>). */}
-      <div
+          and tablets get the native banner alone.
+          AdRow keeps the whole row off the page (no space, no gap) until at
+          least one of its ads has really loaded. */}
+      <AdRow
         dir="ltr"
-        className="hidden w-full min-w-0 flex-col items-stretch gap-8 has-[aside]:flex lg:flex-row lg:items-start lg:justify-between lg:gap-10"
+        className="flex w-full min-w-0 flex-col items-stretch gap-8 lg:flex-row lg:items-start lg:justify-between lg:gap-10"
       >
         <AdsterraNativeBanner className="w-full min-w-0 lg:flex-1" />
         <AdsterraBanner300x250
           minWidth={1024}
           className="w-full lg:w-75 lg:shrink-0"
         />
-      </div>
+      </AdRow>
 
       {/* AUTHOR BIO */}
 
@@ -904,9 +910,11 @@ export default async function ArticlePage({
 
       {/* ADS #4: AdSense display unit, after the author bio. Only renders
           once ADSENSE_SLOT is filled in and AdSense is switched on in
-          components/ads/ads.tsx. */}
+          components/ads/ads.tsx.
+          Off the page (no space, no gap) until AdSense reports the unit as
+          filled; stays off the page when AdSense has no ad. */}
       {ADSENSE_SLOT && (
-        <div className="hidden w-full flex-col items-center gap-2 has-[ins]:flex">
+        <div className="pointer-events-none fixed left-0 top-0 flex w-full flex-col items-center gap-2 opacity-0 has-[ins[data-ad-status=filled]]:pointer-events-auto has-[ins[data-ad-status=filled]]:static has-[ins[data-ad-status=filled]]:opacity-100">
           <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
             Advertisement
           </span>
@@ -928,7 +936,8 @@ export default async function ArticlePage({
       </div>
 
       {/* ADS #5: full-width banner after the comments, before "Continue
-          Exploring". A last chance for readers who keep scrolling. */}
+          Exploring". A last chance for readers who keep scrolling. Takes no
+          space until the ad has really loaded. */}
       <AdsterraBannerAuto className="w-full" />
 
       {/* CONTINUE EXPLORING */}

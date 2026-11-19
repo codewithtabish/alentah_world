@@ -661,7 +661,8 @@ export function HomeClient({ blogs }: HomeClientProps) {
 
       {/* AD A: full-width banner right below the hero section.
           728x90 on tablet and desktop, 300x250 on phones (never both).
-          Renders nothing while ads are off or when no ad is available. */}
+          Renders nothing while ads are off or when no ad is available.
+          Takes no space until the ad has really loaded. */}
       <AdsterraBannerAuto className="w-full" />
 
       {/* 2. READ IN YOUR LANGUAGE */}
@@ -695,9 +696,11 @@ export function HomeClient({ blogs }: HomeClientProps) {
           {/* AD B: native 4-tile banner (left) + 300x250 banner (right) in
               the middle of the story grid. The 300x250 only appears from
               1024px up, so phones and tablets get the native banner alone
-              and never see two 300x250 ads back to back. The row stays
-              hidden until at least one ad renders (each ad is an <aside>). */}
-          <div className="hidden w-full min-w-0 flex-col items-stretch gap-8 has-[aside]:flex lg:flex-row lg:items-start lg:justify-between lg:gap-10">
+              and never see two 300x250 ads back to back.
+              The row stays hidden until at least one ad has REALLY loaded
+              (a loaded ad is an <aside data-ad-ready>), so there is no
+              empty gap while ads are loading or when no ad is available. */}
+          <div className="hidden w-full min-w-0 flex-col items-stretch gap-8 has-[aside[data-ad-ready]]:flex lg:flex-row lg:items-start lg:justify-between lg:gap-10">
             <AdsterraNativeBanner className="w-full min-w-0 lg:flex-1" />
             <AdsterraBanner300x250 minWidth={1024} className="w-full lg:w-75 lg:shrink-0" />
           </div>

@@ -10,8 +10,8 @@ import { getCategoryBlogs } from "@/actions/articles/get-category-blogs";
 import { CategoryClient } from "@/components/site/pages/category/category-client";
 
 // Ads (client components; safe to use inside this server component).
-// Each ad renders its own "Advertisement" label and renders nothing when
-// ads are off or no ad is available.
+// Each ad renders its own "Advertisement" label and takes NO space until a
+// real ad has loaded. If no ad arrives, it renders nothing at all.
 import {
   AdSenseUnit,
   AdsterraNativeBanner,
@@ -443,11 +443,14 @@ export default async function CategoryPage({ params }: PageProps) {
         {/* ADS #1: native 4-tile banner (left) + 300x250 banner (right),
             below the category content. dir="ltr" keeps the same layout for
             RTL languages. The 300x250 only appears from 1024px up, so
-            phones and tablets get the native banner alone. The row stays
-            hidden until at least one ad renders (each ad is an <aside>). */}
+            phones and tablets get the native banner alone.
+            The row (and its top margin) stays hidden until at least one ad
+            has REALLY loaded: a loaded ad is an <aside data-ad-ready>.
+            While ads are loading, or when none arrives, this row takes no
+            space. */}
         <div
           dir="ltr"
-          className="mx-auto mt-16 hidden w-full min-w-0 max-w-[1600px] flex-col items-stretch gap-8 has-[aside]:flex sm:mt-24 lg:flex-row lg:items-start lg:justify-between lg:gap-10"
+          className="mx-auto mt-16 hidden w-full min-w-0 max-w-[1600px] flex-col items-stretch gap-8 has-[aside[data-ad-ready]]:flex sm:mt-24 lg:flex-row lg:items-start lg:justify-between lg:gap-10"
         >
           <AdsterraNativeBanner className="w-full min-w-0 lg:flex-1" />
           <AdsterraBanner300x250
@@ -457,13 +460,16 @@ export default async function CategoryPage({ params }: PageProps) {
         </div>
 
         {/* ADS #2: full-width banner. 728x90 on tablet and desktop, 300x250
-            on phones (never both). */}
+            on phones (never both). Takes no space (including its top
+            margin) until the ad has loaded. */}
         <AdsterraBannerAuto className="mx-auto mt-16 w-full max-w-[1600px] sm:mt-20" />
 
         {/* ADS #3: AdSense display unit. Only renders once ADSENSE_SLOT is
-            filled in and AdSense is switched on in components/ads/ads.tsx. */}
+            filled in and AdSense is switched on in components/ads/ads.tsx.
+            Collapsed (no height, no margin) until AdSense reports the unit
+            as filled; stays collapsed when AdSense has no ad. */}
         {ADSENSE_SLOT && (
-          <div className="mx-auto mt-16 hidden w-full max-w-[1600px] flex-col items-center gap-2 has-[ins]:flex sm:mt-20">
+          <div className="mx-auto mt-0 flex max-h-0 w-full max-w-[1600px] flex-col items-center gap-2 overflow-hidden has-[ins[data-ad-status=filled]]:mt-16 has-[ins[data-ad-status=filled]]:max-h-none has-[ins[data-ad-status=filled]]:overflow-visible sm:has-[ins[data-ad-status=filled]]:mt-20">
             <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
               Advertisement
             </span>

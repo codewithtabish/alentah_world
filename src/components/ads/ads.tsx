@@ -130,24 +130,37 @@ function useMinWidth(px: number) {
 // ======================================================
 // 3. SHARED AD UNIT (label + iframe)
 //
-// Every ad reserves its space, becomes visible once an ad has really
-// loaded, retries once if nothing arrives, and removes itself if there is
-// still no ad (so there is never an empty "Advertisement" box).
-// Native ads also resize to the height of the ad they receive.
-// The ad frame follows the site theme (light / dark, text color, font)
-// and has no background of its own.
+// Space is taken ONLY when a real ad has loaded:
+//
+//   loading -> the unit is rendered off-flow (position: fixed, opacity 0)
+//              so the ad script runs normally and can be measured, but it
+//              takes NO space on the page and adds NO gap to the layout.
+//              (It is NOT visibility:hidden / display:none: ad networks
+//              often refuse to serve into hidden frames.)
+//   ready   -> the unit moves into the normal layout and covers exactly
+//              the area the ad needs.
+//   empty   -> no ad arrived (after all retries): the component renders
+//              nothing at all. No label, no blank box.
+//
+// The ready unit carries data-ad-ready="true" so wrappers can react to it
+// (see AdRow below).
 // ======================================================
 
 type AdStatus = "loading" | "ready" | "empty";
 
-const NATIVE_RESERVED_HEIGHT = 250;
+const NATIVE_PROBE_HEIGHT = 250; // height the loading native frame measures at
 const MIN_FILLED_HEIGHT = 30;
-const EMPTY_AFTER_MS = 10000;
-const MAX_RETRIES = 1;
+const EMPTY_AFTER_MS = 8000; // give up on one attempt sooner (was 15000)
+const MAX_RETRIES = 3; // try again with a fresh frame (was 1)
+const CHECK_EVERY_MS = 250; // check for a loaded ad more often (was 500)
 const THEME_STYLE_ID = "eneena-ad-theme";
 
 const LABEL_CLASS =
   "text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground";
+
+// Off-flow but still "visible" to the browser and the ad script.
+const LOADING_CLASS =
+  "pointer-events-none fixed left-0 top-0 -z-10 opacity-0";
 
 function AdUnit({
   srcDoc,
@@ -164,7 +177,7 @@ function AdUnit({
   const frameRef = useRef<HTMLIFrameElement>(null);
 
   const [attempt, setAttempt] = useState(0);
-  const [height, setHeight] = useState(fixedHeight ?? NATIVE_RESERVED_HEIGHT);
+  const [height, setHeight] = useState(fixedHeight ?? NATIVE_PROBE_HEIGHT);
   const [status, setStatus] = useState<AdStatus>("loading");
 
   useEffect(() => {
@@ -228,8 +241,33 @@ function AdUnit({
               body.querySelector("iframe, img, a, ins, embed, video, object"),
             );
           } else {
-            content = Math.ceil(body.scrollHeight);
-            filled = content >= MIN_FILLED_HEIGHT;
+            // Native: judge the ad container itself, NOT body.scrollHeight
+            // (the body always reports at least the iframe's own height,
+            // which made empty ads look "filled").
+            const container = body.querySelector<HTMLElement>(
+              '[id^="container-"]',
+            );
+
+            if (container) {
+              const items = Array.from(
+                container.querySelectorAll<HTMLElement>(
+                  "a, img, iframe, ins, video",
+                ),
+              );
+
+              const hasVisibleItem = items.some((el) => {
+                const rect = el.getBoundingClientRect();
+                if (rect.width <= 0 || rect.height <= 0) return false;
+                // Images must really be loaded.
+                if (el instanceof HTMLImageElement) {
+                  return el.complete && el.naturalWidth > 0;
+                }
+                return true;
+              });
+
+              content = Math.ceil(container.getBoundingClientRect().height);
+              filled = hasVisibleItem && content >= MIN_FILLED_HEIGHT;
+            }
           }
         }
       } catch {
@@ -247,13 +285,14 @@ function AdUnit({
         if (attempt < MAX_RETRIES) {
           setAttempt((current) => current + 1);
         } else {
+          console.debug("[ENEENA ads] no ad received (no fill or blocked).");
           setStatus((current) => (current === "ready" ? current : "empty"));
         }
       }
     };
 
     measure();
-    timer = window.setInterval(measure, 500);
+    timer = window.setInterval(measure, CHECK_EVERY_MS);
     window.addEventListener("resize", measure);
 
     return () => {
@@ -262,13 +301,17 @@ function AdUnit({
     };
   }, [isFixed, attempt]);
 
+  // No ad: render nothing at all.
   if (status === "empty") return null;
+
+  const ready = status === "ready";
 
   return (
     <aside
       aria-label="Advertisement"
+      data-ad-ready={ready ? "true" : undefined}
       className={`flex min-w-0 flex-col items-center gap-2 text-foreground ${
-        status === "loading" ? "opacity-0" : ""
+        ready ? "" : LOADING_CLASS
       } ${className ?? ""}`}
     >
       <span className={LABEL_CLASS}>Advertisement</span>
@@ -325,6 +368,46 @@ function FixedBanner({
       fixedHeight={height}
       className={className}
     />
+  );
+}
+
+// ======================================================
+// 3b. AD ROW (wrapper for rows that hold one or more ads)
+//
+// Use this instead of a "hidden has-[aside]:flex" wrapper. A wrapper with
+// display:none would stop the ads inside it from ever loading (nothing can
+// be laid out or measured in a display:none box), so the row could never
+// open.
+//
+//   no ad ready yet -> the row is off-flow (position: fixed, opacity 0):
+//                      it takes NO space, adds NO gap and NO margin, but
+//                      the ads inside it still load normally.
+//   an ad is ready  -> the row moves into the normal layout (static) and
+//                      shows, using whatever classes you pass in
+//                      className (flex, margins, gap, ...).
+//
+// Pass the layout classes yourself, for example:
+//   <AdRow dir="ltr" className="mt-16 flex w-full flex-col gap-8 lg:flex-row">
+// ======================================================
+
+export function AdRow({
+  children,
+  className,
+  dir,
+}: {
+  children: ReactNode;
+  className?: string;
+  dir?: "ltr" | "rtl";
+}) {
+  return (
+    <div
+      dir={dir}
+      className={`pointer-events-none fixed left-0 top-0 w-full opacity-0 has-[aside[data-ad-ready]]:pointer-events-auto has-[aside[data-ad-ready]]:static has-[aside[data-ad-ready]]:opacity-100 ${
+        className ?? ""
+      }`}
+    >
+      {children}
+    </div>
   );
 }
 
@@ -395,6 +478,7 @@ function NativeInline({
   className?: string;
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -408,7 +492,17 @@ function NativeInline({
     // Adsterra expects the container before its script.
     host.append(container, script);
 
+    // Show the label/space only once the ad has put real content in.
+    const check = () => {
+      const has = Boolean(container.querySelector("a, img, iframe, ins, video"));
+      const height = container.getBoundingClientRect().height;
+      setReady(has && height >= MIN_FILLED_HEIGHT);
+    };
+    check();
+    const timer = window.setInterval(check, CHECK_EVERY_MS);
+
     return () => {
+      window.clearInterval(timer);
       script.remove();
       container.remove();
     };
@@ -417,7 +511,10 @@ function NativeInline({
   return (
     <aside
       aria-label="Advertisement"
-      className={`flex min-w-0 flex-col items-center gap-2 ${className ?? ""}`}
+      data-ad-ready={ready ? "true" : undefined}
+      className={`flex min-w-0 flex-col items-center gap-2 ${
+        ready ? "" : LOADING_CLASS
+      } ${className ?? ""}`}
     >
       <span className={LABEL_CLASS}>Advertisement</span>
       <div ref={hostRef} className="w-full" />

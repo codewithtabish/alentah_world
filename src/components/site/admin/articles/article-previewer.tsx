@@ -8,9 +8,11 @@ import CodeBlockSwitcher from "./code-article-switcher";
 import { z } from "zod";
 import { tableOfContentsSchema } from "@/schemas/artcile";
 
-// Ads: each one renders its own "Advertisement" label and renders nothing
-// when ads are off or no ad is available.
+// Ads: each one renders its own "Advertisement" label, takes NO space (and
+// none of its margins) until a real ad has loaded, and renders nothing at
+// all when ads are off or no ad is available.
 import {
+  AdRow,
   AdsterraBanner300x250,
   AdsterraBannerAuto,
   AdsterraNativeBanner,
@@ -74,9 +76,11 @@ const MIN_PARAGRAPHS_AFTER_LAST_AD = 2;
 
 function InArticleAd({ kind }: { kind: InArticleAdKind }) {
   return (
-    // Hidden (no extra spacing) until an ad has actually rendered.
-    // dir="ltr" keeps the ads laid out the same way for RTL languages.
-    <div dir="ltr" className="not-prose my-12 hidden has-[aside]:block">
+    // AdRow keeps this slot completely off the page (no space, no my-12
+    // margin) until an ad has really loaded. If no ad arrives, nothing
+    // is ever shown. dir="ltr" keeps the ads laid out the same way for
+    // RTL languages.
+    <AdRow dir="ltr" className="not-prose my-12">
       {kind === "banner" ? (
         <AdsterraBannerAuto className="w-full" />
       ) : kind === "native" ? (
@@ -92,7 +96,7 @@ function InArticleAd({ kind }: { kind: InArticleAdKind }) {
           />
         </div>
       )}
-    </div>
+    </AdRow>
   );
 }
 
