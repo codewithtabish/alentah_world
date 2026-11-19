@@ -139,7 +139,7 @@ function useMinWidth(px: number) {
 //              often refuse to serve into hidden frames.)
 //   ready   -> the unit moves into the normal layout and covers exactly
 //              the area the ad needs.
-//   empty   -> no ad arrived (after all retries): the component renders
+//   empty   -> no ad arrived (after 1 retry): the component renders
 //              nothing at all. No label, no blank box.
 //
 // The ready unit carries data-ad-ready="true" so wrappers can react to it
@@ -150,9 +150,8 @@ type AdStatus = "loading" | "ready" | "empty";
 
 const NATIVE_PROBE_HEIGHT = 250; // height the loading native frame measures at
 const MIN_FILLED_HEIGHT = 30;
-const EMPTY_AFTER_MS = 8000; // give up on one attempt sooner (was 15000)
-const MAX_RETRIES = 3; // try again with a fresh frame (was 1)
-const CHECK_EVERY_MS = 250; // check for a loaded ad more often (was 500)
+const EMPTY_AFTER_MS = 15000;
+const MAX_RETRIES = 1;
 const THEME_STYLE_ID = "eneena-ad-theme";
 
 const LABEL_CLASS =
@@ -292,7 +291,7 @@ function AdUnit({
     };
 
     measure();
-    timer = window.setInterval(measure, CHECK_EVERY_MS);
+    timer = window.setInterval(measure, 500);
     window.addEventListener("resize", measure);
 
     return () => {
@@ -499,7 +498,7 @@ function NativeInline({
       setReady(has && height >= MIN_FILLED_HEIGHT);
     };
     check();
-    const timer = window.setInterval(check, CHECK_EVERY_MS);
+    const timer = window.setInterval(check, 500);
 
     return () => {
       window.clearInterval(timer);
