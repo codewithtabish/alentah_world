@@ -1,9 +1,11 @@
+
 import Script from "next/script";
 
 export default function MonetagAds() {
   return (
     <>
-      {/* Monetag In-Page Push — Zone 12295219 (DISABLED - was showing floating notification ads) */}
+      {/* Monetag In-Page Push — Zone 12295219 (DISABLED) */}
+      {/* Disabled because it was showing floating notification ads. */}
       {/*
       <Script
         id="monetag-in-page-push"
@@ -50,6 +52,16 @@ export default function MonetagAds() {
         strategy="beforeInteractive"
         data-cfasync="false"
         async
+      />
+
+      {/* Monetag MultiTag — Crazy tag — Zone 313878 */}
+      <Script
+        id="monetag-crazy-tag"
+        src="https://quge5.com/88/tag.min.js"
+        data-zone="313878"
+        strategy="beforeInteractive"
+        async
+        data-cfasync="false"
       />
     </>
   );
