@@ -1,10 +1,10 @@
-
 import Script from "next/script";
 
 export default function MonetagAds() {
   return (
     <>
-      {/* Monetag In-Page Push — Zone 12295219 */}
+      {/* Monetag In-Page Push — Zone 12295219 (DISABLED - was showing floating notification ads) */}
+      {/*
       <Script
         id="monetag-in-page-push"
         strategy="beforeInteractive"
@@ -22,6 +22,7 @@ export default function MonetagAds() {
           `,
         }}
       />
+      */}
 
       {/* Monetag Vignette Banner — Zone 12295221 */}
       <Script
